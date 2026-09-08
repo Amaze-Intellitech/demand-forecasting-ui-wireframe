@@ -7,6 +7,8 @@ import { SolutionLogin } from './pages/SolutionLogin';
 import { DataIngestion } from './pages/DataIngestion';
 import { ExecutiveCockpit } from './pages/ExecutiveCockpit';
 import { DemandSignalsPage } from './pages/DemandSignalsPage';
+import { DemandForecastPage } from './pages/DemandForecastPage';
+import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
 
 // Protected Route Guard
 const RequirePlatformAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -98,12 +100,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Demand Forecast (Screen 3 Placeholder) */}
+      {/* Demand Intelligence: Demand Forecast (Screen 3) */}
       <Route
         path="/solutions/demand-intelligence/forecast"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DemandForecastPage />
           </RequirePlatformAuth>
         }
       />
@@ -111,7 +113,43 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/forecast"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DemandForecastPage />
+          </RequirePlatformAuth>
+        }
+      />
+
+      {/* Demand Intelligence: Scenario Studio (Screen 4) */}
+      <Route
+        path="/solutions/demand-intelligence/scenarios"
+        element={
+          <RequirePlatformAuth>
+            <ScenarioStudioPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/scenarios"
+        element={
+          <RequirePlatformAuth>
+            <ScenarioStudioPage />
+          </RequirePlatformAuth>
+        }
+      />
+
+      {/* Demand Intelligence: Prescriptive Sourcing (Screen 5 Placeholder) */}
+      <Route
+        path="/solutions/demand-intelligence/sourcing"
+        element={
+          <RequirePlatformAuth>
+            <ScenarioStudioPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/sourcing"
+        element={
+          <RequirePlatformAuth>
+            <ScenarioStudioPage />
           </RequirePlatformAuth>
         }
       />
