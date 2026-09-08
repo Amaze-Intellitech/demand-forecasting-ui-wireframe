@@ -10,6 +10,7 @@ import { DemandSignalsPage } from './pages/DemandSignalsPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
 import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
 import { PrescriptiveSourcingPage } from './pages/PrescriptiveSourcingPage';
+import { AIDecisionCopilotPage } from './pages/AIDecisionCopilotPage';
 
 // Protected Route Guard
 const RequirePlatformAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -155,12 +156,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: AI Decision Copilot (Screen 6 Placeholder) */}
+      {/* Demand Intelligence: AI Decision Copilot (Screen 6) */}
       <Route
         path="/solutions/demand-intelligence/copilot"
         element={
           <RequirePlatformAuth>
-            <PrescriptiveSourcingPage />
+            <AIDecisionCopilotPage />
           </RequirePlatformAuth>
         }
       />
@@ -168,7 +169,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/copilot"
         element={
           <RequirePlatformAuth>
-            <PrescriptiveSourcingPage />
+            <AIDecisionCopilotPage />
           </RequirePlatformAuth>
         }
       />
