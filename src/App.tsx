@@ -9,6 +9,7 @@ import { ExecutiveCockpit } from './pages/ExecutiveCockpit';
 import { DemandSignalsPage } from './pages/DemandSignalsPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
 import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
+import { PrescriptiveSourcingPage } from './pages/PrescriptiveSourcingPage';
 
 // Protected Route Guard
 const RequirePlatformAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -136,12 +137,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Prescriptive Sourcing (Screen 5 Placeholder) */}
+      {/* Demand Intelligence: Prescriptive Sourcing (Screen 5) */}
       <Route
         path="/solutions/demand-intelligence/sourcing"
         element={
           <RequirePlatformAuth>
-            <ScenarioStudioPage />
+            <PrescriptiveSourcingPage />
           </RequirePlatformAuth>
         }
       />
@@ -149,7 +150,25 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/sourcing"
         element={
           <RequirePlatformAuth>
-            <ScenarioStudioPage />
+            <PrescriptiveSourcingPage />
+          </RequirePlatformAuth>
+        }
+      />
+
+      {/* Demand Intelligence: AI Decision Copilot (Screen 6 Placeholder) */}
+      <Route
+        path="/solutions/demand-intelligence/copilot"
+        element={
+          <RequirePlatformAuth>
+            <PrescriptiveSourcingPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/copilot"
+        element={
+          <RequirePlatformAuth>
+            <PrescriptiveSourcingPage />
           </RequirePlatformAuth>
         }
       />
