@@ -8,8 +8,8 @@ import { DataIngestion } from './pages/DataIngestion';
 import { ExecutiveCockpit } from './pages/ExecutiveCockpit';
 import { ExecutiveCommandCenterPage } from './pages/ExecutiveCommandCenterPage';
 import { DemandSensingPage } from './pages/DemandSensingPage';
-import { DemandSignalsPage } from './pages/DemandSignalsPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
+import { DriverCausalIntelligencePage } from './pages/DriverCausalIntelligencePage';
 import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
 import { PrescriptiveSourcingPage } from './pages/PrescriptiveSourcingPage';
 import { AIDecisionCopilotPage } from './pages/AIDecisionCopilotPage';
@@ -147,12 +147,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Driver & Causal Intelligence */}
+      {/* Demand Intelligence: Driver & Causal Intelligence (Screen 4) */}
       <Route
         path="/solutions/demand-intelligence/drivers"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DriverCausalIntelligencePage />
           </RequirePlatformAuth>
         }
       />
@@ -160,7 +160,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/drivers"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DriverCausalIntelligencePage />
           </RequirePlatformAuth>
         }
       />

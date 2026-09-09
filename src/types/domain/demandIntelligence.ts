@@ -37,4 +37,5 @@ export interface FilterState {
 }
 
 export * from './demandForecast';
+export * from './causalIntelligence';
 
