@@ -6,6 +6,7 @@ import { SolutionHub } from './pages/SolutionHub';
 import { SolutionLogin } from './pages/SolutionLogin';
 import { DataIngestion } from './pages/DataIngestion';
 import { ExecutiveCockpit } from './pages/ExecutiveCockpit';
+import { ExecutiveCommandCenterPage } from './pages/ExecutiveCommandCenterPage';
 import { DemandSignalsPage } from './pages/DemandSignalsPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
 import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
@@ -66,12 +67,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Executive Cockpit (Screen 1) */}
+      {/* Demand Intelligence: Executive Command Center (Screen 1 - P0) */}
       <Route
         path="/solutions/demand-intelligence/overview"
         element={
           <RequirePlatformAuth>
-            <ExecutiveCockpit />
+            <ExecutiveCommandCenterPage />
           </RequirePlatformAuth>
         }
       />
@@ -79,12 +80,29 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/overview"
         element={
           <RequirePlatformAuth>
+            <ExecutiveCommandCenterPage />
+          </RequirePlatformAuth>
+        }
+      />
+      {/* Legacy Executive Cockpit route for backward compatibility */}
+      <Route
+        path="/solutions/demand-intelligence/cockpit"
+        element={
+          <RequirePlatformAuth>
             <ExecutiveCockpit />
           </RequirePlatformAuth>
         }
       />
 
-      {/* Demand Intelligence: Demand Signals (Screen 2) */}
+      {/* Demand Intelligence: Demand Sensing / Signals (Screen 2) */}
+      <Route
+        path="/solutions/demand-intelligence/sensing"
+        element={
+          <RequirePlatformAuth>
+            <DemandSignalsPage />
+          </RequirePlatformAuth>
+        }
+      />
       <Route
         path="/solutions/demand-intelligence/signals"
         element={
@@ -95,6 +113,14 @@ export const AppContent: React.FC = () => {
       />
       <Route
         path="/solutions/:solutionId/signals"
+        element={
+          <RequirePlatformAuth>
+            <DemandSignalsPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/sensing"
         element={
           <RequirePlatformAuth>
             <DemandSignalsPage />
@@ -120,6 +146,42 @@ export const AppContent: React.FC = () => {
         }
       />
 
+      {/* Demand Intelligence: Driver & Causal Intelligence */}
+      <Route
+        path="/solutions/demand-intelligence/drivers"
+        element={
+          <RequirePlatformAuth>
+            <DemandSignalsPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/drivers"
+        element={
+          <RequirePlatformAuth>
+            <DemandSignalsPage />
+          </RequirePlatformAuth>
+        }
+      />
+
+      {/* Demand Intelligence: Inventory Intelligence */}
+      <Route
+        path="/solutions/demand-intelligence/inventory"
+        element={
+          <RequirePlatformAuth>
+            <ExecutiveCommandCenterPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/inventory"
+        element={
+          <RequirePlatformAuth>
+            <ExecutiveCommandCenterPage />
+          </RequirePlatformAuth>
+        }
+      />
+
       {/* Demand Intelligence: Scenario Studio (Screen 4) */}
       <Route
         path="/solutions/demand-intelligence/scenarios"
@@ -138,7 +200,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Prescriptive Sourcing (Screen 5) */}
+      {/* Demand Intelligence: Supply & Capacity Optimization / Sourcing (Screen 5) */}
       <Route
         path="/solutions/demand-intelligence/sourcing"
         element={
@@ -156,6 +218,24 @@ export const AppContent: React.FC = () => {
         }
       />
 
+      {/* Demand Intelligence: Risk & Exception Center */}
+      <Route
+        path="/solutions/demand-intelligence/exceptions"
+        element={
+          <RequirePlatformAuth>
+            <ExecutiveCommandCenterPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/exceptions"
+        element={
+          <RequirePlatformAuth>
+            <ExecutiveCommandCenterPage />
+          </RequirePlatformAuth>
+        }
+      />
+
       {/* Demand Intelligence: AI Decision Copilot (Screen 6) */}
       <Route
         path="/solutions/demand-intelligence/copilot"
@@ -167,6 +247,24 @@ export const AppContent: React.FC = () => {
       />
       <Route
         path="/solutions/:solutionId/copilot"
+        element={
+          <RequirePlatformAuth>
+            <AIDecisionCopilotPage />
+          </RequirePlatformAuth>
+        }
+      />
+
+      {/* Demand Intelligence: Agent Control Center */}
+      <Route
+        path="/solutions/demand-intelligence/agents"
+        element={
+          <RequirePlatformAuth>
+            <AIDecisionCopilotPage />
+          </RequirePlatformAuth>
+        }
+      />
+      <Route
+        path="/solutions/:solutionId/agents"
         element={
           <RequirePlatformAuth>
             <AIDecisionCopilotPage />
