@@ -30,10 +30,10 @@ export const DemandIntelligenceSidebar: React.FC<DemandIntelligenceSidebarProps>
     onSelectTab?.(id);
     const routeMap: Record<string, string> = {
       overview: '/solutions/demand-intelligence/overview',
-      sensing: '/solutions/demand-intelligence/signals',
-      signals: '/solutions/demand-intelligence/signals',
+      sensing: '/solutions/demand-intelligence/sensing',
+      signals: '/solutions/demand-intelligence/sensing',
       forecast: '/solutions/demand-intelligence/forecast',
-      drivers: '/solutions/demand-intelligence/signals',
+      drivers: '/solutions/demand-intelligence/drivers',
       inventory: '/solutions/demand-intelligence/inventory',
       scenarios: '/solutions/demand-intelligence/scenarios',
       sourcing: '/solutions/demand-intelligence/sourcing',

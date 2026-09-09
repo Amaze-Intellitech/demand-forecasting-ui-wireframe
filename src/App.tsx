@@ -7,6 +7,7 @@ import { SolutionLogin } from './pages/SolutionLogin';
 import { DataIngestion } from './pages/DataIngestion';
 import { ExecutiveCockpit } from './pages/ExecutiveCockpit';
 import { ExecutiveCommandCenterPage } from './pages/ExecutiveCommandCenterPage';
+import { DemandSensingPage } from './pages/DemandSensingPage';
 import { DemandSignalsPage } from './pages/DemandSignalsPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
 import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
@@ -99,7 +100,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/demand-intelligence/sensing"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DemandSensingPage />
           </RequirePlatformAuth>
         }
       />
@@ -107,7 +108,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/demand-intelligence/signals"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DemandSensingPage />
           </RequirePlatformAuth>
         }
       />
@@ -115,7 +116,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/signals"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DemandSensingPage />
           </RequirePlatformAuth>
         }
       />
@@ -123,7 +124,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/sensing"
         element={
           <RequirePlatformAuth>
-            <DemandSignalsPage />
+            <DemandSensingPage />
           </RequirePlatformAuth>
         }
       />
