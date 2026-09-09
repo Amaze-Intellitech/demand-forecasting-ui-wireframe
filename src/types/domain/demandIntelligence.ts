@@ -38,4 +38,5 @@ export interface FilterState {
 
 export * from './demandForecast';
 export * from './causalIntelligence';
+export * from './inventoryIntelligence';
 

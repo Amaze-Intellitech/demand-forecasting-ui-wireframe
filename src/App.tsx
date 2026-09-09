@@ -10,6 +10,7 @@ import { ExecutiveCommandCenterPage } from './pages/ExecutiveCommandCenterPage';
 import { DemandSensingPage } from './pages/DemandSensingPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
 import { DriverCausalIntelligencePage } from './pages/DriverCausalIntelligencePage';
+import { InventoryIntelligencePage } from './pages/InventoryIntelligencePage';
 import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
 import { PrescriptiveSourcingPage } from './pages/PrescriptiveSourcingPage';
 import { AIDecisionCopilotPage } from './pages/AIDecisionCopilotPage';
@@ -165,12 +166,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Inventory Intelligence */}
+      {/* Demand Intelligence: Inventory Intelligence (Screen 5) */}
       <Route
         path="/solutions/demand-intelligence/inventory"
         element={
           <RequirePlatformAuth>
-            <ExecutiveCommandCenterPage />
+            <InventoryIntelligencePage />
           </RequirePlatformAuth>
         }
       />
@@ -178,7 +179,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/inventory"
         element={
           <RequirePlatformAuth>
-            <ExecutiveCommandCenterPage />
+            <InventoryIntelligencePage />
           </RequirePlatformAuth>
         }
       />
