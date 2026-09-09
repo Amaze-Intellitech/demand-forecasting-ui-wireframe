@@ -35,3 +35,6 @@ export interface FilterState {
   region: string;
   dateRange: string;
 }
+
+export * from './demandForecast';
+
