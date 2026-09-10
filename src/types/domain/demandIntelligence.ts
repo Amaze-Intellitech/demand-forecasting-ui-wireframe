@@ -40,4 +40,5 @@ export * from './demandForecast';
 export * from './causalIntelligence';
 export * from './inventoryIntelligence';
 export * from './scenarioDecisionTwin';
+export * from './supplyCapacityOptimization';
 

@@ -12,7 +12,7 @@ import { DemandForecastPage } from './pages/DemandForecastPage';
 import { DriverCausalIntelligencePage } from './pages/DriverCausalIntelligencePage';
 import { InventoryIntelligencePage } from './pages/InventoryIntelligencePage';
 import { ScenarioDecisionTwinPage } from './pages/ScenarioDecisionTwinPage';
-import { PrescriptiveSourcingPage } from './pages/PrescriptiveSourcingPage';
+import { SupplyCapacityOptimizationPage } from './pages/SupplyCapacityOptimizationPage';
 import { AIDecisionCopilotPage } from './pages/AIDecisionCopilotPage';
 
 // Protected Route Guard
@@ -202,12 +202,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Supply & Capacity Optimization / Sourcing (Screen 5) */}
+      {/* Demand Intelligence: Supply & Capacity Optimization / Sourcing (Screen 07) */}
       <Route
         path="/solutions/demand-intelligence/sourcing"
         element={
           <RequirePlatformAuth>
-            <PrescriptiveSourcingPage />
+            <SupplyCapacityOptimizationPage />
           </RequirePlatformAuth>
         }
       />
@@ -215,7 +215,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/sourcing"
         element={
           <RequirePlatformAuth>
-            <PrescriptiveSourcingPage />
+            <SupplyCapacityOptimizationPage />
           </RequirePlatformAuth>
         }
       />
