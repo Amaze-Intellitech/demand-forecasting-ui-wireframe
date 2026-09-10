@@ -25,7 +25,7 @@ export const SourcingFilterBar: React.FC<SourcingFilterBarProps> = ({
           <select
             value={filters.plant}
             onChange={(e) => onChange('plant', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {SOURCING_FILTER_OPTIONS.plants.map((p) => (
               <option key={p} value={p}>
@@ -46,7 +46,7 @@ export const SourcingFilterBar: React.FC<SourcingFilterBarProps> = ({
           <select
             value={filters.category}
             onChange={(e) => onChange('category', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {SOURCING_FILTER_OPTIONS.categories.map((c) => (
               <option key={c} value={c}>
@@ -67,7 +67,7 @@ export const SourcingFilterBar: React.FC<SourcingFilterBarProps> = ({
           <select
             value={filters.sku}
             onChange={(e) => onChange('sku', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {SOURCING_FILTER_OPTIONS.skus.map((s) => (
               <option key={s} value={s}>
@@ -88,7 +88,7 @@ export const SourcingFilterBar: React.FC<SourcingFilterBarProps> = ({
           <select
             value={filters.timeHorizon}
             onChange={(e) => onChange('timeHorizon', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {SOURCING_FILTER_OPTIONS.timeHorizons.map((h) => (
               <option key={h} value={h}>
@@ -109,7 +109,7 @@ export const SourcingFilterBar: React.FC<SourcingFilterBarProps> = ({
           <select
             value={filters.scenario}
             onChange={(e) => onChange('scenario', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {SOURCING_FILTER_OPTIONS.scenarios.map((sc) => (
               <option key={sc} value={sc}>

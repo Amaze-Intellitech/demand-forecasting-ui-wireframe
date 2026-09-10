@@ -53,7 +53,7 @@ export const ModelDetailDrawer: React.FC<ModelDetailDrawerProps> = ({
                   className={`text-[11px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${
                     isChampion
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-sky-50 text-[#0062d2] border-sky-200'
+                      : 'bg-info-bg text-[#0062d2] border-border'
                   }`}
                 >
                   {isChampion && <Trophy className="w-3 h-3 text-amber-500 fill-amber-500" />}

@@ -30,7 +30,7 @@ export const CausalInsightsTable: React.FC<CausalInsightsTableProps> = ({
           <select
             value={selectedFilter}
             onChange={(e) => onFilterChange(e.target.value)}
-            className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+            className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
           >
             <option value="All Drivers">All Drivers</option>
             {driverOptions.map((d) => (

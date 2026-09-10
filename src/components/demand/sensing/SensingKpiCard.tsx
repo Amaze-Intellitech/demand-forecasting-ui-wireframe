@@ -20,7 +20,7 @@ export const SensingKpiCard: React.FC<SensingKpiCardProps> = ({ kpi, onClick }) 
       case 'index':
         return {
           icon: Activity,
-          color: 'bg-sky-50 text-[#0062d2] border border-sky-100',
+          color: 'bg-info-bg text-[#0062d2] border border-border',
         };
       case 'coverage':
         return {
@@ -35,7 +35,7 @@ export const SensingKpiCard: React.FC<SensingKpiCardProps> = ({ kpi, onClick }) 
       case 'uplift':
         return {
           icon: TrendingUp,
-          color: 'bg-sky-50 text-[#0062d2] border border-sky-100',
+          color: 'bg-info-bg text-[#0062d2] border border-border',
         };
       case 'confidence':
         return {

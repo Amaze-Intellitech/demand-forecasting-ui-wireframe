@@ -124,8 +124,8 @@ export const SkuDetailDrawer: React.FC<SkuDetailDrawerProps> = ({
             </div>
 
             {/* Recommended Action */}
-            <div className="p-4 bg-sky-50/70 border border-sky-200/80 rounded-xl space-y-1.5">
-              <div className="font-bold text-sky-900 text-xs">
+            <div className="p-4 bg-info-bg border border-border rounded-xl space-y-1.5">
+              <div className="font-bold text-deep text-xs">
                 Recommended Action
               </div>
               <p className="text-slate-700 font-medium leading-relaxed">

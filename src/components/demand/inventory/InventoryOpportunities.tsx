@@ -67,7 +67,7 @@ export const InventoryOpportunities: React.FC<InventoryOpportunitiesProps> = ({
                         e.stopPropagation();
                         onSelectOpportunity(opp);
                       }}
-                      className="px-3 py-1 rounded-md text-xs font-bold bg-sky-50 text-sky-700 hover:bg-sky-100 transition-all cursor-pointer"
+                      className="px-3 py-1 rounded-md text-xs font-bold bg-info-bg text-deep hover:bg-info-bg transition-all cursor-pointer"
                     >
                       {opp.action}
                     </button>

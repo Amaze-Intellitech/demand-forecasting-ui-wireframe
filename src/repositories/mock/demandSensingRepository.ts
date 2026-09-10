@@ -118,7 +118,7 @@ export class DemandSensingRepository {
       return {
         title: `${product} near-term volatility alert`,
         narrative: `High order concentration detected for ${product} with supply lead time variance. Recommend adjusting buffer allocation in nearest hub.`,
-        route: '/solutions/demand-intelligence/sourcing',
+        route: '/solutions/demand-intelligence/supply-capacity',
         targetText: 'Inspect Sourcing Allocation',
       };
     }

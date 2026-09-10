@@ -270,7 +270,7 @@ export const MOCK_RESPONSES: Record<string, CopilotResponseBlocks> = {
       'Monitor pricing behavior closely and incorporate price sensitivity elasticity (-0.42) into the next monthly planning cycle.',
     cta: {
       label: 'View Demand Signals',
-      route: '/solutions/demand-intelligence/signals',
+      route: '/solutions/demand-intelligence/demand-sensing',
     },
     followUps: [
       'How will a 10% price increase impact demand and revenue?',
@@ -363,7 +363,7 @@ export const MOCK_RESPONSES: Record<string, CopilotResponseBlocks> = {
       'Shift incremental demand toward Supplier A and B while locking in volume rebate tiers for H2.',
     cta: {
       label: 'Optimize Sourcing Plan',
-      route: '/solutions/demand-intelligence/sourcing',
+      route: '/solutions/demand-intelligence/supply-capacity',
     },
     followUps: [
       'What is the risk of stockout in the next 6 months?',
@@ -451,7 +451,7 @@ export const MOCK_RESPONSES: Record<string, CopilotResponseBlocks> = {
       'Reduce excess safety stock in non-peak categories while protecting fast-moving polymer grades.',
     cta: {
       label: 'View Executive Cockpit',
-      route: '/solutions/demand-intelligence/overview',
+      route: '/solutions/demand-intelligence/executive',
     },
     followUps: [
       'What should I tell the board?',
@@ -496,7 +496,7 @@ export const MOCK_RESPONSES: Record<string, CopilotResponseBlocks> = {
       'Recommended Management Focus: Protect Q3 peak service levels, execute multi-source allocation contracts with Suppliers A & B, and stress-test pricing power against inflation.',
     cta: {
       label: 'Open Executive Cockpit',
-      route: '/solutions/demand-intelligence/overview',
+      route: '/solutions/demand-intelligence/executive',
     },
     followUps: [
       'What is the demand outlook for HDPE Resin in Q3 2026?',
@@ -517,7 +517,7 @@ export const MOCK_RESPONSES: Record<string, CopilotResponseBlocks> = {
       'You can ask specific questions about demand outlook, pricing scenarios, supplier allocation, or working capital release.',
     cta: {
       label: 'Explore Executive Cockpit',
-      route: '/solutions/demand-intelligence/overview',
+      route: '/solutions/demand-intelligence/executive',
     },
     followUps: [
       'What is the demand outlook for HDPE Resin in Q3 2026?',
@@ -604,13 +604,13 @@ export const COPILOT_ACTION_LINKS: ActionLinkItem[] = [
   {
     id: 'act-sourcing',
     title: 'Optimize Supplier Allocation',
-    route: '/solutions/demand-intelligence/sourcing',
+    route: '/solutions/demand-intelligence/supply-capacity',
     iconName: 'Truck',
   },
   {
     id: 'act-alerts',
     title: 'Set Inventory Alerts',
-    route: '/solutions/demand-intelligence/overview',
+    route: '/solutions/demand-intelligence/executive',
     iconName: 'Bell',
   },
 ];

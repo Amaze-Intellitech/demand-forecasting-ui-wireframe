@@ -214,7 +214,7 @@ export const CostComparisonWaterfallChart: React.FC = () => {
         {/* Hover Tooltip */}
         {hoveredItem && (
           <div className="absolute top-2 right-6 pointer-events-none bg-slate-900/95 text-white p-3 rounded-lg shadow-xl border border-slate-700 text-xs backdrop-blur-xs flex flex-col gap-1 z-30 min-w-[170px]">
-            <div className="flex items-center justify-between border-b border-slate-700 pb-1 font-bold text-sky-400">
+            <div className="flex items-center justify-between border-b border-slate-700 pb-1 font-bold text-blue-400">
               <span>{hoveredItem.label}</span>
               <span>{hoveredItem.displayVal}</span>
             </div>

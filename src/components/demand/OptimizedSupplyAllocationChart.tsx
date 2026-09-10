@@ -246,18 +246,18 @@ export const OptimizedSupplyAllocationChart: React.FC = () => {
         {/* Hover Tooltip */}
         {hoveredQuarter && (
           <div className="absolute top-2 left-1/3 pointer-events-none bg-slate-900/95 text-white p-3 rounded-lg shadow-xl border border-slate-700 text-xs backdrop-blur-xs flex flex-col gap-1 z-30 min-w-[170px]">
-            <div className="flex items-center justify-between border-b border-slate-700 pb-1 font-bold text-sky-400">
+            <div className="flex items-center justify-between border-b border-slate-700 pb-1 font-bold text-blue-400">
               <span>{hoveredQuarter.quarter} Allocation</span>
               <span>{hoveredQuarter.totalLabel}</span>
             </div>
             <div className="space-y-0.5 text-[11px] font-mono pt-1">
               <div className="flex justify-between">
                 <span className="text-slate-300">Supplier A:</span>
-                <strong className="text-sky-300">{hoveredQuarter.supplierA}K units</strong>
+                <strong className="text-primary">{hoveredQuarter.supplierA}K units</strong>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-300">Supplier B:</span>
-                <strong className="text-sky-200">{hoveredQuarter.supplierB}K units</strong>
+                <strong className="text-primary">{hoveredQuarter.supplierB}K units</strong>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-300">Supplier C:</span>

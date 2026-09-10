@@ -24,7 +24,7 @@ export const ModelTournamentTable: React.FC<ModelTournamentTableProps> = ({
         );
       case 'Challenger':
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-[#0062d2] border border-sky-100">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-info-bg text-[#0062d2] border border-border">
             Challenger
           </span>
         );
@@ -61,7 +61,7 @@ export const ModelTournamentTable: React.FC<ModelTournamentTableProps> = ({
                 onClick={() => onSelectModel(model)}
                 className={`transition-colors cursor-pointer group ${
                   isSelected
-                    ? 'bg-sky-50/90'
+                    ? 'bg-info-bg'
                     : isChampion
                     ? 'bg-emerald-50/30 hover:bg-emerald-50/60'
                     : 'hover:bg-slate-50/80'

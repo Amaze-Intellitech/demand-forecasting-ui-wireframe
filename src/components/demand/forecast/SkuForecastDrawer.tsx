@@ -80,7 +80,7 @@ export const SkuForecastDrawer: React.FC<SkuForecastDrawerProps> = ({
           <div className="flex-1 overflow-y-auto p-6 space-y-5 text-xs text-slate-700">
             {/* Forecast Comparison Grid */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 bg-sky-50/80 border border-sky-200 rounded-xl">
+              <div className="p-3.5 bg-info-bg border border-border rounded-xl">
                 <div className="text-[11px] text-[#0062d2] font-semibold mb-0.5">
                   Current Forecast (FY25)
                 </div>

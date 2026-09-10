@@ -271,7 +271,7 @@ export const CausalNetworkCard: React.FC<CausalNetworkCardProps> = ({
           <span className="text-[11px] font-medium text-slate-700">Negative Impact</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-sky-400" />
+          <span className="w-2.5 h-2.5 rounded-full bg-primary" />
           <span className="text-[11px] font-medium text-slate-700">Indirect Impact</span>
         </div>
       </div>

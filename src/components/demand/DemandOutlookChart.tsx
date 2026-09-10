@@ -110,7 +110,7 @@ export const DemandOutlookChart: React.FC<DemandOutlookChartProps> = ({
           <select
             value={period}
             onChange={(e) => onPeriodChange(e.target.value as 'monthly' | 'quarterly')}
-            className="h-8 pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all cursor-pointer shadow-xs appearance-none"
+            className="h-8 pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer shadow-xs appearance-none"
           >
             <option value="monthly">Monthly</option>
             <option value="quarterly">Quarterly</option>
@@ -277,7 +277,7 @@ export const DemandOutlookChart: React.FC<DemandOutlookChartProps> = ({
                   y={paddingTop + chartHeight + 20}
                   textAnchor="middle"
                   className={`text-[11px] select-none transition-colors ${
-                    isHovered ? 'font-bold fill-sky-700' : 'font-medium fill-slate-600'
+                    isHovered ? 'font-bold fill-deep' : 'font-medium fill-slate-600'
                   }`}
                 >
                   {d.monthShort}
@@ -332,7 +332,7 @@ export const DemandOutlookChart: React.FC<DemandOutlookChartProps> = ({
             <div className="font-semibold text-slate-200 border-b border-slate-800 pb-1 flex items-center justify-between gap-3">
               <span>{data[hoveredIdx].period}</span>
               {data[hoveredIdx].isToday && (
-                <span className="text-[10px] px-1.5 py-0.2 bg-sky-500/20 text-sky-400 rounded">
+                <span className="text-[10px] px-1.5 py-0.2 bg-primary text-primary rounded">
                   Current Month
                 </span>
               )}
@@ -340,7 +340,7 @@ export const DemandOutlookChart: React.FC<DemandOutlookChartProps> = ({
             {data[hoveredIdx].actual !== null && (
               <div className="flex items-center justify-between gap-4 text-slate-300">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-sky-400 inline-block" />
+                  <span className="w-2 h-2 rounded-full bg-primary inline-block" />
                   Actual Demand:
                 </span>
                 <span className="font-bold text-white">
@@ -351,10 +351,10 @@ export const DemandOutlookChart: React.FC<DemandOutlookChartProps> = ({
             {data[hoveredIdx].forecast !== null && (
               <div className="flex items-center justify-between gap-4 text-slate-300">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full border border-sky-400 inline-block" />
+                  <span className="w-2 h-2 rounded-full border border-primary inline-block" />
                   Forecast:
                 </span>
-                <span className="font-bold text-sky-400">
+                <span className="font-bold text-primary">
                   {data[hoveredIdx].forecast}K units
                 </span>
               </div>

@@ -153,7 +153,7 @@ export const QuarterlyForecastChart: React.FC = () => {
         {/* Hover Tooltip */}
         {hoveredQuarter && (
           <div className="absolute top-2 right-4 pointer-events-none bg-slate-900/90 text-white px-2.5 py-1.5 rounded-md shadow-lg border border-slate-700 text-xs backdrop-blur-xs flex items-center gap-2 z-20">
-            <span className="font-bold text-sky-400">{hoveredQuarter.quarter}</span>
+            <span className="font-bold text-blue-400">{hoveredQuarter.quarter}</span>
             <span className="text-slate-400">|</span>
             <span className="font-mono text-white">{hoveredQuarter.volumeLabel} units</span>
             <span className="text-[10px] uppercase font-bold text-emerald-400">

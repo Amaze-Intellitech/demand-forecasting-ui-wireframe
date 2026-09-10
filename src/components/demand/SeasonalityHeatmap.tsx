@@ -119,7 +119,7 @@ export const SeasonalityHeatmap: React.FC = () => {
         {/* Hover Tooltip */}
         {hoveredCell && (
           <div className="absolute top-1 left-28 z-20 pointer-events-none bg-slate-900/90 text-white px-2.5 py-1.5 rounded-md shadow-lg border border-slate-700 text-xs backdrop-blur-xs flex items-center gap-2">
-            <span className="font-bold text-sky-400">
+            <span className="font-bold text-blue-400">
               {hoveredCell.month} {hoveredCell.year}
             </span>
             <span className="text-slate-400">|</span>

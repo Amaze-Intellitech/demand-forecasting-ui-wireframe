@@ -214,7 +214,7 @@ export const KEY_FORECAST_INSIGHTS_MOCK: ForecastInsight[] = [
     summary: 'Demand 18% above average',
     iconType: 'peak',
     severity: 'info',
-    route: '/solutions/demand-intelligence/overview',
+    route: '/solutions/demand-intelligence/executive',
   },
   {
     id: 'insight-2',
@@ -222,7 +222,7 @@ export const KEY_FORECAST_INSIGHTS_MOCK: ForecastInsight[] = [
     summary: '+22% growth in APAC',
     iconType: 'packaging',
     severity: 'positive',
-    route: '/solutions/demand-intelligence/sensing',
+    route: '/solutions/demand-intelligence/demand-sensing',
   },
   {
     id: 'insight-3',

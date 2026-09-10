@@ -25,7 +25,7 @@ export const ForecastFilterBar: React.FC<ForecastFilterBarProps> = ({
           <select
             value={filters.plant}
             onChange={(e) => onChange('plant', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {FORECAST_FILTER_OPTIONS.plants.map((p) => (
               <option key={p} value={p}>
@@ -46,7 +46,7 @@ export const ForecastFilterBar: React.FC<ForecastFilterBarProps> = ({
           <select
             value={filters.category}
             onChange={(e) => onChange('category', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {FORECAST_FILTER_OPTIONS.categories.map((c) => (
               <option key={c} value={c}>
@@ -67,7 +67,7 @@ export const ForecastFilterBar: React.FC<ForecastFilterBarProps> = ({
           <select
             value={filters.sku}
             onChange={(e) => onChange('sku', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {FORECAST_FILTER_OPTIONS.skus.map((s) => (
               <option key={s} value={s}>
@@ -88,7 +88,7 @@ export const ForecastFilterBar: React.FC<ForecastFilterBarProps> = ({
           <select
             value={filters.horizon}
             onChange={(e) => onChange('horizon', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {FORECAST_FILTER_OPTIONS.horizons.map((h) => (
               <option key={h} value={h}>
@@ -109,7 +109,7 @@ export const ForecastFilterBar: React.FC<ForecastFilterBarProps> = ({
           <select
             value={filters.planningView}
             onChange={(e) => onChange('planningView', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {FORECAST_FILTER_OPTIONS.planningViews.map((v) => (
               <option key={v} value={v}>

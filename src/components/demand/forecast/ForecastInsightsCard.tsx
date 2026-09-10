@@ -24,7 +24,7 @@ export const ForecastInsightsCard: React.FC<ForecastInsightsCardProps> = ({
       case 'peak':
         return {
           icon: BarChart2,
-          color: 'text-[#0062d2] bg-sky-50 border-sky-100',
+          color: 'text-[#0062d2] bg-info-bg border-border',
         };
       case 'packaging':
         return {
@@ -39,7 +39,7 @@ export const ForecastInsightsCard: React.FC<ForecastInsightsCardProps> = ({
       case 'fva':
         return {
           icon: Target,
-          color: 'text-[#0062d2] bg-sky-50 border-sky-100',
+          color: 'text-[#0062d2] bg-info-bg border-border',
         };
       case 'signals':
       default:

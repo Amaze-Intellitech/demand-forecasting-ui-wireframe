@@ -18,11 +18,11 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
       case 'Supply Risk':
         return 'bg-rose-500';
       case 'Demand Surge':
-        return 'bg-sky-500';
+        return 'bg-primary';
       case 'Inventory':
         return 'bg-amber-500';
       case 'Market Signal':
-        return 'bg-teal-500';
+        return 'bg-primary';
       case 'Sourcing':
         return 'bg-emerald-500';
       default:
@@ -48,7 +48,7 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({
       case 'Open':
         return 'bg-rose-50 text-rose-700 border-rose-200';
       case 'In Review':
-        return 'bg-sky-50 text-sky-700 border-sky-200';
+        return 'bg-info-bg text-deep border-border';
       case 'Monitoring':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'Resolved':

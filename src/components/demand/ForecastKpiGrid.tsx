@@ -16,22 +16,22 @@ export const ForecastKpiGrid: React.FC = () => {
       case 'accuracy':
         return {
           icon: <TrendingUp className="w-5 h-5 text-[#0062d2]" />,
-          bgClass: 'bg-sky-50 text-[#0062d2]',
+          bgClass: 'bg-info-bg text-[#0062d2]',
         };
       case 'mape':
         return {
           icon: <Target className="w-5 h-5 text-[#0062d2]" />,
-          bgClass: 'bg-sky-50 text-[#0062d2]',
+          bgClass: 'bg-info-bg text-[#0062d2]',
         };
       case 'rmse':
         return {
           icon: <BarChart3 className="w-5 h-5 text-[#0062d2]" />,
-          bgClass: 'bg-sky-50 text-[#0062d2]',
+          bgClass: 'bg-info-bg text-[#0062d2]',
         };
       case 'r2':
         return {
           icon: <Share2 className="w-5 h-5 text-[#0062d2]" />,
-          bgClass: 'bg-sky-50 text-[#0062d2]',
+          bgClass: 'bg-info-bg text-[#0062d2]',
         };
       case 'bias':
         return {

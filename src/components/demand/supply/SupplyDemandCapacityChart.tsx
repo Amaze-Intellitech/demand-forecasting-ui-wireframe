@@ -75,7 +75,7 @@ export const SupplyDemandCapacityChart: React.FC<SupplyDemandCapacityChartProps>
               <span>Supply Plan</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block ring-2 ring-sky-100" />
+              <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block ring-2 ring-primary" />
               <span>Available Capacity</span>
             </div>
           </div>
@@ -332,7 +332,7 @@ export const SupplyDemandCapacityChart: React.FC<SupplyDemandCapacityChartProps>
               </span>
 
               <span className="text-slate-400">Capacity:</span>
-              <span className="font-semibold text-sky-400 text-right">
+              <span className="font-semibold text-primary text-right">
                 {data[hoveredIndex].availableCapacity}K units
               </span>
 

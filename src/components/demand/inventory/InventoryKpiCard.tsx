@@ -45,7 +45,7 @@ export const InventoryKpiCard: React.FC<InventoryKpiCardProps> = ({ kpi, onClick
         );
       case 'clock':
         return (
-          <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 border border-sky-100/60 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-info-bg flex items-center justify-center text-primary border border-border shadow-xs">
             <Clock className="w-5 h-5" />
           </div>
         );

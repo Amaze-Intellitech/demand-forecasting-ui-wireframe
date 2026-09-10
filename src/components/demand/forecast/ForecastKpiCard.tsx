@@ -22,7 +22,7 @@ export const ForecastKpiCard: React.FC<ForecastKpiCardProps> = ({ kpi, onClick }
       case 'accuracy':
         return {
           icon: BarChart2,
-          color: 'bg-sky-50 text-[#0062d2] border border-sky-100',
+          color: 'bg-info-bg text-[#0062d2] border border-border',
         };
       case 'fva':
         return {
@@ -32,7 +32,7 @@ export const ForecastKpiCard: React.FC<ForecastKpiCardProps> = ({ kpi, onClick }
       case 'demand':
         return {
           icon: Box,
-          color: 'bg-sky-50 text-[#0062d2] border border-sky-100',
+          color: 'bg-info-bg text-[#0062d2] border border-border',
         };
       case 'service':
         return {

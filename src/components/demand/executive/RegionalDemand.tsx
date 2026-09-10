@@ -130,7 +130,7 @@ export const RegionalDemand: React.FC<RegionalDemandProps> = ({
                 onMouseLeave={() => setHoveredRegion(null)}
                 className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer flex items-center justify-between gap-1.5 border ${
                   isSelected
-                    ? 'bg-sky-50/80 border-sky-200 shadow-xs'
+                    ? 'bg-info-bg border-border shadow-xs'
                     : isHovered
                     ? 'bg-slate-50 border-slate-200'
                     : 'bg-transparent border-transparent'

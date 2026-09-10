@@ -18,7 +18,7 @@ export const DriverEventsCard: React.FC<DriverEventsCardProps> = ({
       case 'Market Event':
         return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Business Event':
-        return 'bg-sky-50 text-[#0062d2] border-sky-200';
+        return 'bg-info-bg text-[#0062d2] border-border';
       case 'External Event':
       default:
         return 'bg-purple-50 text-purple-700 border-purple-200';

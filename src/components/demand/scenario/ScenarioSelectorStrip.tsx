@@ -79,7 +79,7 @@ export const ScenarioSelectorStrip: React.FC<ScenarioSelectorStripProps> = ({
         return (
           <div
             className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-              isSelected ? 'bg-white/20 text-white' : 'bg-sky-50 text-sky-600'
+              isSelected ? 'bg-white/20 text-white' : 'bg-info-bg text-primary'
             }`}
           >
             <Settings className={iconClass} />
@@ -99,7 +99,7 @@ export const ScenarioSelectorStrip: React.FC<ScenarioSelectorStripProps> = ({
             onClick={() => onSelectScenario(scenario.id)}
             className={`relative rounded-xl p-3.5 transition-all duration-200 cursor-pointer flex flex-col justify-between border ${
               isSelected
-                ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-md shadow-sky-600/20'
+                ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-md shadow-primary'
                 : 'bg-white text-slate-900 border-slate-200/80 hover:border-slate-300 hover:shadow-xs'
             }`}
           >
@@ -181,7 +181,7 @@ export const ScenarioSelectorStrip: React.FC<ScenarioSelectorStripProps> = ({
               </div>
               <div
                 className={`text-xs mt-0.5 truncate font-medium ${
-                  isSelected ? 'text-sky-100' : 'text-slate-500'
+                  isSelected ? 'text-primary' : 'text-slate-500'
                 }`}
               >
                 {scenario.subtitle}

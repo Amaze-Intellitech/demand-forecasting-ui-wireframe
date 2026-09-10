@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useDemandFilters } from '../hooks/useDemandFilters';
 import { ChevronRight } from 'lucide-react';
 
 import { DemandIntelligenceSidebar } from '../components/demand/DemandIntelligenceSidebar';
@@ -37,9 +38,14 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
   const [selectedDateRange, setSelectedDateRange] = useState<string>('Jan 2025 – Dec 2026');
 
   // Global Filters State
-  const [selectedPlant, setSelectedPlant] = useState<string>('All Plants');
-  const [selectedProduct, setSelectedProduct] = useState<string>('All Products');
-  const [selectedRegion, setSelectedRegion] = useState<string>('All Regions');
+  const {
+    plant: selectedPlant,
+    product: selectedProduct,
+    region: selectedRegion,
+    setPlant: setSelectedPlant,
+    setProduct: setSelectedProduct,
+    setRegion: setSelectedRegion,
+  } = useDemandFilters();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FY 2025');
 
   // Scenario Presets State

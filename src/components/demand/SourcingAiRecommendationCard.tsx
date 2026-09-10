@@ -46,8 +46,16 @@ export const SourcingAiRecommendationCard: React.FC = () => {
       {/* Footnote / Model Confidence Indicator */}
       <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
         <span>Reasoning Engine: <strong>AITEK Agentic Sourcing v2.4</strong></span>
-        <span className="text-emerald-600 font-medium">99.2% Convergence</span>
+        <span
+          className="text-emerald-600 font-medium"
+          title="Convergence measures the optimizer's objective-function stability across the final 50 iterations of the allocation solve."
+        >
+          99.2% Convergence
+        </span>
       </div>
+      <p className="text-[10px] text-slate-400 mt-1">
+        Convergence reflects optimizer objective-function stability over the final 50 solve iterations, not a guarantee of outcome.
+      </p>
     </div>
   );
 };

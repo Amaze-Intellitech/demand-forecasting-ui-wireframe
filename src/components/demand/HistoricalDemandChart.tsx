@@ -316,7 +316,7 @@ export const HistoricalDemandChart: React.FC = () => {
             }}
           >
             <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 mb-1.5">
-              <span className="font-bold text-sky-400">{hoveredPoint.dateStr}</span>
+              <span className="font-bold text-primary">{hoveredPoint.dateStr}</span>
               <span className="text-[10px] text-slate-400 font-mono">
                 {hoveredPoint.year}
               </span>
@@ -338,7 +338,7 @@ export const HistoricalDemandChart: React.FC = () => {
                   <span className="w-2 h-2 rounded-full bg-[#0d9488]" />
                   Moving Avg (12M):
                 </span>
-                <span className="font-mono font-semibold text-teal-300">
+                <span className="font-mono font-semibold text-blue-400">
                   {hoveredPoint.movingAverage.toLocaleString()}
                 </span>
               </div>

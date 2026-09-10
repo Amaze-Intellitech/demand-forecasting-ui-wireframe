@@ -127,8 +127,8 @@ export const ExceptionDetailDrawer: React.FC<ExceptionDetailDrawerProps> = ({
             </div>
 
             {/* AITEK Recommended Action */}
-            <div className="p-4 bg-sky-50/70 border border-sky-200/80 rounded-xl space-y-2">
-              <div className="flex items-center gap-1.5 text-sky-900 font-bold text-xs">
+            <div className="p-4 bg-info-bg border border-border rounded-xl space-y-2">
+              <div className="flex items-center gap-1.5 text-deep font-bold text-xs">
                 <FileSearch className="w-4 h-4 text-[#0062d2]" />
                 <span>Recommended Prescriptive Action</span>
               </div>
@@ -148,15 +148,24 @@ export const ExceptionDetailDrawer: React.FC<ExceptionDetailDrawerProps> = ({
               Dismiss
             </button>
 
-            <button
-              type="button"
-              onClick={() => onOpenWorkspace(event.targetWorkspaceRoute)}
-              className="px-4 py-2 rounded-lg bg-[#0062d2] hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
-            >
-              <CheckCircle className="w-3.5 h-3.5" />
-              <span>{event.nextBestAction}</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onOpenWorkspace(`/solutions/demand-intelligence/risk-exceptions?eventId=${event.id}`)}
+                className="px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors shadow-xs"
+              >
+                View in Risk & Exception Center
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenWorkspace(event.targetWorkspaceRoute)}
+                className="px-4 py-2 rounded-lg bg-[#0062d2] hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                <span>{event.nextBestAction}</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
+              </button>
+            </div>
           </div>
 
         </div>

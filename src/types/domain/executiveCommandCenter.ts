@@ -122,6 +122,8 @@ export interface DecisionTrigger {
   approvedAt?: string;
   rejectionReason?: string;
   modificationNotes?: string;
+  /** Agent Control Center agent id this trigger's recommendation traces back to. */
+  relatedAgentId?: string;
 }
 
 export interface ExecutiveFilterOptions {

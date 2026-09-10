@@ -88,7 +88,7 @@ export const RecentScenariosCard: React.FC<RecentScenariosCardProps> = ({
                   Recommended
                 </span>
               ) : (
-                <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md">
+                <span className="text-[11px] font-bold text-deep bg-info-bg border border-border px-2 py-0.5 rounded-md">
                   Analyzed
                 </span>
               )}

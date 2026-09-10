@@ -28,7 +28,7 @@ export const KeyTakeawaysCard: React.FC<KeyTakeawaysCardProps> = ({
       case 'macro':
         return {
           icon: BarChart2,
-          color: 'text-[#0062d2] bg-sky-50 border-sky-100',
+          color: 'text-[#0062d2] bg-info-bg border-border',
         };
       case 'competitor':
         return {
@@ -39,7 +39,7 @@ export const KeyTakeawaysCard: React.FC<KeyTakeawaysCardProps> = ({
       default:
         return {
           icon: Settings,
-          color: 'text-[#0062d2] bg-sky-50 border-sky-100',
+          color: 'text-[#0062d2] bg-info-bg border-border',
         };
     }
   };

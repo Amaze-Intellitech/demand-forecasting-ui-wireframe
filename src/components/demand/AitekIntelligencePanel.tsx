@@ -22,7 +22,7 @@ export const AitekIntelligencePanel: React.FC<AitekIntelligencePanelProps> = ({
       {/* Top Header: Title + High Confidence Badge */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-sky-500 fill-sky-500/20" />
+          <Sparkles className="w-5 h-5 text-primary fill-primary" />
           <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
             AITEK Intelligence
           </h3>
@@ -82,13 +82,13 @@ export const AitekIntelligencePanel: React.FC<AitekIntelligencePanelProps> = ({
 
             {/* Signal 2: Seasonality */}
             <div className="flex items-center gap-2.5 text-xs text-slate-700 font-medium">
-              <BarChart3 className="w-4 h-4 text-sky-600 flex-shrink-0" />
+              <BarChart3 className="w-4 h-4 text-primary flex-shrink-0" />
               <span>Strong seasonality (Q3 peak)</span>
             </div>
 
             {/* Signal 3: Price Elasticity */}
             <div className="flex items-center gap-2.5 text-xs text-slate-700 font-medium">
-              <Compass className="w-4 h-4 text-sky-600 flex-shrink-0" />
+              <Compass className="w-4 h-4 text-primary flex-shrink-0" />
               <span>High price sensitivity</span>
             </div>
           </div>

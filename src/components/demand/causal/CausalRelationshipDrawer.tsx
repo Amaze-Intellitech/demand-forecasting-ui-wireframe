@@ -126,12 +126,12 @@ export const CausalRelationshipDrawer: React.FC<CausalRelationshipDrawerProps> =
             </div>
 
             {/* Methodology Note */}
-            <div className="p-3.5 bg-sky-50/60 border border-sky-200 rounded-xl space-y-1.5">
-              <div className="text-[11px] font-bold text-sky-950 flex items-center gap-1.5">
+            <div className="p-3.5 bg-info-bg border border-border rounded-xl space-y-1.5">
+              <div className="text-[11px] font-bold text-deep flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5 text-[#0062d2]" />
                 <span>Modeled Causal Estimate</span>
               </div>
-              <p className="text-[11px] text-sky-900/80 leading-relaxed">
+              <p className="text-[11px] text-deep leading-relaxed">
                 Relationship derived using structural causal modeling with instrumental variables to isolate counterfactual treatment effects from simple observational correlations.
               </p>
             </div>

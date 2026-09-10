@@ -85,7 +85,7 @@ export const SignalSourceDrawer: React.FC<SignalSourceDrawerProps> = ({
               <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                 Active Telemetry & Signal
               </div>
-              <div className="p-3.5 bg-sky-50/60 border border-sky-200/80 rounded-lg flex items-start gap-2.5 text-sky-950 font-medium">
+              <div className="p-3.5 bg-info-bg border border-border rounded-lg flex items-start gap-2.5 text-deep font-medium">
                 <Radio className="w-4 h-4 text-[#0062d2] flex-shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-slate-900">Current Velocity</div>

@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { useDemandFilters } from '../hooks/useDemandFilters';
+import { ChevronRight, Info } from 'lucide-react';
 
 import { DemandIntelligenceSidebar } from '../components/demand/DemandIntelligenceSidebar';
 import { DemandTopbar } from '../components/demand/DemandTopbar';
+import { Tooltip } from '../components/ui/Tooltip';
 
 import { CausalKpiCard } from '../components/demand/causal/CausalKpiCard';
 import { CausalFilters } from '../components/demand/causal/CausalFilters';
@@ -35,9 +37,14 @@ export const DriverCausalIntelligencePage: React.FC = () => {
   const [selectedDateRange, setSelectedDateRange] = useState<string>('Jan 2025 – Dec 2026');
 
   // Filter Bar state
-  const [selectedPlant, setSelectedPlant] = useState<string>('All Plants');
-  const [selectedProduct, setSelectedProduct] = useState<string>('All Products');
-  const [selectedRegion, setSelectedRegion] = useState<string>('All Regions');
+  const {
+    plant: selectedPlant,
+    product: selectedProduct,
+    region: selectedRegion,
+    setPlant: setSelectedPlant,
+    setProduct: setSelectedProduct,
+    setRegion: setSelectedRegion,
+  } = useDemandFilters();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FY 2025');
 
   // Interactive selectors
@@ -165,8 +172,17 @@ export const DriverCausalIntelligencePage: React.FC = () => {
           {/* Page Header & Global Filter Bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight flex items-center gap-2">
                 Driver & Causal Intelligence
+                <Tooltip content={`Causal impact is estimated with a structural time-series model that separates each driver's independent effect on demand from correlation with other drivers — distinguishing "moves with demand" from "changes demand."`}>
+                  <button
+                    type="button"
+                    aria-label="What does 'causal' mean here?"
+                    className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-slate-300 text-slate-400 hover:text-primary hover:border-primary/50 transition-colors"
+                  >
+                    <Info className="w-3 h-3" />
+                  </button>
+                </Tooltip>
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 font-normal">
                 Understand what drives demand. From correlation to causation.

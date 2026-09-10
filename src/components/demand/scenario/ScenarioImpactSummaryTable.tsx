@@ -48,7 +48,7 @@ export const ScenarioImpactSummaryTable: React.FC<ScenarioImpactSummaryTableProp
                   key={row.scenarioId}
                   onClick={() => onSelectScenario(row.scenarioId)}
                   className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
-                    isSelected ? 'bg-sky-50/60 font-semibold' : ''
+                    isSelected ? 'bg-info-bg font-semibold' : ''
                   }`}
                 >
                   {/* Scenario Name */}

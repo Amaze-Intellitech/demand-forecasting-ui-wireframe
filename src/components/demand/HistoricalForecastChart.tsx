@@ -359,7 +359,7 @@ export const HistoricalForecastChart: React.FC = () => {
             }}
           >
             <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 mb-2">
-              <span className="font-bold text-sky-400">{hoveredPoint.dateStr}</span>
+              <span className="font-bold text-primary">{hoveredPoint.dateStr}</span>
               <span className="text-[10px] text-slate-400 font-mono font-semibold">
                 YoY: <strong className="text-emerald-400">{hoveredPoint.yoy}</strong>
               </span>
@@ -383,7 +383,7 @@ export const HistoricalForecastChart: React.FC = () => {
                       <span className="w-2 h-2 rounded-full bg-[#0284c7]" />
                       Forecast:
                     </span>
-                    <span className="font-mono font-bold text-sky-300">
+                    <span className="font-mono font-bold text-blue-400">
                       {hoveredPoint.forecast?.toLocaleString()} units
                     </span>
                   </div>
@@ -418,7 +418,7 @@ export const HistoricalForecastChart: React.FC = () => {
 
         {/* Confidence Range */}
         <div className="flex items-center gap-2">
-          <span className="w-4 h-3 bg-sky-100 border border-sky-300/80 rounded-xs" />
+          <span className="w-4 h-3 bg-info-bg border border-border rounded-xs" />
           <span className="text-slate-700 font-medium">Confidence Range</span>
         </div>
       </div>

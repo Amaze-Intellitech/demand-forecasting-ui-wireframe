@@ -221,7 +221,7 @@ export const CopilotConversationWorkspace: React.FC<CopilotConversationWorkspace
                 {blocks.keyTakeaways && blocks.keyTakeaways.length > 0 && (
                   <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100/80 space-y-2">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                      <Lightbulb className="w-4 h-4 text-sky-600" />
+                      <Lightbulb className="w-4 h-4 text-primary" />
                       <span>Key Takeaways</span>
                     </div>
                     <ul className="space-y-1.5 text-xs text-slate-700">
@@ -279,7 +279,7 @@ export const CopilotConversationWorkspace: React.FC<CopilotConversationWorkspace
                 {/* Timestamp & Confidence Footer */}
                 <div className="flex items-center justify-between pt-2 text-[10px] text-slate-400 font-mono">
                   <span className="flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-sky-500" />
+                    <Sparkles className="w-3 h-3 text-primary" />
                     <span>High Confidence &bull; Synthesized across 12 statistical models</span>
                   </span>
                   <span>{msg.timestamp}</span>
@@ -308,7 +308,7 @@ export const CopilotConversationWorkspace: React.FC<CopilotConversationWorkspace
       {/* Composer Container */}
       <div className="p-3 sm:p-4 border-t border-slate-100 bg-slate-50/50">
         <form onSubmit={handleSubmit} className="relative">
-          <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200/90 px-3 py-2 shadow-xs focus-within:ring-2 focus-within:ring-sky-500/20 focus-within:border-sky-500 transition-all">
+          <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200/90 px-3 py-2 shadow-xs focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
             <button
               type="button"
               title="Attach context file"

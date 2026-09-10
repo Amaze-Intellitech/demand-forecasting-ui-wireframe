@@ -111,7 +111,7 @@ export const ProductMix: React.FC<ProductMixProps> = ({
                 onMouseLeave={() => setHoveredCategory(null)}
                 className={`flex items-center justify-between p-1.5 rounded-lg cursor-pointer transition-all ${
                   isSelected
-                    ? 'bg-sky-50/80 ring-1 ring-sky-300'
+                    ? 'bg-info-bg ring-1 ring-primary'
                     : isHovered
                     ? 'bg-slate-50'
                     : ''

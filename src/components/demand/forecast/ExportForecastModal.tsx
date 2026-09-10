@@ -38,7 +38,7 @@ export const ExportForecastModal: React.FC<ExportForecastModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-50 text-[#0062d2] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-info-bg text-[#0062d2] flex items-center justify-center">
               <Download className="w-4 h-4" />
             </div>
             <div>
@@ -95,7 +95,7 @@ export const ExportForecastModal: React.FC<ExportForecastModalProps> = ({
               onClick={() => setFormat('excel')}
               className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                 format === 'excel'
-                  ? 'border-[#0062d2] bg-sky-50/80 text-[#0062d2] shadow-2xs'
+                  ? 'border-[#0062d2] bg-info-bg text-[#0062d2] shadow-2xs'
                   : 'border-slate-200 hover:bg-slate-50 text-slate-700'
               }`}
             >
@@ -108,11 +108,11 @@ export const ExportForecastModal: React.FC<ExportForecastModalProps> = ({
               onClick={() => setFormat('csv')}
               className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                 format === 'csv'
-                  ? 'border-[#0062d2] bg-sky-50/80 text-[#0062d2] shadow-2xs'
+                  ? 'border-[#0062d2] bg-info-bg text-[#0062d2] shadow-2xs'
                   : 'border-slate-200 hover:bg-slate-50 text-slate-700'
               }`}
             >
-              <FileSpreadsheet className="w-5 h-5 text-sky-600" />
+              <FileSpreadsheet className="w-5 h-5 text-primary" />
               <span>CSV (.csv)</span>
             </button>
 
@@ -121,7 +121,7 @@ export const ExportForecastModal: React.FC<ExportForecastModalProps> = ({
               onClick={() => setFormat('pdf')}
               className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                 format === 'pdf'
-                  ? 'border-[#0062d2] bg-sky-50/80 text-[#0062d2] shadow-2xs'
+                  ? 'border-[#0062d2] bg-info-bg text-[#0062d2] shadow-2xs'
                   : 'border-slate-200 hover:bg-slate-50 text-slate-700'
               }`}
             >

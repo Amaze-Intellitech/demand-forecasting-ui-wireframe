@@ -165,7 +165,7 @@ export const ScenarioParametersCard: React.FC<ScenarioParametersCardProps> = ({
           <button
             type="button"
             onClick={onReset}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-sky-200/90 bg-sky-50/50 hover:bg-sky-100/70 text-[#0062d2] text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-colors shadow-2xs cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-border bg-info-bg hover:bg-info-bg text-[#0062d2] text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-colors shadow-2xs cursor-pointer"
           >
             <RotateCcw className="w-4 h-4 text-[#0062d2]" />
             <span className="text-[11px] font-bold">Reset to Base Case</span>

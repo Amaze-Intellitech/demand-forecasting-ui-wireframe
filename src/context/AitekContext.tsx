@@ -32,11 +32,6 @@ interface AitekContextType {
   solutions: Solution[];
   selectedSolution: Solution | null;
   selectSolution: (id: string) => void;
-  
-  // Solution Auth
-  solutionAuthMap: Record<string, boolean>;
-  loginSolution: (solutionId: string, solutionUser: string) => Promise<boolean>;
-  isSolutionAuthenticated: (solutionId: string) => boolean;
 
   // Connectors
   connectors: Connector[];
@@ -66,11 +61,6 @@ export const AitekProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return sessionStorage.getItem('aitek_selected_solution') || 'demand-intelligence';
   });
 
-  const [solutionAuthMap, setSolutionAuthMap] = useState<Record<string, boolean>>(() => {
-    const saved = sessionStorage.getItem('aitek_solution_auths');
-    return saved ? JSON.parse(saved) : {};
-  });
-
   const [connectors, setConnectors] = useState<Connector[]>(() => {
     const saved = sessionStorage.getItem('aitek_connectors');
     return saved ? JSON.parse(saved) : INITIAL_CONNECTORS;
@@ -88,10 +78,6 @@ export const AitekProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     sessionStorage.setItem('aitek_selected_solution', selectedSolutionId);
   }, [selectedSolutionId]);
-
-  useEffect(() => {
-    sessionStorage.setItem('aitek_solution_auths', JSON.stringify(solutionAuthMap));
-  }, [solutionAuthMap]);
 
   useEffect(() => {
     sessionStorage.setItem('aitek_connectors', JSON.stringify(connectors));
@@ -123,25 +109,11 @@ export const AitekProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const logout = () => {
     setUser(null);
-    setSolutionAuthMap({});
     sessionStorage.clear();
   };
 
   const selectSolution = (id: string) => {
     setSelectedSolutionId(id);
-  };
-
-  const loginSolution = async (solutionId: string, _solutionUser: string): Promise<boolean> => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setSolutionAuthMap((prev) => ({
-      ...prev,
-      [solutionId]: true,
-    }));
-    return true;
-  };
-
-  const isSolutionAuthenticated = (solutionId: string): boolean => {
-    return !!solutionAuthMap[solutionId];
   };
 
   const updateConnectorStatus = (id: string, state: ConnectionState, recordCount?: number) => {
@@ -188,9 +160,6 @@ export const AitekProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         solutions: INITIAL_SOLUTIONS,
         selectedSolution,
         selectSolution,
-        solutionAuthMap,
-        loginSolution,
-        isSolutionAuthenticated,
         connectors,
         updateConnectorStatus,
         resetConnector,
