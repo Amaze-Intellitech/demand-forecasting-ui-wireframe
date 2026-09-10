@@ -11,7 +11,7 @@ import { DemandSensingPage } from './pages/DemandSensingPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
 import { DriverCausalIntelligencePage } from './pages/DriverCausalIntelligencePage';
 import { InventoryIntelligencePage } from './pages/InventoryIntelligencePage';
-import { ScenarioStudioPage } from './pages/ScenarioStudioPage';
+import { ScenarioDecisionTwinPage } from './pages/ScenarioDecisionTwinPage';
 import { PrescriptiveSourcingPage } from './pages/PrescriptiveSourcingPage';
 import { AIDecisionCopilotPage } from './pages/AIDecisionCopilotPage';
 
@@ -184,12 +184,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Scenario Studio (Screen 4) */}
+      {/* Demand Intelligence: Scenario & Decision Twin (Screen 6) */}
       <Route
         path="/solutions/demand-intelligence/scenarios"
         element={
           <RequirePlatformAuth>
-            <ScenarioStudioPage />
+            <ScenarioDecisionTwinPage />
           </RequirePlatformAuth>
         }
       />
@@ -197,7 +197,7 @@ export const AppContent: React.FC = () => {
         path="/solutions/:solutionId/scenarios"
         element={
           <RequirePlatformAuth>
-            <ScenarioStudioPage />
+            <ScenarioDecisionTwinPage />
           </RequirePlatformAuth>
         }
       />
