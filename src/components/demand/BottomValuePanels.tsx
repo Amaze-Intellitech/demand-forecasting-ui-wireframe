@@ -102,7 +102,7 @@ export const BottomValuePanels: React.FC<BottomValuePanelsProps> = ({
           {/* Header Row: Badge, Title & Sparkline */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-info-bg text-primary border border-border flex items-center justify-center flex-shrink-0">
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <div>

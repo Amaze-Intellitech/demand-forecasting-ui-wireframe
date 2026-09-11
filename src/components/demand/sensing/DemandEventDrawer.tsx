@@ -146,8 +146,8 @@ export const DemandEventDrawer: React.FC<DemandEventDrawerProps> = ({
             </div>
 
             {/* Recommended Action */}
-            <div className="p-4 bg-sky-50/70 border border-sky-200/80 rounded-xl space-y-1.5">
-              <div className="flex items-center gap-1.5 text-sky-900 font-bold text-xs">
+            <div className="p-4 bg-info-bg border border-border rounded-xl space-y-1.5">
+              <div className="flex items-center gap-1.5 text-deep font-bold text-xs">
                 <TrendingDown className="w-3.5 h-3.5 text-[#0062d2]" />
                 <span>Recommended Prescriptive Response</span>
               </div>

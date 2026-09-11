@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAitek } from '../../context/AitekContext';
 import { DATE_RANGE_OPTIONS } from '../../data/demandIntelligenceMock';
+import { ThemeToggle } from '../ui/ThemeToggle';
 
 export interface DemandTopbarProps {
   selectedDateRange: string;
@@ -48,7 +49,7 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
       {/* Left: Product Name & Tagline */}
       <div className="flex items-center gap-3">
         {/* Solution Icon: Ascending 3 Bars in Blue */}
-        <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100 flex items-end justify-center p-1.5 gap-1">
+        <div className="w-8 h-8 rounded-lg bg-info-bg border border-border flex items-end justify-center p-1.5 gap-1">
           <span className="w-1.5 h-3 bg-[#0062d2] rounded-xs inline-block" />
           <span className="w-1.5 h-4.5 bg-[#0062d2] rounded-xs inline-block" />
           <span className="w-1.5 h-6 bg-[#0062d2] rounded-xs inline-block" />
@@ -72,7 +73,7 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
           <button
             type="button"
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-            className="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+            className="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <Calendar className="w-3.5 h-3.5 text-slate-500" />
             <span>{selectedDateRange}</span>
@@ -102,7 +103,7 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg flex items-start justify-between gap-2 transition-colors ${
                           isSelected
-                            ? 'bg-sky-50 text-sky-900 font-semibold'
+                            ? 'bg-info-bg text-deep font-semibold'
                             : 'hover:bg-slate-50 text-slate-700'
                         }`}
                       >
@@ -110,7 +111,7 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
                           <div className="font-medium text-slate-900">{opt.label}</div>
                           <div className="text-[10px] text-slate-500">{opt.desc}</div>
                         </div>
-                        {isSelected && <Check className="w-4 h-4 text-sky-600 mt-0.5" />}
+                        {isSelected && <Check className="w-4 h-4 text-primary mt-0.5" />}
                       </button>
                     );
                   })}
@@ -119,6 +120,8 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
             </>
           )}
         </div>
+
+        <ThemeToggle />
 
         {/* Notifications Bell Button */}
         <div className="relative">
@@ -147,7 +150,7 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 p-3 z-40 text-xs animate-in fade-in zoom-in-95 duration-100">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
                   <span className="font-bold text-slate-900">Notifications</span>
-                  <span className="text-[10px] text-sky-600 font-semibold cursor-pointer">
+                  <span className="text-[10px] text-primary font-semibold cursor-pointer">
                     Mark all read
                   </span>
                 </div>
@@ -158,9 +161,9 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
                       HDPE Resin (SKU-9021) has dropped to 12 days of cover.
                     </div>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-sky-50/60 border border-sky-100 text-sky-900">
+                  <div className="p-2.5 rounded-lg bg-info-bg border border-border text-deep">
                     <div className="font-bold">Forecast Model Updated</div>
-                    <div className="text-[11px] text-sky-700 mt-0.5">
+                    <div className="text-[11px] text-deep mt-0.5">
                       Q3 2025 seasonal projection recalculated with 94.2% accuracy.
                     </div>
                   </div>

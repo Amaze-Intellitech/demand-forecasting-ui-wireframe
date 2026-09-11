@@ -15,59 +15,59 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className, siz
       case 'active':
         return {
           label: 'Active Solution',
-          classes: 'bg-emerald-950/70 text-emerald-400 border-emerald-800/60',
-          dot: 'bg-emerald-400 animate-pulse',
+          classes: 'bg-success-bg text-success-tx border-success/20',
+          dot: 'bg-success animate-pulse',
         };
       case 'available':
         return {
           label: 'Available',
-          classes: 'bg-sky-950/70 text-sky-400 border-sky-800/60',
-          dot: 'bg-sky-400',
+          classes: 'bg-info-bg text-info-tx border-primary/20',
+          dot: 'bg-primary',
         };
       case 'coming_soon':
         return {
           label: 'Coming Soon',
-          classes: 'bg-slate-800/80 text-slate-400 border-slate-700/60',
-          dot: 'bg-slate-500',
+          classes: 'bg-neutral-bg text-neutral-tx border-border',
+          dot: 'bg-subtle',
         };
 
       // Connection States
       case 'connected':
         return {
           label: 'Connected',
-          classes: 'bg-emerald-950/70 text-emerald-400 border-emerald-800/60',
-          dot: 'bg-emerald-400',
+          classes: 'bg-success-bg text-success-tx border-success/20',
+          dot: 'bg-success',
         };
       case 'connecting':
         return {
           label: 'Connecting...',
-          classes: 'bg-amber-950/70 text-amber-300 border-amber-800/60',
-          dot: 'bg-amber-400 animate-ping',
+          classes: 'bg-warning-bg text-warning-tx border-warning/20',
+          dot: 'bg-warning animate-ping',
         };
       case 'syncing':
         return {
           label: 'Syncing Data...',
-          classes: 'bg-sky-950/70 text-sky-300 border-sky-800/60',
-          dot: 'bg-sky-400 animate-spin',
+          classes: 'bg-info-bg text-info-tx border-primary/20',
+          dot: 'bg-primary animate-spin',
         };
       case 'sync_complete':
         return {
           label: 'Sync Completed',
-          classes: 'bg-emerald-950/80 text-emerald-300 border-emerald-800/70',
-          dot: 'bg-emerald-400',
+          classes: 'bg-success-bg text-success-tx border-success/20',
+          dot: 'bg-success',
         };
       case 'validation_error':
         return {
           label: 'Validation Issue',
-          classes: 'bg-rose-950/70 text-rose-300 border-rose-800/60',
-          dot: 'bg-rose-400',
+          classes: 'bg-error-bg text-error-tx border-error/20',
+          dot: 'bg-error',
         };
       case 'not_connected':
       default:
         return {
           label: 'Not Connected',
-          classes: 'bg-slate-900/90 text-slate-400 border-slate-800',
-          dot: 'bg-slate-600',
+          classes: 'bg-neutral-bg text-neutral-tx border-border',
+          dot: 'bg-subtle',
         };
     }
   };

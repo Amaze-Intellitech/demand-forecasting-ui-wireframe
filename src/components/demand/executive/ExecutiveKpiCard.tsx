@@ -23,7 +23,7 @@ export const ExecutiveKpiCard: React.FC<ExecutiveKpiCardProps> = ({ kpi, onClick
       case 'demand':
         return {
           icon: BarChart2,
-          bgColor: 'bg-sky-50 text-sky-600 border border-sky-100/80',
+          bgColor: 'bg-info-bg text-primary border border-border',
         };
       case 'revenue':
         return {
@@ -38,7 +38,7 @@ export const ExecutiveKpiCard: React.FC<ExecutiveKpiCardProps> = ({ kpi, onClick
       case 'service':
         return {
           icon: ShieldCheck,
-          bgColor: 'bg-teal-50 text-teal-600 border border-teal-100/80',
+          bgColor: 'bg-info-bg text-primary border border-border',
         };
       case 'exceptions':
         return {

@@ -70,7 +70,7 @@ export const NearTermSensingChart: React.FC<NearTermSensingChartProps> = ({
           <select
             value={selectedHorizon}
             onChange={(e) => onHorizonChange(e.target.value)}
-            className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+            className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
           >
             <option value="Last 4 Weeks">Last 4 Weeks</option>
             <option value="Last 8 Weeks">Last 8 Weeks</option>
@@ -93,7 +93,7 @@ export const NearTermSensingChart: React.FC<NearTermSensingChartProps> = ({
           <span className="font-medium text-slate-700">Baseline Forecast</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-2.5 bg-sky-100 rounded-xs border border-sky-300 inline-block" />
+          <span className="w-3 h-2.5 bg-info-bg rounded-xs border border-border inline-block" />
           <span className="text-slate-500">Confidence Range</span>
         </div>
       </div>
@@ -265,7 +265,7 @@ export const NearTermSensingChart: React.FC<NearTermSensingChartProps> = ({
             <div className="space-y-0.5 text-[11px]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-slate-400">Sensed Demand:</span>
-                <span className="font-bold text-sky-400 font-mono">{activePoint.sensed}K</span>
+                <span className="font-bold text-primary font-mono">{activePoint.sensed}K</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-slate-400">Baseline Forecast:</span>

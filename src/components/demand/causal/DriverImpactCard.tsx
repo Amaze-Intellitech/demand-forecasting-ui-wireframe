@@ -39,7 +39,7 @@ export const DriverImpactCard: React.FC<DriverImpactCardProps> = ({
                 key={driver.id}
                 onClick={() => onSelectDriver(driver)}
                 className={`py-1 px-2 rounded-lg cursor-pointer transition-all flex items-center justify-between gap-3 text-xs group ${
-                  isSelected ? 'bg-sky-50/90 ring-1 ring-sky-300' : 'hover:bg-slate-50'
+                  isSelected ? 'bg-info-bg ring-1 ring-primary' : 'hover:bg-slate-50'
                 }`}
               >
                 {/* Driver Name */}

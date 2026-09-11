@@ -60,7 +60,7 @@ export const PlantServiceLevels: React.FC<PlantServiceLevelsProps> = ({
               key={item.plantId}
               onClick={() => onSelectPlant?.(item.plantName)}
               className={`group cursor-pointer rounded-lg p-1.5 transition-all ${
-                isSelected ? 'bg-sky-50/80 ring-1 ring-sky-300' : 'hover:bg-slate-50'
+                isSelected ? 'bg-info-bg ring-1 ring-primary' : 'hover:bg-slate-50'
               }`}
             >
               {/* Row Top: Plant Name & Value */}

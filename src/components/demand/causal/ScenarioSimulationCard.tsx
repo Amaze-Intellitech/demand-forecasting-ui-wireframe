@@ -30,7 +30,7 @@ export const ScenarioSimulationCard: React.FC<ScenarioSimulationCardProps> = ({
           <select
             value={selectedDriver}
             onChange={(e) => onDriverChange(e.target.value)}
-            className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+            className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
           >
             {availableDrivers.map((d) => (
               <option key={d} value={d}>
@@ -63,7 +63,7 @@ export const ScenarioSimulationCard: React.FC<ScenarioSimulationCardProps> = ({
                   key={row.id}
                   onClick={() => onSelectScenario?.(row)}
                   className={`hover:bg-slate-50/80 transition-colors group cursor-pointer ${
-                    isBase ? 'bg-sky-50/50 font-bold text-[#0062d2]' : ''
+                    isBase ? 'bg-info-bg font-bold text-[#0062d2]' : ''
                   }`}
                 >
                   <td className="py-2.5 px-3 font-mono whitespace-nowrap">

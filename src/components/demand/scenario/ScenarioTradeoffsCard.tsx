@@ -52,11 +52,11 @@ export const ScenarioTradeoffsCard: React.FC<ScenarioTradeoffsCardProps> = ({
       </div>
 
       {/* Bottom Explainer Callout */}
-      <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-100 flex items-start gap-2.5 mt-3">
-        <div className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+      <div className="p-3.5 rounded-xl bg-info-bg border border-border flex items-start gap-2.5 mt-3">
+        <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 mt-0.5">
           <Info className="w-3.5 h-3.5" />
         </div>
-        <p className="text-xs text-sky-900 leading-relaxed font-medium">
+        <p className="text-xs text-deep leading-relaxed font-medium">
           Higher demand increases revenue but requires additional inventory and supply capacity. Service level may be at risk if supply is constrained.
         </p>
       </div>

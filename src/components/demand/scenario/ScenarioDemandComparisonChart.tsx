@@ -352,14 +352,14 @@ export const ScenarioDemandComparisonChart: React.FC<ScenarioDemandComparisonCha
             <div className="font-bold text-slate-200 border-b border-slate-700/60 pb-1 mb-1.5 flex items-center justify-between gap-3">
               <span>{activePoint.month}</span>
               {activePoint.isForecast && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-sky-500/20 text-sky-300">
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-primary text-primary">
                   Forecast
                 </span>
               )}
             </div>
 
             <div className="space-y-1 text-[11px] font-mono">
-              <div className="flex justify-between gap-4 text-sky-300">
+              <div className="flex justify-between gap-4 text-primary">
                 <span className="font-sans">Base Case:</span>
                 <span className="font-bold">{activePoint.baseCase}K</span>
               </div>

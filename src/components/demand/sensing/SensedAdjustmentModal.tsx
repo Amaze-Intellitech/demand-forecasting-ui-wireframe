@@ -34,7 +34,7 @@ export const SensedAdjustmentModal: React.FC<SensedAdjustmentModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-50 text-[#0062d2] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-info-bg text-[#0062d2] flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
@@ -87,7 +87,7 @@ export const SensedAdjustmentModal: React.FC<SensedAdjustmentModalProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-sky-50 border border-sky-200/80 rounded-xl text-center">
+          <div className="p-3 bg-info-bg border border-border rounded-xl text-center">
             <div className="text-[#0062d2] font-medium text-[11px]">Sensed Demand</div>
             <div className="text-lg font-bold font-mono text-[#0062d2] mt-0.5">
               {recommendation.sensedDemand}

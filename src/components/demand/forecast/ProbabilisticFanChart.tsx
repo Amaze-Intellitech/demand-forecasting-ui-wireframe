@@ -98,7 +98,7 @@ export const ProbabilisticFanChart: React.FC<ProbabilisticFanChartProps> = ({
               <span className="text-[11px] font-medium text-slate-700">Actual</span>
             </div>
             <div className="flex items-center gap-1.5 cursor-pointer">
-              <span className="w-2 h-2 rounded-full bg-sky-300" />
+              <span className="w-2 h-2 rounded-full bg-primary" />
               <span className="text-[11px] font-medium text-slate-600">P10</span>
             </div>
             <div className="flex items-center gap-1.5 cursor-pointer">
@@ -106,11 +106,11 @@ export const ProbabilisticFanChart: React.FC<ProbabilisticFanChartProps> = ({
               <span className="text-[11px] font-bold text-[#0062d2]">P50</span>
             </div>
             <div className="flex items-center gap-1.5 cursor-pointer">
-              <span className="w-2.5 h-2 bg-sky-100 border border-sky-300 rounded-xs" />
+              <span className="w-2.5 h-2 bg-info-bg border border-border rounded-xs" />
               <span className="text-[11px] font-medium text-slate-600">P80</span>
             </div>
             <div className="flex items-center gap-1.5 cursor-pointer">
-              <span className="w-2.5 h-2 bg-sky-200/60 border border-sky-400 rounded-xs" />
+              <span className="w-2.5 h-2 bg-info-bg border border-primary rounded-xs" />
               <span className="text-[11px] font-medium text-slate-600">P90</span>
             </div>
           </div>
@@ -120,7 +120,7 @@ export const ProbabilisticFanChart: React.FC<ProbabilisticFanChartProps> = ({
             <select
               value={granularity}
               onChange={(e) => onGranularityChange(e.target.value as 'Monthly' | 'Quarterly')}
-              className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+              className="h-7 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
             >
               <option value="Monthly">Monthly</option>
               <option value="Quarterly">Quarterly</option>
@@ -357,7 +357,7 @@ export const ProbabilisticFanChart: React.FC<ProbabilisticFanChartProps> = ({
               <div className="font-bold text-[11px] text-slate-300 pb-1 border-b border-slate-700 mb-1 flex items-center justify-between gap-2">
                 <span>{activePoint.period} 2025</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                  activePoint.isForecast ? 'bg-sky-900 text-sky-300' : 'bg-slate-800 text-slate-300'
+                  activePoint.isForecast ? 'bg-primary text-white' : 'bg-slate-800 text-slate-300'
                 }`}>
                   {activePoint.isForecast ? 'Forecast' : 'Actual'}
                 </span>
@@ -374,7 +374,7 @@ export const ProbabilisticFanChart: React.FC<ProbabilisticFanChartProps> = ({
                 <div className="space-y-0.5 text-[11px]">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-slate-400">P50 (Median):</span>
-                    <span className="font-bold text-sky-400 font-mono">{activePoint.p50}K</span>
+                    <span className="font-bold text-primary font-mono">{activePoint.p50}K</span>
                   </div>
                   <div className="flex items-center justify-between gap-3 text-[10px] text-slate-300">
                     <span className="text-slate-400">P90 / P80:</span>

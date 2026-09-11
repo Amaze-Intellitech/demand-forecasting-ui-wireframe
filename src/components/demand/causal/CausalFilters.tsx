@@ -36,7 +36,7 @@ export const CausalFilters: React.FC<CausalFiltersProps> = ({
         <select
           value={selectedPlant}
           onChange={(e) => onPlantChange(e.target.value)}
-          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer hover:border-slate-300 transition-colors"
+          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:border-slate-300 transition-colors"
         >
           {options.plants.map((p) => (
             <option key={p} value={p}>
@@ -52,7 +52,7 @@ export const CausalFilters: React.FC<CausalFiltersProps> = ({
         <select
           value={selectedProduct}
           onChange={(e) => onProductChange(e.target.value)}
-          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer hover:border-slate-300 transition-colors"
+          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:border-slate-300 transition-colors"
         >
           {options.products.map((p) => (
             <option key={p} value={p}>
@@ -68,7 +68,7 @@ export const CausalFilters: React.FC<CausalFiltersProps> = ({
         <select
           value={selectedRegion}
           onChange={(e) => onRegionChange(e.target.value)}
-          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer hover:border-slate-300 transition-colors"
+          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:border-slate-300 transition-colors"
         >
           {options.regions.map((r) => (
             <option key={r} value={r}>
@@ -84,7 +84,7 @@ export const CausalFilters: React.FC<CausalFiltersProps> = ({
         <select
           value={selectedPeriod}
           onChange={(e) => onPeriodChange(e.target.value)}
-          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer hover:border-slate-300 transition-colors"
+          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:border-slate-300 transition-colors"
         >
           {options.periods.map((p) => (
             <option key={p} value={p}>

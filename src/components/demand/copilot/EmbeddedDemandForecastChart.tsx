@@ -85,7 +85,7 @@ export const EmbeddedDemandForecastChart: React.FC = () => {
             <span className="font-medium">Forecast</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-2.5 bg-sky-200/70 rounded-xs border border-sky-300/50" />
+            <span className="w-3 h-2.5 bg-info-bg rounded-xs border border-border" />
             <span className="font-medium">Confidence Range</span>
           </div>
         </div>
@@ -234,7 +234,7 @@ export const EmbeddedDemandForecastChart: React.FC = () => {
         {/* Tooltip on Hover */}
         {hoveredPoint && (
           <div className="absolute top-2 right-8 pointer-events-none bg-slate-900/95 text-white p-2.5 rounded-lg shadow-xl border border-slate-700 text-xs backdrop-blur-xs flex flex-col gap-0.5 z-30 min-w-[150px]">
-            <div className="flex items-center justify-between border-b border-slate-700 pb-1 font-bold text-sky-400 text-[11px]">
+            <div className="flex items-center justify-between border-b border-slate-700 pb-1 font-bold text-blue-400 text-[11px]">
               <span>{hoveredPoint.label}</span>
               <span>{hoveredPoint.isToday ? 'Today' : hoveredPoint.actual ? 'Actual' : 'Forecast'}</span>
             </div>

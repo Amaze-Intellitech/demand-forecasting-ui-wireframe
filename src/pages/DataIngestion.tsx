@@ -14,6 +14,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import aitekLogo from '../assets/aitek_logo.png';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
 
 interface SourceConnectorItem {
   id: string;
@@ -273,13 +274,13 @@ export const DataIngestion: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-[#f4f6fa] text-slate-900 font-sans select-none overflow-x-hidden">
+    <div className="min-h-screen w-full flex flex-col justify-between bg-surface text-deep font-sans select-none overflow-x-hidden">
       
       {/* Top Flex Container: Sidebar + Main Content */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0">
         
-        {/* Left Dark Navigation Sidebar */}
-        <aside className="w-full md:w-64 lg:w-68 bg-[#080e1a] border-r border-slate-800/80 flex flex-col justify-between p-5 z-20 flex-shrink-0">
+        {/* Left Navigation Sidebar */}
+        <aside className="w-full md:w-64 lg:w-68 bg-bg border-r border-border flex flex-col justify-between p-5 z-20 flex-shrink-0">
           <div>
             {/* Top Logo */}
             <div className="pt-2 pb-6 px-1 flex items-center justify-start">
@@ -287,7 +288,7 @@ export const DataIngestion: React.FC = () => {
                 <img
                   src={aitekLogo}
                   alt="AITEK"
-                  className="h-20 sm:h-24 w-auto object-contain filter drop-shadow-[0_0_18px_rgba(56,189,248,0.4)] hover:opacity-95 transition-opacity"
+                  className="h-20 sm:h-24 w-auto object-contain hover:opacity-90 transition-opacity"
                 />
               </Link>
             </div>
@@ -298,12 +299,12 @@ export const DataIngestion: React.FC = () => {
               <button
                 onClick={() => {
                   setActiveNav('overview');
-                  navigate(`/solutions/${solutionId || 'demand-intelligence'}/overview`);
+                  navigate(`/solutions/${solutionId || 'demand-intelligence'}/executive`);
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'overview'
-                    ? 'bg-[#1053b8] text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white font-semibold'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <Eye className="w-4 h-4" />
@@ -315,8 +316,8 @@ export const DataIngestion: React.FC = () => {
                 onClick={() => setActiveNav('ingestion')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                   activeNav === 'ingestion'
-                    ? 'bg-[#1053b8] text-white shadow-md shadow-blue-950/40'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <Database className="w-4 h-4" />
@@ -328,8 +329,8 @@ export const DataIngestion: React.FC = () => {
                 onClick={() => setActiveNav('connections')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'connections'
-                    ? 'bg-[#1053b8] text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white font-semibold'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <Network className="w-4 h-4" />
@@ -341,8 +342,8 @@ export const DataIngestion: React.FC = () => {
                 onClick={() => setActiveNav('mapping')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'mapping'
-                    ? 'bg-[#1053b8] text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white font-semibold'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <TableProperties className="w-4 h-4" />
@@ -354,8 +355,8 @@ export const DataIngestion: React.FC = () => {
                 onClick={() => setActiveNav('history')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'history'
-                    ? 'bg-[#1053b8] text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white font-semibold'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <History className="w-4 h-4" />
@@ -367,8 +368,8 @@ export const DataIngestion: React.FC = () => {
                 onClick={() => setActiveNav('settings')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'settings'
-                    ? 'bg-[#1053b8] text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white font-semibold'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <Settings className="w-4 h-4" />
@@ -378,14 +379,15 @@ export const DataIngestion: React.FC = () => {
           </div>
 
           {/* Bottom Sign Out */}
-          <div className="pt-6 border-t border-slate-800/60">
+          <div className="pt-6 border-t border-border flex items-center justify-between">
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2.5 text-xs text-slate-400 hover:text-white transition-colors p-1"
+              className="flex items-center gap-2.5 text-xs text-subtle hover:text-deep transition-colors p-1"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
             </button>
+            <ThemeToggle />
           </div>
         </aside>
 
@@ -529,7 +531,7 @@ export const DataIngestion: React.FC = () => {
       </div>
 
       {/* Bottom Docked Presentation Strip: 04 DATA INGESTION */}
-      <div className="relative z-30 w-full bg-[#080e1a] border-t border-slate-800/80 px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-white">
+      <div className="relative z-30 w-full bg-deep border-t border-border px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-white">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded bg-[#0062d2] flex items-center justify-center text-white font-bold text-xs tracking-wider">
             04
@@ -538,15 +540,15 @@ export const DataIngestion: React.FC = () => {
             <span className="font-bold text-xs text-white tracking-wider mr-2 uppercase">
               DATA INGESTION
             </span>
-            <span className="text-xs text-slate-400 hidden sm:inline">
+            <span className="text-xs text-white/60 hidden sm:inline">
               Connect, configure and activate your enterprise data
             </span>
           </div>
         </div>
 
-        <div className="text-xs text-slate-400 flex items-center gap-3 self-end sm:self-auto">
+        <div className="text-xs text-white/60 flex items-center gap-3 self-end sm:self-auto">
           <span>Your data. Our intelligence. Greater outcomes.</span>
-          <div className="w-16 h-[1px] bg-slate-700 hidden md:block" />
+          <div className="w-16 h-[1px] bg-white/20 hidden md:block" />
         </div>
       </div>
 

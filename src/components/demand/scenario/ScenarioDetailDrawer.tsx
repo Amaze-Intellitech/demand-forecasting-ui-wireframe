@@ -40,7 +40,7 @@ export const ScenarioDetailDrawer: React.FC<ScenarioDetailDrawerProps> = ({
               <span className="font-mono text-lg font-black text-slate-900">
                 {scenario.name}
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-info-bg text-deep border border-border">
                 {scenario.status}
               </span>
             </div>

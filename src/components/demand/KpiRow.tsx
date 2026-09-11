@@ -18,7 +18,7 @@ export const KpiRow: React.FC = () => {
       change: '+3.1% vs. last year',
       isPositive: true,
       icon: BarChart3,
-      badgeBg: 'bg-sky-50 text-sky-600 border border-sky-100',
+      badgeBg: 'bg-info-bg text-primary border border-border',
     },
     {
       id: 'demand',

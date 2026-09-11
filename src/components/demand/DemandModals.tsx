@@ -27,7 +27,7 @@ export const DetailedForecastModal: React.FC<{
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-info-bg text-primary border border-border flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
@@ -65,7 +65,7 @@ export const DetailedForecastModal: React.FC<{
             </div>
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
               <div className="text-slate-400 text-[10px] font-semibold uppercase">R² Fit</div>
-              <div className="text-lg font-bold text-sky-600 mt-0.5">0.93</div>
+              <div className="text-lg font-bold text-primary mt-0.5">0.93</div>
             </div>
           </div>
 
@@ -88,7 +88,7 @@ export const DetailedForecastModal: React.FC<{
                   <tr key={item.period} className="hover:bg-slate-50/60">
                     <td className="px-4 py-2 font-medium text-slate-800">{item.period}</td>
                     <td className="px-4 py-2 text-center">
-                      <span className="px-2 py-0.5 bg-sky-50 text-sky-700 rounded-md text-[10px] font-semibold">
+                      <span className="px-2 py-0.5 bg-info-bg text-deep rounded-md text-[10px] font-semibold">
                         {item.isToday ? 'Today (Anchor)' : 'Forecast'}
                       </span>
                     </td>
@@ -104,8 +104,8 @@ export const DetailedForecastModal: React.FC<{
             </table>
           </div>
 
-          <div className="p-3 rounded-xl bg-sky-50/60 border border-sky-100 text-sky-900 flex items-start gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
+          <div className="p-3 rounded-xl bg-info-bg border border-border text-deep flex items-start gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <p className="leading-relaxed">
               Prophet ensemble model fitted with yearly seasonality. Q3 projected peak requirements require forward procurement orders 6–8 weeks in advance.
             </p>

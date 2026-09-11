@@ -76,7 +76,7 @@ export const DecisionTriggers: React.FC<DecisionTriggersProps> = ({
                       ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
                       : isRejected
                       ? 'bg-rose-50 border-rose-200 text-rose-600'
-                      : 'bg-sky-50 border-sky-100 text-[#0062d2]'
+                      : 'bg-info-bg border-border text-[#0062d2]'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -132,12 +132,12 @@ export const QuickActionsCard: React.FC<QuickActionsProps> = ({ onNavigate }) =>
     {
       label: 'Open Risk & Exception Center',
       icon: AlertTriangle,
-      route: '/solutions/demand-intelligence/exceptions',
+      route: '/solutions/demand-intelligence/risk-exceptions',
     },
     {
       label: 'Optimize Supplier Allocation',
       icon: Truck,
-      route: '/solutions/demand-intelligence/sourcing',
+      route: '/solutions/demand-intelligence/supply-capacity',
     },
     {
       label: 'Chat with AI Decision Copilot',
@@ -172,7 +172,7 @@ export const QuickActionsCard: React.FC<QuickActionsProps> = ({ onNavigate }) =>
               className="py-2.5 px-1.5 flex items-center justify-between gap-3 group cursor-pointer hover:bg-slate-50/70 rounded-lg transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-sky-50/70 border border-sky-100/80 flex items-center justify-center flex-shrink-0 text-[#0062d2]">
+                <div className="w-8 h-8 rounded-lg bg-info-bg border border-border flex items-center justify-center flex-shrink-0 text-[#0062d2]">
                   <Icon className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-semibold text-slate-800 group-hover:text-[#0062d2] transition-colors truncate">

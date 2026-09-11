@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useDemandFilters } from '../hooks/useDemandFilters';
 import { DemandIntelligenceSidebar } from '../components/demand/DemandIntelligenceSidebar';
 import { DemandTopbar } from '../components/demand/DemandTopbar';
 
@@ -36,9 +37,14 @@ export const SupplyCapacityOptimizationPage: React.FC = () => {
   const [selectedDateRange, setSelectedDateRange] = useState<string>('Jan 2025 – Dec 2026');
 
   // Filter State
-  const [selectedPlant, setSelectedPlant] = useState<string>('All Plants');
-  const [selectedProduct, setSelectedProduct] = useState<string>('All Products');
-  const [selectedRegion, setSelectedRegion] = useState<string>('All Regions');
+  const {
+    plant: selectedPlant,
+    product: selectedProduct,
+    region: selectedRegion,
+    setPlant: setSelectedPlant,
+    setProduct: setSelectedProduct,
+    setRegion: setSelectedRegion,
+  } = useDemandFilters();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FY 2025');
 
   // Time series granularity
@@ -177,7 +183,7 @@ export const SupplyCapacityOptimizationPage: React.FC = () => {
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden text-slate-900 font-sans antialiased">
       {/* Sidebar navigation with activeTab = 'sourcing' */}
-      <DemandIntelligenceSidebar activeTab="sourcing" />
+      <DemandIntelligenceSidebar activeTab="supply-capacity" />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

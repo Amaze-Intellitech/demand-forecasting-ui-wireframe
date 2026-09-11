@@ -76,14 +76,9 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
   // Reset or initialize on modal open
   useEffect(() => {
     if (isOpen) {
-      // If already connected, jump to mapping or review, else start at step 0
-      if (connector.state === 'connected') {
-        setCurrentStepIndex(3); // Start at Mapping
-        setAuthSuccess(true);
-      } else {
-        setCurrentStepIndex(0);
-        setAuthSuccess(null);
-      }
+      // Always walk the full 6-step wizard in order, regardless of prior connection state.
+      setCurrentStepIndex(0);
+      setAuthSuccess(null);
       setMappings(connector.mappings);
       setSelectedEntities(connector.entities);
       setSyncProgress(0);
@@ -158,8 +153,8 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
 
   const handleNext = () => {
     if (currentStep.key === 'auth' && !authSuccess) {
-      // Auto-validate for smooth demo
-      setAuthSuccess(true);
+      // Require the user to test the connection before advancing past Authenticate.
+      return;
     }
     if (currentStepIndex < STEPS.length - 1) {
       setCurrentStepIndex((prev) => prev + 1);
@@ -183,12 +178,12 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-sky-400">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
               <Server className="w-5 h-5" />
             </div>
             <div>
               <h2 id="modal-title" className="text-base font-semibold text-white flex items-center gap-2">
-                Enterprise Connection Pipeline: <span className="text-sky-400">{connector.name}</span>
+                Enterprise Connection Pipeline: <span className="text-blue-400">{connector.name}</span>
               </h2>
               <p className="text-xs text-slate-400">
                 AITEK Certified Ingestion Connector &bull; Zero-Data-Loss Protocol
@@ -220,7 +215,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                   <div
                     className={cn(
                       'flex items-center gap-2 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors',
-                      isCurrent && 'bg-sky-500/10 text-sky-300 border border-sky-500/30 font-semibold',
+                      isCurrent && 'bg-primary/10 text-primary border border-primary/30 font-semibold',
                       isDone && 'text-emerald-400',
                       !isCurrent && !isDone && 'text-slate-500'
                     )}
@@ -229,7 +224,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                       className={cn(
                         'w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-mono',
                         isDone && 'bg-emerald-950 text-emerald-400 border border-emerald-800',
-                        isCurrent && 'bg-sky-500 text-slate-950 font-bold',
+                        isCurrent && 'bg-primary text-white font-bold',
                         !isCurrent && !isDone && 'bg-slate-800 text-slate-500 border border-slate-700'
                       )}
                     >
@@ -253,7 +248,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
           {currentStep.key === 'select' && (
             <div className="space-y-5 animate-in fade-in duration-150">
               <div className="p-4 rounded-lg bg-slate-950/50 border border-slate-800 flex items-start gap-4">
-                <div className="p-2.5 rounded-md bg-sky-950 border border-sky-800/60 text-sky-400">
+                <div className="p-2.5 rounded-md bg-primary/10 border border-primary/30 text-primary">
                   <Database className="w-6 h-6" />
                 </div>
                 <div className="space-y-1">
@@ -263,10 +258,13 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                     <span className="text-[11px] font-mono bg-slate-800/80 text-slate-300 px-2 py-0.5 rounded border border-slate-700/60">
                       Category: {connector.category}
                     </span>
-                    <span className="text-[11px] font-mono bg-emerald-950/80 text-emerald-400 px-2 py-0.5 rounded border border-emerald-800/60">
+                    <span
+                      className="text-[11px] font-mono bg-emerald-950/80 text-emerald-400 px-2 py-0.5 rounded border border-emerald-800/60"
+                      title="Data is replicated in its native format via change-data-capture and transformed only at query time, rather than pre-transformed by a separate ETL pipeline."
+                    >
                       Zero ETL Architecture
                     </span>
-                    <span className="text-[11px] font-mono bg-sky-950/80 text-sky-400 px-2 py-0.5 rounded border border-sky-800/60">
+                    <span className="text-[11px] font-mono bg-primary/10 text-primary px-2 py-0.5 rounded border border-primary/30">
                       CDC Stream Ready
                     </span>
                   </div>
@@ -345,7 +343,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                     className={cn(
                       'p-2.5 rounded-md border text-xs font-medium text-left transition-colors',
                       authMethod === 'oauth'
-                        ? 'border-sky-500 bg-sky-950/40 text-sky-200'
+                        ? 'border-primary bg-primary/10 text-primary'
                         : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
                     )}
                   >
@@ -357,7 +355,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                     className={cn(
                       'p-2.5 rounded-md border text-xs font-medium text-left transition-colors',
                       authMethod === 'service_account'
-                        ? 'border-sky-500 bg-sky-950/40 text-sky-200'
+                        ? 'border-primary bg-primary/10 text-primary'
                         : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
                     )}
                   >
@@ -369,7 +367,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                     className={cn(
                       'p-2.5 rounded-md border text-xs font-medium text-left transition-colors',
                       authMethod === 'basic'
-                        ? 'border-sky-500 bg-sky-950/40 text-sky-200'
+                        ? 'border-primary bg-primary/10 text-primary'
                         : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
                     )}
                   >
@@ -407,7 +405,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                     size="sm"
                     onClick={handleTestConnection}
                     isLoading={isTestingAuth}
-                    leftIcon={<Activity className="w-3.5 h-3.5 text-sky-400" />}
+                    leftIcon={<Activity className="w-3.5 h-3.5 text-blue-400" />}
                   >
                     Test Connection Handshake
                   </Button>
@@ -431,7 +429,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                   <h3 className="text-sm font-semibold text-slate-100">Select Enterprise Data Entities</h3>
                   <p className="text-xs text-slate-400">Choose tables, views, or endpoints to replicate into AITEK</p>
                 </div>
-                <div className="text-xs text-sky-400 font-mono">
+                <div className="text-xs text-blue-400 font-mono">
                   {selectedEntities.length} of {connector.entities.length} selected
                 </div>
               </div>
@@ -446,7 +444,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                       className={cn(
                         'flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors',
                         isChecked
-                          ? 'border-sky-500/50 bg-sky-950/30'
+                          ? 'border-primary/50 bg-primary/10'
                           : 'border-slate-800 bg-slate-950/40 hover:border-slate-700'
                       )}
                     >
@@ -455,7 +453,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => {}}
-                          className="w-4 h-4 rounded border-slate-700 text-sky-500 focus:ring-sky-500 bg-slate-900"
+                          className="w-4 h-4 rounded border-slate-700 text-primary focus:ring-primary bg-slate-900"
                         />
                         <div>
                           <div className="text-sm font-mono text-slate-200 font-medium">{entity}</div>
@@ -487,11 +485,14 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                   size="sm"
                   onClick={handleAutoMapAll}
                   className="text-xs"
-                  leftIcon={<Sparkles className="w-3.5 h-3.5 text-sky-400" />}
+                  leftIcon={<Sparkles className="w-3.5 h-3.5 text-blue-400" />}
                 >
-                  Auto-Map AI Confidence (100%)
+                  Auto-Map Fields
                 </Button>
               </div>
+              <p className="text-[11px] text-slate-500 -mt-4">
+                Auto-mapping matches source column names against the AITEK canonical schema using exact and fuzzy name matching; fields still marked "Pending" below need manual review.
+              </p>
 
               <div className="border border-slate-800 rounded-lg overflow-hidden">
                 <table className="w-full text-left text-xs border-collapse">
@@ -517,7 +518,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                             type="text"
                             value={mapping.sourceField}
                             onChange={(e) => handleMappingChange(mapping.id, e.target.value)}
-                            className="bg-slate-950 border border-slate-700/80 rounded px-2 py-1 text-xs text-sky-300 w-full font-mono focus:outline-none focus:border-sky-500"
+                            className="bg-slate-950 border border-slate-700/80 rounded px-2 py-1 text-xs text-blue-300 w-full font-mono focus:outline-none focus:border-primary"
                           />
                         </td>
                         <td className="py-2.5 px-3 text-slate-400">
@@ -542,7 +543,7 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                 </table>
               </div>
 
-              <div className="p-3 rounded-lg bg-sky-950/20 border border-sky-900/40 text-xs text-sky-300 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary flex items-center justify-between">
                 <span>All required canonical columns have satisfied schema constraints.</span>
                 <span className="font-mono text-slate-400">Canonical Model v2.4</span>
               </div>
@@ -565,7 +566,9 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                   <div className="text-lg font-bold text-emerald-400 mt-1 flex items-center gap-1">
                     <CheckCircle2 className="w-4 h-4" /> 100% Passed
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">0 type mismatches</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    0 type mismatches, checked against AITEK Canonical Model v2.4
+                  </div>
                 </div>
 
                 <div className="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800">
@@ -573,12 +576,14 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                   <div className="text-lg font-bold text-emerald-400 mt-1 flex items-center gap-1">
                     <CheckCircle2 className="w-4 h-4" /> 0 Violations
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">Primary keys intact</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    Required fields verified against a sample of the source data; primary keys intact
+                  </div>
                 </div>
 
                 <div className="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800">
                   <div className="text-[11px] text-slate-400 font-mono">Estimated Row Count</div>
-                  <div className="text-lg font-bold text-sky-400 mt-1">
+                  <div className="text-lg font-bold text-blue-400 mt-1">
                     ~1,428,500
                   </div>
                   <div className="text-[10px] text-slate-500 mt-0.5">Estimated sync: 12 seconds</div>
@@ -605,8 +610,8 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
           {/* STEP 6: SYNC PROGRESS */}
           {currentStep.key === 'sync' && (
             <div className="py-8 space-y-6 text-center animate-in fade-in duration-150">
-              <div className="w-16 h-16 rounded-full bg-sky-950/80 border border-sky-800/60 flex items-center justify-center mx-auto text-sky-400 animate-pulse">
-                <RefreshCw className="w-8 h-8 animate-spin text-sky-400" />
+              <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto text-primary animate-pulse">
+                <RefreshCw className="w-8 h-8 animate-spin text-primary" />
               </div>
 
               <div>
@@ -619,20 +624,22 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
               <div className="max-w-md mx-auto space-y-2">
                 <div className="flex justify-between text-xs font-mono text-slate-400">
                   <span>{ingestedRows.toLocaleString()} / 1,428,500 records</span>
-                  <span className="text-sky-400 font-semibold">{syncProgress}%</span>
+                  <span className="text-blue-400 font-semibold">{syncProgress}%</span>
                 </div>
-                
+
                 {/* Progress bar */}
                 <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-sky-500 to-emerald-400 transition-all duration-300 rounded-full"
+                    className="h-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-300 rounded-full"
                     style={{ width: `${syncProgress}%` }}
                   />
                 </div>
 
                 <div className="flex justify-between text-[11px] text-slate-500 pt-1 font-mono">
                   <span>Throughput: ~124,000 rows/sec</span>
-                  <span>Zero-Loss Checksum Active</span>
+                  <span title="Each batch is verified against a SHA-256 checksum of the source extract before being marked ingested.">
+                    Zero-Loss Checksum Active
+                  </span>
                 </div>
               </div>
             </div>
@@ -717,6 +724,8 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                 variant="primary"
                 size="sm"
                 onClick={handleNext}
+                disabled={!authSuccess}
+                title={!authSuccess ? 'Test the connection handshake before continuing' : undefined}
                 rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
               >
                 Configure Entities
@@ -775,11 +784,11 @@ export const ConnectionWizardModal: React.FC<ConnectionWizardModalProps> = ({
                   size="sm"
                   onClick={() => {
                     onClose();
-                    navigate('/solutions/demand-intelligence/overview');
+                    navigate('/solutions/demand-intelligence/executive');
                   }}
                   rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                 >
-                  Launch Executive Cockpit
+                  Go to Executive Command Center
                 </Button>
               </div>
             )}

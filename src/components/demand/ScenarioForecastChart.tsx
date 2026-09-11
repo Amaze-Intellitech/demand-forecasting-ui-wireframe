@@ -386,7 +386,7 @@ export const ScenarioForecastChart: React.FC<ScenarioForecastChartProps> = ({
             }}
           >
             <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 mb-2">
-              <span className="font-bold text-sky-400">
+              <span className="font-bold text-primary">
                 {hoveredPoint.month} {hoveredPoint.year}
               </span>
               <span className="text-[10px] text-slate-400 font-mono">

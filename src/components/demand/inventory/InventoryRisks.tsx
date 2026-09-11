@@ -42,7 +42,7 @@ export const InventoryRisks: React.FC<InventoryRisksProps> = ({
       );
     }
     return (
-      <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 border border-sky-100 flex-shrink-0">
+      <div className="w-8 h-8 rounded-lg bg-info-bg flex items-center justify-center text-primary border border-border flex-shrink-0">
         <Info className="w-4 h-4" />
       </div>
     );

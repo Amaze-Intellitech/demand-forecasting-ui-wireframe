@@ -21,7 +21,7 @@ import plantHeroBg from '../assets/plant_hero_bg.jpg';
 
 export const SolutionHub: React.FC = () => {
   const navigate = useNavigate();
-  const { solutions, selectSolution, isSolutionAuthenticated, user, updateUserName, logout } = useAitek();
+  const { solutions, selectSolution, connectors, user, updateUserName, logout } = useAitek();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'solutions' | 'support' | 'org' | 'profile'>('solutions');
@@ -52,10 +52,17 @@ export const SolutionHub: React.FC = () => {
   const handleOpenSolution = (solution: Solution) => {
     if (solution.status === 'coming_soon') return;
     selectSolution(solution.id);
-    if (isSolutionAuthenticated(solution.id)) {
-      navigate(`/solutions/${solution.id}/data`);
+
+    // Single sign-on: opening a solution is a pure entitlement check against the
+    // existing platform session — no second login screen. Land directly on the
+    // solution's home page if its data is already connected, otherwise on ingestion.
+    const hasConnectedData = connectors.some(
+      (c) => c.state === 'connected' || c.state === 'sync_complete'
+    );
+    if (solution.id === 'demand-intelligence' && hasConnectedData) {
+      navigate('/solutions/demand-intelligence/executive');
     } else {
-      navigate(`/solutions/${solution.id}/login`);
+      navigate(`/solutions/${solution.id}/data-ingestion`);
     }
   };
 
@@ -140,28 +147,28 @@ export const SolutionHub: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-[#f4f6fa] text-slate-900 font-sans select-none overflow-x-hidden">
-      
+    <div className="min-h-screen w-full flex flex-col justify-between bg-surface text-deep font-sans select-none overflow-x-hidden">
+
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-950/90 text-emerald-200 border border-emerald-800 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-semibold backdrop-blur-md animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-5 right-5 z-50 bg-success-bg text-success-tx border border-success/20 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-semibold backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4" />
           <span>{successToast}</span>
         </div>
       )}
 
       {/* Top Flex Container: Sidebar + Main Content */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0">
-        
-        {/* Left Dark Sidebar */}
-        <aside className="w-full md:w-64 lg:w-68 bg-[#080e1a] border-r border-slate-800/80 flex flex-col justify-between p-5 z-20 flex-shrink-0">
+
+        {/* Left Sidebar */}
+        <aside className="w-full md:w-64 lg:w-68 bg-bg border-r border-border flex flex-col justify-between p-5 z-20 flex-shrink-0">
           <div>
             {/* Top Logo */}
             <div className="pt-2 pb-6 px-1 flex items-center justify-start">
               <img
                 src={aitekLogo}
                 alt="AITEK"
-                className="h-20 sm:h-24 w-auto object-contain filter drop-shadow-[0_0_18px_rgba(56,189,248,0.4)]"
+                className="h-20 sm:h-24 w-auto object-contain"
               />
             </div>
 
@@ -172,8 +179,8 @@ export const SolutionHub: React.FC = () => {
                 onClick={() => setActiveTab('solutions')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                   activeTab === 'solutions'
-                    ? 'bg-[#1053b8] text-white shadow-md shadow-blue-950/40'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -185,8 +192,8 @@ export const SolutionHub: React.FC = () => {
                 onClick={() => setActiveTab('support')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeTab === 'support'
-                    ? 'bg-[#1053b8] text-white'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <Globe className="w-4 h-4" />
@@ -198,8 +205,8 @@ export const SolutionHub: React.FC = () => {
                 onClick={() => setActiveTab('org')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeTab === 'org'
-                    ? 'bg-[#1053b8] text-white'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -215,8 +222,8 @@ export const SolutionHub: React.FC = () => {
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeTab === 'profile'
-                    ? 'bg-[#1053b8] text-white'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-primary text-white'
+                    : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -226,10 +233,10 @@ export const SolutionHub: React.FC = () => {
           </div>
 
           {/* Bottom Sign Out */}
-          <div className="pt-6 border-t border-slate-800/60">
+          <div className="pt-6 border-t border-border">
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2.5 text-xs text-slate-400 hover:text-white transition-colors p-1"
+              className="flex items-center gap-2.5 text-xs text-subtle hover:text-deep transition-colors p-1"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
@@ -436,24 +443,24 @@ export const SolutionHub: React.FC = () => {
       </div>
 
       {/* Bottom Docked Presentation Strip: 02 SOLUTION HUB */}
-      <div className="relative z-30 w-full bg-[#080e1a] border-t border-slate-800/80 px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+      <div className="relative z-30 w-full bg-deep border-t border-border px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded bg-[#0062d2] flex items-center justify-center text-white font-bold text-xs tracking-wider">
+          <div className="w-7 h-7 rounded bg-primary flex items-center justify-center text-white font-bold text-xs tracking-wider">
             02
           </div>
           <div>
             <span className="font-bold text-xs text-white tracking-wider mr-2 uppercase">
               SOLUTION HUB
             </span>
-            <span className="text-xs text-slate-400 hidden sm:inline">
+            <span className="text-xs text-white/60 hidden sm:inline">
               Explore and access the AITEK solution portfolio
             </span>
           </div>
         </div>
 
-        <div className="text-xs text-slate-400 flex items-center gap-3 self-end sm:self-auto">
+        <div className="text-xs text-white/60 flex items-center gap-3 self-end sm:self-auto">
           <span>One platform. Multiple possibilities.</span>
-          <div className="w-16 h-[1px] bg-slate-700 hidden md:block" />
+          <div className="w-16 h-[1px] bg-white/20 hidden md:block" />
         </div>
       </div>
 
@@ -465,7 +472,7 @@ export const SolutionHub: React.FC = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-lg bg-info-bg text-primary border border-primary/20 flex items-center justify-center">
                   <User className="w-5 h-5" />
                 </div>
                 <div>
@@ -507,7 +514,7 @@ export const SolutionHub: React.FC = () => {
                   value={editNameInput}
                   onChange={(e) => setEditNameInput(e.target.value)}
                   placeholder="e.g. Siddhartha M"
-                  className="w-full h-10 px-3 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                  className="w-full h-10 px-3 rounded-lg border border-border bg-bg text-deep text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   autoFocus
                 />
               </div>

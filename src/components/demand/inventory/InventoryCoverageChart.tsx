@@ -206,7 +206,7 @@ export const InventoryCoverageChart: React.FC<InventoryCoverageChartProps> = ({
                 <span>Base Case:</span>
                 <span className="font-bold">{data[hoverIndex].baseCase} days</span>
               </div>
-              <div className="flex justify-between gap-3 text-sky-300">
+              <div className="flex justify-between gap-3 text-blue-400">
                 <span>High Demand:</span>
                 <span className="font-bold">{data[hoverIndex].highDemandScenario} days</span>
               </div>

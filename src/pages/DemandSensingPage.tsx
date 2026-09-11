@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDemandFilters } from '../hooks/useDemandFilters';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
 
 import { DemandIntelligenceSidebar } from '../components/demand/DemandIntelligenceSidebar';
@@ -32,12 +33,17 @@ export const DemandSensingPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Navigation & Horizon Filters
-  const [activeTab, setActiveTab] = useState<string>('sensing');
+  const [activeTab, setActiveTab] = useState<string>('demand-sensing');
   const [selectedDateRange, setSelectedDateRange] = useState<string>('Jan 2025 – Dec 2026');
 
-  const [selectedPlant, setSelectedPlant] = useState<string>('All Plants');
-  const [selectedProduct, setSelectedProduct] = useState<string>('All Products');
-  const [selectedRegion, setSelectedRegion] = useState<string>('All Regions');
+  const {
+    plant: selectedPlant,
+    product: selectedProduct,
+    region: selectedRegion,
+    setPlant: setSelectedPlant,
+    setProduct: setSelectedProduct,
+    setRegion: setSelectedRegion,
+  } = useDemandFilters();
   const [selectedHorizon, setSelectedHorizon] = useState<string>('Last 8 Weeks');
 
   // Source filter for live feed
@@ -244,7 +250,7 @@ export const DemandSensingPage: React.FC = () => {
               <DemandEventsCard
                 events={demandEvents}
                 onSelectEvent={handleSelectEvent}
-                onViewAll={() => navigate('/solutions/demand-intelligence/exceptions')}
+                onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
               />
             </div>
           </div>
@@ -279,7 +285,7 @@ export const DemandSensingPage: React.FC = () => {
                 items={liveSignalFeed}
                 activeSourceFilter={activeSourceFilter}
                 onClearSourceFilter={() => setActiveSourceFilter(undefined)}
-                onViewAll={() => navigate('/solutions/demand-intelligence/exceptions')}
+                onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
               />
             </div>
 

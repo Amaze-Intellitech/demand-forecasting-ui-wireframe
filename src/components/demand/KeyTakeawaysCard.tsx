@@ -26,7 +26,7 @@ export const KeyTakeawaysCard: React.FC = () => {
           {KEY_TAKEAWAYS.map((takeaway, idx) => (
             <div key={idx} className="flex items-start gap-3">
               {/* Number Circle Badge */}
-              <div className="w-5.5 h-5.5 rounded-full bg-sky-100 text-[#0062d2] font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-5.5 h-5.5 rounded-full bg-info-bg text-[#0062d2] font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
                 {idx + 1}
               </div>
 

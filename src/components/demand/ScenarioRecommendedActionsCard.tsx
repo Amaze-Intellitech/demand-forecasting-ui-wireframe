@@ -97,7 +97,7 @@ export const ScenarioRecommendedActionsCard: React.FC<ScenarioRecommendedActions
                   type="button"
                   onClick={() => {
                     setIsModalOpen(false);
-                    navigate('/solutions/demand-intelligence/sourcing');
+                    navigate('/solutions/demand-intelligence/supply-capacity');
                   }}
                   className="flex-1 py-2 px-3 rounded-lg bg-[#0062d2] text-white text-xs font-semibold hover:bg-[#0052b3] transition-colors"
                 >

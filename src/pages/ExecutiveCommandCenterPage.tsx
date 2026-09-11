@@ -29,18 +29,16 @@ import {
   PlanningEvent,
   ExecutiveInsight,
 } from '../types/domain/executiveCommandCenter';
+import { useDemandFilters } from '../hooks/useDemandFilters';
 
 export const ExecutiveCommandCenterPage: React.FC = () => {
   const navigate = useNavigate();
 
-  // Navigation state
-  const [activeTab, setActiveTab] = useState<string>('overview');
+  // Filter state — shared across Demand Intelligence pages via the URL
+  const { plant: selectedPlant, product: selectedProduct, region: selectedRegion, setPlant: setSelectedPlant, setProduct: setSelectedProduct, setRegion: setSelectedRegion } = useDemandFilters();
 
   // Filter state
   const [selectedDateRange, setSelectedDateRange] = useState<string>('Jan 2025 – Dec 2026');
-  const [selectedPlant, setSelectedPlant] = useState<string>('All Plants');
-  const [selectedProduct, setSelectedProduct] = useState<string>('All Products');
-  const [selectedRegion, setSelectedRegion] = useState<string>('All Regions');
   const [chartPeriod, setChartPeriod] = useState<'monthly' | 'quarterly'>('monthly');
 
   // Interactive drawer & modal states
@@ -244,10 +242,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
   return (
     <div className="min-h-screen w-full flex bg-[#f8fafc] text-slate-900 font-sans select-none overflow-x-hidden">
       {/* ── Left Navigation Rail ── */}
-      <DemandIntelligenceSidebar
-        activeTab={activeTab}
-        onSelectTab={(tabId) => setActiveTab(tabId)}
-      />
+      <DemandIntelligenceSidebar activeTab="executive" />
 
       {/* ── Main App Content ── */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -289,7 +284,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
                 <select
                   value={selectedPlant}
                   onChange={(e) => setSelectedPlant(e.target.value)}
-                  className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
+                  className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                 >
                   {filterOptions.plants.map((p) => (
                     <option key={p} value={p}>
@@ -305,7 +300,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
                 <select
                   value={selectedProduct}
                   onChange={(e) => setSelectedProduct(e.target.value)}
-                  className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
+                  className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                 >
                   {filterOptions.products.map((p) => (
                     <option key={p} value={p}>
@@ -320,7 +315,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsExportModalOpen(true)}
-                className="h-9 px-4 rounded-lg bg-[#0062d2] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+                className="h-9 px-4 rounded-lg bg-[#0062d2] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Export Report</span>
@@ -336,7 +331,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
                 kpi={kpi}
                 onClick={
                   kpi.id === 'kpi-exceptions'
-                    ? () => navigate('/solutions/demand-intelligence/exceptions')
+                    ? () => navigate('/solutions/demand-intelligence/risk-exceptions')
                     : undefined
                 }
               />
@@ -346,7 +341,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
           {/* Section 2: Critical Exception Banner */}
           <CriticalExceptionBanner
             criticalCount={3}
-            onViewExceptions={() => navigate('/solutions/demand-intelligence/exceptions')}
+            onViewExceptions={() => navigate('/solutions/demand-intelligence/risk-exceptions?severity=critical')}
           />
 
           {/* Section 3: Main Analytical Row (3 Columns: 40% / 28% / 32%) */}
@@ -413,7 +408,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
               <RecentActivity
                 events={recentEvents}
                 onSelectEvent={handleOpenEvent}
-                onViewAll={() => navigate('/solutions/demand-intelligence/exceptions')}
+                onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
               />
             </div>
 
@@ -441,6 +436,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
         onReject={handleRejectDecision}
         onModify={handleModifyDecision}
         onUndo={handleUndoDecision}
+        onOpenAuditLog={(agentId) => navigate(`/solutions/demand-intelligence/agent-control?agentId=${agentId}`)}
       />
 
       <ExceptionDetailDrawer

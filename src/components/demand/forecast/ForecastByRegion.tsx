@@ -39,7 +39,7 @@ export const ForecastByRegion: React.FC<ForecastByRegionProps> = ({
               key={item.id}
               onClick={() => onSelectRegion?.(item)}
               className={`p-1.5 rounded-lg cursor-pointer transition-all ${
-                isSelected ? 'bg-sky-50/80 ring-1 ring-sky-300' : 'hover:bg-slate-50/80'
+                isSelected ? 'bg-info-bg ring-1 ring-primary' : 'hover:bg-slate-50/80'
               }`}
             >
               {/* Top Line: Region Name, Bar, Demand, YoY */}

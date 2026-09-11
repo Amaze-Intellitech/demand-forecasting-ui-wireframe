@@ -106,7 +106,7 @@ export const DemandSupplyOutlook: React.FC<DemandSupplyOutlookProps> = ({
             <span className="font-medium text-slate-700">Supply Plan</span>
           </div>
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <span className="w-3 h-2.5 bg-sky-100 rounded-xs border border-sky-300 inline-block" />
+            <span className="w-3 h-2.5 bg-info-bg rounded-xs border border-border inline-block" />
             <span className="text-slate-500">Demand Range (P10–P90)</span>
           </div>
         </div>
@@ -327,7 +327,7 @@ export const DemandSupplyOutlook: React.FC<DemandSupplyOutlookProps> = ({
             <div className="font-bold text-[11px] text-slate-300 pb-1 border-b border-slate-700 mb-1 flex items-center justify-between gap-3">
               <span>{activePoint.period}</span>
               {activePoint.isToday && (
-                <span className="text-[9px] bg-sky-500/30 text-sky-300 px-1 py-0.5 rounded">
+                <span className="text-[9px] bg-primary text-primary px-1 py-0.5 rounded">
                   Current
                 </span>
               )}
@@ -335,7 +335,7 @@ export const DemandSupplyOutlook: React.FC<DemandSupplyOutlookProps> = ({
             <div className="space-y-0.5 text-[11px]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-slate-400">Demand:</span>
-                <span className="font-bold text-sky-400">{activePoint.demandForecast}K</span>
+                <span className="font-bold text-primary">{activePoint.demandForecast}K</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-slate-400">Supply Plan:</span>

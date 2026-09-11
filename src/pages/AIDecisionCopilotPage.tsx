@@ -132,7 +132,7 @@ export const AIDecisionCopilotPage: React.FC = () => {
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <Link
-              to="/solutions/demand-intelligence/overview"
+              to="/solutions/demand-intelligence/executive"
               className="hover:text-slate-800 transition-colors"
             >
               Demand Intelligence

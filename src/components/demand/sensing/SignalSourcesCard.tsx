@@ -77,7 +77,7 @@ export const SignalSourcesCard: React.FC<SignalSourcesCardProps> = ({
               onClick={() => onSelectSource(src)}
               className={`py-1.5 px-2 flex items-center justify-between gap-2 rounded-lg cursor-pointer transition-all group ${
                 isSelected
-                  ? 'bg-sky-50/90 ring-1 ring-sky-300'
+                  ? 'bg-info-bg ring-1 ring-primary'
                   : 'hover:bg-slate-50'
               }`}
             >

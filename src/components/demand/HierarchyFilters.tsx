@@ -31,7 +31,7 @@ export const HierarchyFilters: React.FC<HierarchyFiltersProps> = ({
           <select
             value={enterprise}
             onChange={(e) => onChange('enterprise', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {HIERARCHY_OPTIONS.enterprises.map((opt) => (
               <option key={opt} value={opt}>
@@ -52,7 +52,7 @@ export const HierarchyFilters: React.FC<HierarchyFiltersProps> = ({
           <select
             value={division}
             onChange={(e) => onChange('division', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {HIERARCHY_OPTIONS.divisions.map((opt) => (
               <option key={opt} value={opt}>
@@ -73,7 +73,7 @@ export const HierarchyFilters: React.FC<HierarchyFiltersProps> = ({
           <select
             value={plant}
             onChange={(e) => onChange('plant', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {HIERARCHY_OPTIONS.plants.map((opt) => (
               <option key={opt} value={opt}>
@@ -94,7 +94,7 @@ export const HierarchyFilters: React.FC<HierarchyFiltersProps> = ({
           <select
             value={category}
             onChange={(e) => onChange('category', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {HIERARCHY_OPTIONS.productCategories.map((opt) => (
               <option key={opt} value={opt}>
@@ -115,7 +115,7 @@ export const HierarchyFilters: React.FC<HierarchyFiltersProps> = ({
           <select
             value={sku}
             onChange={(e) => onChange('sku', e.target.value)}
-            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer truncate"
+            className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 shadow-xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer truncate"
           >
             {HIERARCHY_OPTIONS.skus.map((opt) => (
               <option key={opt} value={opt}>

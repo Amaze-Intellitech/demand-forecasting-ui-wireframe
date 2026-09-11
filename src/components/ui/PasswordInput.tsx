@@ -14,7 +14,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, Omit<InputProps,
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="text-slate-400 hover:text-slate-200 focus:outline-none focus:text-sky-400 transition-colors p-1"
+            className="text-subtle hover:text-deep focus:outline-none focus:text-primary transition-colors p-1"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             tabIndex={-1}
           >

@@ -58,7 +58,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-50 text-[#0062d2] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-info-bg text-[#0062d2] flex items-center justify-center">
               <FileText className="w-4 h-4" />
             </div>
             <div>
@@ -118,7 +118,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleSection(key as keyof typeof sections)}
-                    className="w-4 h-4 rounded text-[#0062d2] focus:ring-sky-500 border-slate-300"
+                    className="w-4 h-4 rounded text-[#0062d2] focus:ring-primary border-slate-300"
                   />
                   <span className="font-medium text-slate-700">{label}</span>
                 </label>
@@ -142,7 +142,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
                 onClick={() => setFormat(fmt.id as any)}
                 className={`py-2 px-3 rounded-lg border text-center font-semibold transition-all ${
                   format === fmt.id
-                    ? 'border-[#0062d2] bg-sky-50 text-[#0062d2] shadow-xs'
+                    ? 'border-[#0062d2] bg-info-bg text-[#0062d2] shadow-xs'
                     : 'border-slate-200 hover:bg-slate-50 text-slate-600'
                 }`}
               >

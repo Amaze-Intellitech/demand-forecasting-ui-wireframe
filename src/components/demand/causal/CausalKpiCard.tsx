@@ -20,12 +20,12 @@ export const CausalKpiCard: React.FC<CausalKpiCardProps> = ({ kpi, onClick }) =>
       case 'drivers':
         return {
           icon: Network,
-          color: 'bg-sky-50 text-[#0062d2] border border-sky-100',
+          color: 'bg-info-bg text-[#0062d2] border border-border',
         };
       case 'variance':
         return {
           icon: BarChart2,
-          color: 'bg-sky-50 text-[#0062d2] border border-sky-100',
+          color: 'bg-info-bg text-[#0062d2] border border-border',
         };
       case 'positive':
         return {
@@ -40,7 +40,7 @@ export const CausalKpiCard: React.FC<CausalKpiCardProps> = ({ kpi, onClick }) =>
       case 'structural':
         return {
           icon: Activity,
-          color: 'bg-sky-50 text-[#0062d2] border border-sky-100',
+          color: 'bg-info-bg text-[#0062d2] border border-border',
         };
       case 'confidence':
         return {

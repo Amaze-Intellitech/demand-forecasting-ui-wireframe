@@ -19,6 +19,7 @@ interface DecisionApprovalDrawerProps {
   onReject: (triggerId: string, reason?: string) => void;
   onModify: (triggerId: string, notes: string) => void;
   onUndo: (triggerId: string) => void;
+  onOpenAuditLog?: (agentId: string) => void;
 }
 
 export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
@@ -29,6 +30,7 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
   onReject,
   onModify,
   onUndo,
+  onOpenAuditLog,
 }) => {
   const [isModifying, setIsModifying] = useState(false);
   const [volumeShift, setVolumeShift] = useState(14);
@@ -73,7 +75,7 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
                 <span className="text-[11px] font-bold font-mono uppercase tracking-wider text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">
                   {trigger.id}
                 </span>
-                <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded">
+                <span className="text-[11px] font-bold text-deep bg-info-bg border border-border px-2 py-0.5 rounded">
                   Tier {trigger.autonomyTier} Supervised
                 </span>
               </div>
@@ -114,6 +116,16 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
               </div>
             )}
 
+            {isApproved && trigger.relatedAgentId && onOpenAuditLog && (
+              <button
+                type="button"
+                onClick={() => onOpenAuditLog(trigger.relatedAgentId!)}
+                className="mt-2 text-[11px] font-semibold text-primary hover:text-deep underline"
+              >
+                View in Agent Control Center audit log →
+              </button>
+            )}
+
             {isRejected && (
               <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-center justify-between gap-3 text-xs text-rose-800">
                 <div className="flex items-center gap-2">
@@ -131,6 +143,16 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
                   Reopen
                 </button>
               </div>
+            )}
+
+            {isRejected && trigger.relatedAgentId && onOpenAuditLog && (
+              <button
+                type="button"
+                onClick={() => onOpenAuditLog(trigger.relatedAgentId!)}
+                className="mt-2 text-[11px] font-semibold text-primary hover:text-deep underline"
+              >
+                View in Agent Control Center audit log →
+              </button>
             )}
           </div>
 
@@ -157,8 +179,8 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
             </div>
 
             {/* AITEK Recommendation */}
-            <div className="p-4 bg-sky-50/70 border border-sky-200/80 rounded-xl space-y-2">
-              <div className="flex items-center gap-1.5 text-sky-900 font-bold text-xs">
+            <div className="p-4 bg-info-bg border border-border rounded-xl space-y-2">
+              <div className="flex items-center gap-1.5 text-deep font-bold text-xs">
                 <ShieldCheck className="w-4 h-4 text-[#0062d2]" />
                 <span>AITEK Strategic Recommendation</span>
               </div>
@@ -195,7 +217,7 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
 
                 <div className="p-3 bg-white border border-slate-200 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-1 text-[11px] text-slate-500 mb-0.5">
-                    <ShieldCheck className="w-3 h-3 text-sky-600" />
+                    <ShieldCheck className="w-3 h-3 text-primary" />
                     <span>Risk Exposure</span>
                   </div>
                   <div className="text-sm font-bold text-emerald-600">

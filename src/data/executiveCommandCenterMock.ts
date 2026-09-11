@@ -225,7 +225,7 @@ export const EXECUTIVE_INSIGHTS_MOCK: ExecutiveInsight[] = [
     category: 'Supply',
     severity: 'critical',
     iconType: 'supplier',
-    route: '/solutions/demand-intelligence/sourcing',
+    route: '/solutions/demand-intelligence/supply-capacity',
   },
   {
     id: 'ins-5',
@@ -234,7 +234,7 @@ export const EXECUTIVE_INSIGHTS_MOCK: ExecutiveInsight[] = [
     category: 'Sourcing',
     severity: 'info',
     iconType: 'savings',
-    route: '/solutions/demand-intelligence/sourcing',
+    route: '/solutions/demand-intelligence/supply-capacity',
   },
 ];
 
@@ -306,7 +306,7 @@ export const RECENT_PLANNING_EVENTS_MOCK: PlanningEvent[] = [
     affectedArea: 'North America & APAC Resin Pellets',
     recommendation: 'Shift 14% of volume allocation to Supplier A and secondary verified partners',
     nextBestAction: 'Review Supplier Allocation Matrix',
-    targetWorkspaceRoute: '/solutions/demand-intelligence/sourcing',
+    targetWorkspaceRoute: '/solutions/demand-intelligence/supply-capacity',
   },
   {
     id: 'evt-102',
@@ -348,7 +348,7 @@ export const RECENT_PLANNING_EVENTS_MOCK: PlanningEvent[] = [
     affectedArea: 'Enterprise Purchasing & Finished Goods Pricing',
     recommendation: 'Recalculate pricing elasticity thresholds and maintain current supply contracts',
     nextBestAction: 'Assess Cost-Volume Elasticity Model',
-    targetWorkspaceRoute: '/solutions/demand-intelligence/sourcing',
+    targetWorkspaceRoute: '/solutions/demand-intelligence/supply-capacity',
   },
   {
     id: 'evt-105',
@@ -362,7 +362,7 @@ export const RECENT_PLANNING_EVENTS_MOCK: PlanningEvent[] = [
     affectedArea: 'All Operating Plants',
     recommendation: 'Consolidate auxiliary raw polymer volumes under renegotiated tier-1 tariffs',
     nextBestAction: 'Execute Prescriptive Sourcing Plan',
-    targetWorkspaceRoute: '/solutions/demand-intelligence/sourcing',
+    targetWorkspaceRoute: '/solutions/demand-intelligence/supply-capacity',
   },
 ];
 
@@ -383,6 +383,7 @@ export const DECISION_TRIGGERS_MOCK: DecisionTrigger[] = [
     },
     status: 'pendingApproval',
     autonomyTier: 'L3',
+    relatedAgentId: 'agent-sourcing',
   },
   {
     id: 'DT-002',
@@ -434,6 +435,7 @@ export const DECISION_TRIGGERS_MOCK: DecisionTrigger[] = [
     },
     status: 'pendingApproval',
     autonomyTier: 'L3',
+    relatedAgentId: 'agent-inventory',
   },
 ];
 

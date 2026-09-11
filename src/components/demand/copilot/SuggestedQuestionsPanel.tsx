@@ -35,7 +35,7 @@ export const SuggestedQuestionsPanel: React.FC<SuggestedQuestionsPanelProps> = (
             type="button"
             title="Reset conversation"
             onClick={onResetConversation}
-            className="p-1 rounded-lg text-sky-600 hover:bg-sky-50 transition-colors cursor-pointer"
+            className="p-1 rounded-lg text-primary hover:bg-info-bg transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -68,7 +68,7 @@ export const SuggestedQuestionsPanel: React.FC<SuggestedQuestionsPanelProps> = (
               onClick={() => onSelectQuestion(item.question)}
               className="w-full text-left p-3 rounded-xl border border-slate-200/70 hover:border-blue-300 hover:bg-blue-50/30 transition-all flex items-start gap-2.5 group cursor-pointer shadow-2xs"
             >
-              <MessageSquare className="w-4 h-4 text-sky-500 shrink-0 mt-0.5 group-hover:text-[#0062d2] transition-colors" />
+              <MessageSquare className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover:text-[#0062d2] transition-colors" />
               <span className="text-xs text-slate-700 group-hover:text-slate-900 font-medium leading-snug">
                 {item.question}
               </span>
@@ -80,7 +80,7 @@ export const SuggestedQuestionsPanel: React.FC<SuggestedQuestionsPanelProps> = (
       {/* Footer hint */}
       <div className="pt-3 border-t border-slate-100 text-[10px] text-slate-400 mt-3 flex items-center justify-between">
         <span>Curated Enterprise Prompts</span>
-        <span className="text-sky-600 font-medium">{filteredQuestions.length} Available</span>
+        <span className="text-primary font-medium">{filteredQuestions.length} Available</span>
       </div>
     </div>
   );

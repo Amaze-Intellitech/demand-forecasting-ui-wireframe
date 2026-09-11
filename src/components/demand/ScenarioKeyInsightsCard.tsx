@@ -32,7 +32,7 @@ export const ScenarioKeyInsightsCard: React.FC<ScenarioKeyInsightsCardProps> = (
         );
       case 'shield':
         return (
-          <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 border border-sky-200/80 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div className="w-8 h-8 rounded-lg bg-info-bg text-primary border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
             <Shield className="w-4 h-4" />
           </div>
         );

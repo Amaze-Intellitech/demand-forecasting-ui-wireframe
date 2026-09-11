@@ -93,8 +93,8 @@ export const ApplyPlanningModal: React.FC<ApplyPlanningModalProps> = ({
         </div>
 
         {/* Warning / Confirmation Message */}
-        <div className="p-3.5 bg-sky-50 border border-sky-100 rounded-xl flex items-start gap-2.5 text-xs text-sky-900">
-          <AlertCircle className="w-4 h-4 text-sky-600 flex-shrink-0 mt-0.5" />
+        <div className="p-3.5 bg-info-bg border border-border rounded-xl flex items-start gap-2.5 text-xs text-deep">
+          <AlertCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             This will mark <strong>{scenario.name}</strong> as the official active consensus planning assumption for the demand forecasting and supply optimization twins.
           </p>

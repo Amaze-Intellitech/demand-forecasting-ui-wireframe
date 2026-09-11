@@ -1,11 +1,10 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AitekProvider, useAitek } from './context/AitekContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { PlatformLogin } from './pages/PlatformLogin';
 import { SolutionHub } from './pages/SolutionHub';
-import { SolutionLogin } from './pages/SolutionLogin';
 import { DataIngestion } from './pages/DataIngestion';
-import { ExecutiveCockpit } from './pages/ExecutiveCockpit';
 import { ExecutiveCommandCenterPage } from './pages/ExecutiveCommandCenterPage';
 import { DemandSensingPage } from './pages/DemandSensingPage';
 import { DemandForecastPage } from './pages/DemandForecastPage';
@@ -14,6 +13,8 @@ import { InventoryIntelligencePage } from './pages/InventoryIntelligencePage';
 import { ScenarioDecisionTwinPage } from './pages/ScenarioDecisionTwinPage';
 import { SupplyCapacityOptimizationPage } from './pages/SupplyCapacityOptimizationPage';
 import { AIDecisionCopilotPage } from './pages/AIDecisionCopilotPage';
+import { RiskExceptionCenterPage } from './pages/RiskExceptionCenterPage';
+import { AgentControlCenterPage } from './pages/AgentControlCenterPage';
 
 // Protected Route Guard
 const RequirePlatformAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -49,19 +50,9 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Screen 3: Solution-Specific Login (Protected) */}
+      {/* Screen 3: Data Ingestion / Enterprise Connectivity (Protected) */}
       <Route
-        path="/solutions/:solutionId/login"
-        element={
-          <RequirePlatformAuth>
-            <SolutionLogin />
-          </RequirePlatformAuth>
-        }
-      />
-
-      {/* Screen 4: Data Ingestion / Enterprise Connectivity (Protected) */}
-      <Route
-        path="/solutions/:solutionId/data"
+        path="/solutions/:solutionId/data-ingestion"
         element={
           <RequirePlatformAuth>
             <DataIngestion />
@@ -69,9 +60,9 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Executive Command Center (Screen 1 - P0) */}
+      {/* Demand Intelligence: Executive Command Center */}
       <Route
-        path="/solutions/demand-intelligence/overview"
+        path="/solutions/demand-intelligence/executive"
         element={
           <RequirePlatformAuth>
             <ExecutiveCommandCenterPage />
@@ -79,26 +70,17 @@ export const AppContent: React.FC = () => {
         }
       />
       <Route
-        path="/solutions/:solutionId/overview"
+        path="/solutions/:solutionId/executive"
         element={
           <RequirePlatformAuth>
             <ExecutiveCommandCenterPage />
           </RequirePlatformAuth>
         }
       />
-      {/* Legacy Executive Cockpit route for backward compatibility */}
-      <Route
-        path="/solutions/demand-intelligence/cockpit"
-        element={
-          <RequirePlatformAuth>
-            <ExecutiveCockpit />
-          </RequirePlatformAuth>
-        }
-      />
 
-      {/* Demand Intelligence: Demand Sensing / Signals (Screen 2) */}
+      {/* Demand Intelligence: Demand Sensing */}
       <Route
-        path="/solutions/demand-intelligence/sensing"
+        path="/solutions/demand-intelligence/demand-sensing"
         element={
           <RequirePlatformAuth>
             <DemandSensingPage />
@@ -106,23 +88,7 @@ export const AppContent: React.FC = () => {
         }
       />
       <Route
-        path="/solutions/demand-intelligence/signals"
-        element={
-          <RequirePlatformAuth>
-            <DemandSensingPage />
-          </RequirePlatformAuth>
-        }
-      />
-      <Route
-        path="/solutions/:solutionId/signals"
-        element={
-          <RequirePlatformAuth>
-            <DemandSensingPage />
-          </RequirePlatformAuth>
-        }
-      />
-      <Route
-        path="/solutions/:solutionId/sensing"
+        path="/solutions/:solutionId/demand-sensing"
         element={
           <RequirePlatformAuth>
             <DemandSensingPage />
@@ -130,7 +96,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Demand Forecast (Screen 3) */}
+      {/* Demand Intelligence: Forecast Intelligence */}
       <Route
         path="/solutions/demand-intelligence/forecast"
         element={
@@ -148,7 +114,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Driver & Causal Intelligence (Screen 4) */}
+      {/* Demand Intelligence: Driver & Causal Intelligence */}
       <Route
         path="/solutions/demand-intelligence/drivers"
         element={
@@ -166,7 +132,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Inventory Intelligence (Screen 5) */}
+      {/* Demand Intelligence: Inventory Intelligence */}
       <Route
         path="/solutions/demand-intelligence/inventory"
         element={
@@ -184,7 +150,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Scenario & Decision Twin (Screen 6) */}
+      {/* Demand Intelligence: Scenario & Decision Twin */}
       <Route
         path="/solutions/demand-intelligence/scenarios"
         element={
@@ -202,9 +168,9 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Supply & Capacity Optimization / Sourcing (Screen 07) */}
+      {/* Demand Intelligence: Supply & Capacity Optimization */}
       <Route
-        path="/solutions/demand-intelligence/sourcing"
+        path="/solutions/demand-intelligence/supply-capacity"
         element={
           <RequirePlatformAuth>
             <SupplyCapacityOptimizationPage />
@@ -212,7 +178,7 @@ export const AppContent: React.FC = () => {
         }
       />
       <Route
-        path="/solutions/:solutionId/sourcing"
+        path="/solutions/:solutionId/supply-capacity"
         element={
           <RequirePlatformAuth>
             <SupplyCapacityOptimizationPage />
@@ -222,23 +188,23 @@ export const AppContent: React.FC = () => {
 
       {/* Demand Intelligence: Risk & Exception Center */}
       <Route
-        path="/solutions/demand-intelligence/exceptions"
+        path="/solutions/demand-intelligence/risk-exceptions"
         element={
           <RequirePlatformAuth>
-            <ExecutiveCommandCenterPage />
+            <RiskExceptionCenterPage />
           </RequirePlatformAuth>
         }
       />
       <Route
-        path="/solutions/:solutionId/exceptions"
+        path="/solutions/:solutionId/risk-exceptions"
         element={
           <RequirePlatformAuth>
-            <ExecutiveCommandCenterPage />
+            <RiskExceptionCenterPage />
           </RequirePlatformAuth>
         }
       />
 
-      {/* Demand Intelligence: AI Decision Copilot (Screen 6) */}
+      {/* Demand Intelligence: AI Decision Copilot */}
       <Route
         path="/solutions/demand-intelligence/copilot"
         element={
@@ -258,18 +224,18 @@ export const AppContent: React.FC = () => {
 
       {/* Demand Intelligence: Agent Control Center */}
       <Route
-        path="/solutions/demand-intelligence/agents"
+        path="/solutions/demand-intelligence/agent-control"
         element={
           <RequirePlatformAuth>
-            <AIDecisionCopilotPage />
+            <AgentControlCenterPage />
           </RequirePlatformAuth>
         }
       />
       <Route
-        path="/solutions/:solutionId/agents"
+        path="/solutions/:solutionId/agent-control"
         element={
           <RequirePlatformAuth>
-            <AIDecisionCopilotPage />
+            <AgentControlCenterPage />
           </RequirePlatformAuth>
         }
       />
@@ -282,11 +248,13 @@ export const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AitekProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </AitekProvider>
+    <ThemeProvider>
+      <AitekProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </AitekProvider>
+    </ThemeProvider>
   );
 };
 

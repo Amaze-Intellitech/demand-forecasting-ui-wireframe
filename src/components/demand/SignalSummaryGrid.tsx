@@ -23,8 +23,8 @@ export const SignalSummaryGrid: React.FC = () => {
         };
       case 'volatility':
         return {
-          icon: <Activity className="w-4 h-4 text-teal-600" />,
-          bgClass: 'bg-teal-50 text-teal-700',
+          icon: <Activity className="w-4 h-4 text-primary" />,
+          bgClass: 'bg-info-bg text-deep',
         };
       case 'price':
         return {
@@ -33,8 +33,8 @@ export const SignalSummaryGrid: React.FC = () => {
         };
       case 'forecast':
         return {
-          icon: <Crosshair className="w-4 h-4 text-sky-600" />,
-          bgClass: 'bg-sky-50 text-sky-700',
+          icon: <Crosshair className="w-4 h-4 text-primary" />,
+          bgClass: 'bg-info-bg text-deep',
         };
     }
   };

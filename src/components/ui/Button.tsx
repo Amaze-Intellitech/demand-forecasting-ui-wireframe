@@ -4,24 +4,26 @@ import { cn } from '../../lib/utils';
 import { Loader2 } from 'lucide-react';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:pointer-events-none disabled:opacity-50 select-none',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:pointer-events-none disabled:opacity-50 select-none',
   {
     variants: {
       variant: {
         default:
-          'bg-sky-500 text-slate-950 hover:bg-sky-400 active:bg-sky-600 font-semibold shadow-sm shadow-sky-950/50',
+          'bg-primary text-white hover:bg-deep active:bg-deep font-semibold shadow-sm',
         primary:
-          'bg-sky-500 text-slate-950 hover:bg-sky-400 active:bg-sky-600 font-semibold shadow-sm shadow-sky-950/50',
+          'bg-primary text-white hover:bg-deep active:bg-deep font-semibold shadow-sm',
+        deep:
+          'bg-deep text-white hover:bg-[#1E293B] active:bg-[#1E293B] font-semibold shadow-sm',
         secondary:
-          'bg-slate-800 text-slate-100 hover:bg-slate-700 hover:text-white border border-slate-700/60',
+          'bg-muted text-deep hover:bg-border border border-border',
         outline:
-          'border border-slate-700 bg-transparent text-slate-200 hover:bg-slate-800/80 hover:text-white',
+          'border border-border bg-transparent text-deep hover:border-primary hover:text-primary',
         ghost:
-          'text-slate-300 hover:bg-slate-800 hover:text-white',
+          'text-primary hover:bg-muted',
         destructive:
-          'bg-red-600/90 text-white hover:bg-red-500 active:bg-red-700',
+          'bg-error-bg text-error-tx hover:bg-destructive hover:text-white',
         subtle:
-          'bg-sky-950/60 text-sky-300 border border-sky-800/50 hover:bg-sky-900/60 hover:text-sky-200',
+          'bg-info-bg text-info-tx border border-primary/20 hover:bg-primary/10',
       },
       size: {
         default: 'h-10 px-4 py-2',

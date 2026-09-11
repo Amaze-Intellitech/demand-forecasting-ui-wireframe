@@ -41,7 +41,7 @@ export const ForecastQuantilePanel: React.FC<ForecastQuantilePanelProps> = ({
                 onClick={() => onSelectQuantile?.(item.label)}
                 className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                   isP50
-                    ? 'bg-sky-50/90 text-[#0062d2] font-bold border border-sky-200/80 shadow-2xs'
+                    ? 'bg-info-bg text-[#0062d2] font-bold border border-border shadow-2xs'
                     : isSelected
                     ? 'bg-slate-100 text-slate-900 font-semibold'
                     : 'text-slate-600 hover:bg-slate-50'

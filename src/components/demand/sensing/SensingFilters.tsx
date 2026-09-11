@@ -32,7 +32,7 @@ export const SensingFilters: React.FC<SensingFiltersProps> = ({
         <select
           value={selectedPlant}
           onChange={(e) => onPlantChange(e.target.value)}
-          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
+          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
         >
           {options.plants.map((p) => (
             <option key={p} value={p}>
@@ -48,7 +48,7 @@ export const SensingFilters: React.FC<SensingFiltersProps> = ({
         <select
           value={selectedProduct}
           onChange={(e) => onProductChange(e.target.value)}
-          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
+          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
         >
           {options.products.map((p) => (
             <option key={p} value={p}>
@@ -64,7 +64,7 @@ export const SensingFilters: React.FC<SensingFiltersProps> = ({
         <select
           value={selectedRegion}
           onChange={(e) => onRegionChange(e.target.value)}
-          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
+          className="h-9 pl-3.5 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
         >
           {options.regions.map((r) => (
             <option key={r} value={r}>
@@ -83,7 +83,7 @@ export const SensingFilters: React.FC<SensingFiltersProps> = ({
         <select
           value={selectedHorizon}
           onChange={(e) => onHorizonChange(e.target.value)}
-          className="h-9 pl-8 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
+          className="h-9 pl-8 pr-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs appearance-none focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
         >
           {options.horizons.map((h) => (
             <option key={h} value={h}>

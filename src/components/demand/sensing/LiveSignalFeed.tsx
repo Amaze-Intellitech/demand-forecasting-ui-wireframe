@@ -51,7 +51,7 @@ export const LiveSignalFeed: React.FC<LiveSignalFeedProps> = ({
             Live Signal Feed
           </h3>
           {activeSourceFilter && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-[#0062d2] border border-sky-200">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-info-bg text-[#0062d2] border border-border">
               <span>Source: {activeSourceFilter}</span>
               <button
                 type="button"

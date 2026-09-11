@@ -28,7 +28,7 @@ export const ExecutiveInsights: React.FC<ExecutiveInsightsProps> = ({
       case 'chart':
         return {
           icon: BarChart3,
-          color: 'text-sky-600 bg-sky-50 border-sky-100',
+          color: 'text-primary bg-info-bg border-border',
         };
       case 'warning':
         return {
@@ -41,7 +41,7 @@ export const ExecutiveInsights: React.FC<ExecutiveInsightsProps> = ({
           color:
             severity === 'critical'
               ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
-              : 'text-teal-600 bg-teal-50 border-teal-100',
+              : 'text-primary bg-info-bg border-border',
         };
       case 'savings':
         return {
@@ -51,7 +51,7 @@ export const ExecutiveInsights: React.FC<ExecutiveInsightsProps> = ({
       default:
         return {
           icon: Lightbulb,
-          color: 'text-sky-600 bg-sky-50 border-sky-100',
+          color: 'text-primary bg-info-bg border-border',
         };
     }
   };

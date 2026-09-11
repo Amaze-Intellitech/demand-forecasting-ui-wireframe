@@ -322,7 +322,7 @@ export const InventoryPositionChart: React.FC<InventoryPositionChartProps> = ({
               <span className="text-emerald-300 font-sans font-medium">Target:</span>
               <span className="text-right">{activePoint.target}K</span>
 
-              <span className="text-sky-300 font-sans font-medium">Upper:</span>
+              <span className="text-primary font-sans font-medium">Upper:</span>
               <span className="text-right">{activePoint.upperLimit}K</span>
 
               <span className="text-slate-300 font-sans font-medium">Lower:</span>
