@@ -1,7 +1,26 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAitek } from '../context/AitekContext';
-import { ConnectionWizardModal } from '../components/aitek/ConnectionWizardModal';
+import {
+  MaterialMasterItem,
+  DataPeriodConfig,
+  ColumnMappingConfig,
+  CustomFieldItem,
+  DataSelectionSession
+} from '../types';
+import {
+  MOCK_MATERIALS,
+  MOCK_VARIABLES,
+  DEFAULT_SELECTED_VARIABLE_IDS,
+  computePeriodDates
+} from '../data/dataSelectionMock';
+import { MaterialSelectionStep } from '../components/aitek/dataSelection/MaterialSelectionStep';
+import { PeriodSelectionStep } from '../components/aitek/dataSelection/PeriodSelectionStep';
+import { VariablesSelectionStep } from '../components/aitek/dataSelection/VariablesSelectionStep';
+import { FieldMappingStep } from '../components/aitek/dataSelection/FieldMappingStep';
+import { ReviewAndSaveStep } from '../components/aitek/dataSelection/ReviewAndSaveStep';
+import { IngestionRunningStep } from '../components/aitek/dataSelection/IngestionRunningStep';
+import { WorkbenchLaunchStep } from '../components/aitek/dataSelection/WorkbenchLaunchStep';
 import {
   Eye,
   Database,
@@ -11,17 +30,14 @@ import {
   Settings,
   LogOut,
   ArrowRight,
-  CheckCircle2
+  ArrowLeft,
+  CheckCircle2,
+  BookmarkCheck
 } from 'lucide-react';
 import aitekLogo from '../assets/aitek_logo.png';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 
-interface SourceConnectorItem {
-  id: string;
-  name: string;
-  category: 'ERP' | 'Databases' | 'Cloud' | 'Files' | 'APIs';
-  logo: React.ReactNode;
-}
+const STORAGE_KEY = 'aitek_data_selection_session';
 
 export const DataIngestion: React.FC = () => {
   const { solutionId } = useParams<{ solutionId: string }>();
@@ -30,7 +46,6 @@ export const DataIngestion: React.FC = () => {
     solutions,
     selectedSolution,
     selectSolution,
-    connectors,
     updateConnectorStatus,
     logout
   } = useAitek();
@@ -38,7 +53,7 @@ export const DataIngestion: React.FC = () => {
   const activeSolution =
     solutions.find((s) => s.id === solutionId) || selectedSolution || solutions[0];
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (solutionId && solutionId !== selectedSolution?.id) {
       selectSolution(solutionId);
     }
@@ -47,220 +62,197 @@ export const DataIngestion: React.FC = () => {
   // Sidebar navigation state
   const [activeNav, setActiveNav] = useState<'overview' | 'ingestion' | 'connections' | 'mapping' | 'history' | 'settings'>('ingestion');
 
-  // Category filter
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'ERP' | 'Databases' | 'Cloud' | 'Files' | 'APIs'>('all');
-
-  // Stepper current state
+  // Stepper state: 1 (Material) -> 2 (Period) -> 3 (Variables) -> 4 (Mapping) -> 5 (Review) -> 6 (Ingestion) -> 7 (Workbench)
   const [currentStep, setCurrentStep] = useState<number>(1);
 
-  // Selected source card
-  const [selectedSourceId, setSelectedSourceId] = useState<string>('sap');
+  // Core Data Selection Wizard State
+  const [material, setMaterial] = useState<MaterialMasterItem>(MOCK_MATERIALS[0]);
+  const [period, setPeriod] = useState<DataPeriodConfig>(() => computePeriodDates('3'));
+  const [selectedVariableIds, setSelectedVariableIds] = useState<string[]>(DEFAULT_SELECTED_VARIABLE_IDS);
+  const [customFields, setCustomFields] = useState<CustomFieldItem[]>([]);
+  const [isConfigSaved, setIsConfigSaved] = useState<boolean>(false);
+  const [hasLoadedSavedConfig, setHasLoadedSavedConfig] = useState<boolean>(false);
 
-  // Connection Wizard Modal state
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  // Build initial or updated mappings based on selected variables and custom fields
+  const generateMappings = useCallback(
+    (varIds: string[], cFields: CustomFieldItem[], existingMappings: ColumnMappingConfig[] = []): ColumnMappingConfig[] => {
+      const existingMap = new Map(existingMappings.map((m) => [m.id, m]));
+      const result: ColumnMappingConfig[] = [];
 
-  // 12 Authentic Enterprise Source Connectors
-  const ALL_SOURCES: SourceConnectorItem[] = [
-    {
-      id: 'sap',
-      name: 'SAP',
-      category: 'ERP',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <div
-            className="bg-[#0070d2] text-white font-black text-sm px-3 py-1 rounded tracking-tight shadow-xs"
-            style={{ clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }}
-          >
-            SAP
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'oracle',
-      name: 'Oracle',
-      category: 'ERP',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <span className="text-[#f80000] font-black text-base tracking-widest font-sans">
-            ORACLE
-          </span>
-        </div>
-      ),
-    },
-    {
-      id: 'ms-dynamics',
-      name: 'Microsoft Dynamics',
-      category: 'ERP',
-      logo: (
-        <div className="h-10 flex items-center justify-center gap-0.5">
-          <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
-            <path d="M4 8l10-4v10l-10 4V8z" fill="#F25022" />
-            <path d="M16 4l12 5v10l-12-5V4z" fill="#7FBA00" />
-            <path d="M16 16l12 5v7l-12-5v-7z" fill="#00A4EF" />
-            <path d="M4 20l10 4v7l-10-4v-7z" fill="#FFB900" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'postgresql',
-      name: 'PostgreSQL',
-      category: 'Databases',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-9 h-9" viewBox="0 0 100 100" fill="none">
-            <path
-              d="M50 15c-18 0-32 14-32 32 0 10 5 19 12 25v12l10-5c3 1 7 2 10 2 18 0 32-14 32-32S68 15 50 15z"
-              stroke="#336791"
-              strokeWidth="5"
-              fill="#4a7da8"
-            />
-            <circle cx="42" cy="40" r="3.5" fill="white" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'mysql',
-      name: 'MySQL',
-      category: 'Databases',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-9 h-9 text-[#00758f]" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19.5 9.5c-.8-1.5-2.2-2.5-4-2.8 1.2-1 2.8-1.6 4.5-1.7-2.3-.5-4.8-.1-6.9 1.1-1.3.7-2.4 1.7-3.1 3-.7 1.2-1 2.6-1 4 0 2.2.8 4.3 2.3 5.8 1.5 1.5 3.6 2.3 5.7 2.3 2.5 0 4.9-1.1 6.5-3-1.6.8-3.4 1.1-5.2.8-1.7-.3-3.2-1.3-4.2-2.7-1-1.4-1.4-3.1-1.2-4.8.2-1.7 1.1-3.2 2.5-4.2.9-.6 1.9-1 3-1.1.8 1.1 1.3 2.3 1.1 3.5z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'sql-server',
-      name: 'SQL Server',
-      category: 'Databases',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-8 h-8 text-[#cc292b]" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 3.79 2 6v12c0 2.21 4.48 4 10 4s10-1.79 10-4V6c0-2.21-4.48-4-10-4zm0 2c4.42 0 8 1.34 8 3s-3.58 3-8 3-8-1.34-8-3 3.58-3 8-3zm0 6c4.42 0 8 1.34 8 3s-3.58 3-8 3-8-1.34-8-3 3.58-3 8-3zm0 6c4.42 0 8 1.34 8 3s-3.58 3-8 3-8-1.34-8-3 3.58-3 8-3z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'snowflake',
-      name: 'Snowflake',
-      category: 'Cloud',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2v4m0 12v4M2 12h4m12 0h4m-3.5-6.5l-2.8 2.8m-7.4 7.4l-2.8 2.8m0-13l2.8 2.8m7.4 7.4l2.8 2.8"
-              stroke="#29b5e8"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'databricks',
-      name: 'Databricks',
-      category: 'Cloud',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
-            <path d="M12 3L2 8l10 5 10-5-10-5z" fill="#FF3621" />
-            <path d="M2 11l10 5 10-5" stroke="#FF3621" strokeWidth="2" />
-            <path d="M2 15l10 5 10-5" stroke="#FF3621" strokeWidth="2" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'aws',
-      name: 'AWS',
-      category: 'Cloud',
-      logo: (
-        <div className="h-10 flex flex-col items-center justify-center">
-          <span className="leading-none text-base font-black lowercase text-[#232f3e] tracking-tight">aws</span>
-          <svg className="w-7 h-2 text-[#ff9900]" viewBox="0 0 40 10" fill="currentColor">
-            <path d="M2 3c10 6 26 6 36 0-3 3-10 6-18 6S5 6 2 3z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'azure',
-      name: 'Azure',
-      category: 'Cloud',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
-            <path d="M13.05 2.15L3.25 18.75h5.5l7.1-12.05z" fill="#0089D6" />
-            <path d="M13.6 7.6L9.6 14.5l3.2 5.5h8L13.6 7.6z" fill="#0072C6" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'google-cloud',
-      name: 'Google Cloud',
-      category: 'Cloud',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-9 h-9" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"
-              fill="#4285F4"
-            />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'upload-files',
-      name: 'Upload Files',
-      category: 'Files',
-      logo: (
-        <div className="h-10 flex items-center justify-center">
-          <svg className="w-8 h-8 text-[#0066cc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="8" y1="13" x2="16" y2="13" />
-            <line x1="8" y1="17" x2="12" y2="17" />
-          </svg>
-        </div>
-      ),
-    },
-  ];
+      // 1. Mandatory stock variable
+      const stockVar = MOCK_VARIABLES.find((v) => v.id === 'stock_level')!;
+      const existingStock = existingMap.get(stockVar.id);
+      result.push(
+        existingStock || {
+          id: stockVar.id,
+          columnName: stockVar.name,
+          role: 'Dependent Variable',
+          dataType: stockVar.dataType,
+          sourceSystem: stockVar.defaultSourceSystem,
+          sourceTable: stockVar.defaultTable,
+          sourceField: stockVar.defaultField,
+          status: 'valid',
+          unit: stockVar.unit,
+        }
+      );
 
-  // Filtered source list
-  const filteredSources = useMemo(() => {
-    if (selectedCategory === 'all') return ALL_SOURCES;
-    return ALL_SOURCES.filter((s) => s.category === selectedCategory);
-  }, [selectedCategory]);
+      // 2. Selected independent variables
+      varIds.forEach((id) => {
+        if (id === 'stock_level') return;
+        const v = MOCK_VARIABLES.find((item) => item.id === id);
+        if (!v) return;
 
-  // Stepper definition matching panel4.png
-  const STEPS = [
-    { num: 1, label: 'Select Source' },
-    { num: 2, label: 'Connect' },
-    { num: 3, label: 'Select Data' },
-    { num: 4, label: 'Map Fields' },
-    { num: 5, label: 'Validate' },
-    { num: 6, label: 'Sync' },
-  ];
+        const existing = existingMap.get(id);
+        result.push(
+          existing || {
+            id: v.id,
+            columnName: v.name,
+            role: 'Independent Variable',
+            dataType: v.dataType,
+            sourceSystem: v.defaultSourceSystem,
+            sourceTable: v.defaultTable,
+            sourceField: v.defaultField,
+            status: 'valid',
+            unit: v.unit,
+          }
+        );
+      });
 
-  // Map to matching connector in store for wizard
-  const currentConnector = useMemo(() => {
-    return (
-      connectors.find((c) => c.id.includes(selectedSourceId) || selectedSourceId.includes(c.id.split('-')[0])) ||
-      connectors[0]
+      // 3. Custom fields added by user
+      cFields.forEach((cf) => {
+        const existing = existingMap.get(cf.id);
+        result.push(
+          existing || {
+            id: cf.id,
+            columnName: cf.fieldName,
+            role: 'Custom Variable',
+            dataType: cf.dataType,
+            sourceSystem: cf.sourceSystem,
+            sourceTable: cf.tableOrEndpoint,
+            sourceField: cf.fieldOrColumn,
+            status: 'custom',
+          }
+        );
+      });
+
+      return result;
+    },
+    []
+  );
+
+  const [mappings, setMappings] = useState<ColumnMappingConfig[]>(() =>
+    generateMappings(DEFAULT_SELECTED_VARIABLE_IDS, [])
+  );
+
+  // Load saved configuration on mount if present in localStorage (PDF Screen 6: "Reloaded at next login")
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved: DataSelectionSession = JSON.parse(raw);
+        if (saved.material) setMaterial(saved.material);
+        if (saved.selectedVariableIds) setSelectedVariableIds(saved.selectedVariableIds);
+        if (saved.customFields) setCustomFields(saved.customFields);
+        if (saved.mappings) setMappings(saved.mappings);
+        setIsConfigSaved(true);
+        setHasLoadedSavedConfig(true);
+      }
+    } catch {
+      // ignore storage error
+    }
+  }, []);
+
+  // Sync mappings whenever variables or custom fields change
+  const handleToggleVariable = (id: string) => {
+    if (id === 'stock_level') return; // Mandatory
+    setSelectedVariableIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
+      setMappings((currentMappings) => generateMappings(next, customFields, currentMappings));
+      return next;
+    });
+  };
+
+  const handleSelectRecommended = () => {
+    setSelectedVariableIds(DEFAULT_SELECTED_VARIABLE_IDS);
+    setMappings((currentMappings) =>
+      generateMappings(DEFAULT_SELECTED_VARIABLE_IDS, customFields, currentMappings)
     );
-  }, [connectors, selectedSourceId]);
+  };
 
-  const handleNext = () => {
-    // Open guided connection flow modal for the selected connector
-    setIsWizardOpen(true);
+  const handleAddCustomField = (newField: CustomFieldItem) => {
+    const updatedCustom = [...customFields, newField];
+    setCustomFields(updatedCustom);
+    setMappings((currentMappings) =>
+      generateMappings(selectedVariableIds, updatedCustom, currentMappings)
+    );
+  };
+
+  const handleRemoveCustomField = (id: string) => {
+    const updatedCustom = customFields.filter((f) => f.id !== id);
+    setCustomFields(updatedCustom);
+    setMappings((currentMappings) =>
+      generateMappings(selectedVariableIds, updatedCustom, currentMappings)
+    );
+  };
+
+  const handleUpdateMapping = (id: string, updates: Partial<ColumnMappingConfig>) => {
+    setMappings((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, ...updates, status: 'valid' } : m))
+    );
+  };
+
+  const handleAutoMapAll = () => {
+    setMappings((prev) =>
+      prev.map((m) => {
+        const v = MOCK_VARIABLES.find((item) => item.id === m.id);
+        if (v) {
+          return {
+            ...m,
+            sourceSystem: v.defaultSourceSystem,
+            sourceTable: v.defaultTable,
+            sourceField: v.defaultField,
+            status: 'valid',
+          };
+        }
+        return m;
+      })
+    );
+  };
+
+  const handleToggleSaveConfig = (saved: boolean) => {
+    setIsConfigSaved(saved);
+    if (saved) {
+      const sessionData: DataSelectionSession = {
+        material,
+        period,
+        selectedVariableIds,
+        customFields,
+        mappings,
+        isConfigSaved: true,
+        savedAt: new Date().toISOString(),
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
+      } catch {
+        // ignore storage error
+      }
+    } else {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  const handleStartIngestion = () => {
+    setCurrentStep(6);
+  };
+
+  const handleIngestionComplete = () => {
+    // Notify AitekContext that data is connected
+    updateConnectorStatus('sap-erp', 'connected', 1428500);
+    setCurrentStep(7);
   };
 
   const handleSignOut = () => {
@@ -268,19 +260,23 @@ export const DataIngestion: React.FC = () => {
     navigate('/login');
   };
 
-  const handleCompleteConnection = (connectorId: string, count: number) => {
-    updateConnectorStatus(connectorId, 'connected', count);
-    setCurrentStep(6);
-  };
+  // Stepper definition matching im_saas_user_flow.pdf Screens 3 to 7
+  const STEPS = [
+    { num: 1, label: '1. Material', shortDesc: 'Customer Master Data' },
+    { num: 2, label: '2. Data Period', shortDesc: 'From & To Window' },
+    { num: 3, label: '3. Variables', shortDesc: 'Stock & 50 Columns' },
+    { num: 4, label: '4. Field Mapping', shortDesc: 'Source System & Table' },
+    { num: 5, label: '5. Review & Save', shortDesc: 'Verify & Config Save' },
+    { num: 6, label: '6. Ingestion', shortDesc: 'Time-Scoped Pipeline' },
+    { num: 7, label: '7. Workbench', shortDesc: 'Analytics Components' },
+  ];
 
   return (
     <div className="min-h-screen w-full flex flex-col justify-between bg-surface text-deep font-sans select-none overflow-x-hidden">
-      
       {/* Top Flex Container: Sidebar + Main Content */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0">
-        
         {/* Left Navigation Sidebar */}
-        <aside className="w-full md:w-64 lg:w-68 bg-bg border-r border-border flex flex-col justify-between p-5 z-20 flex-shrink-0">
+        <aside className="w-full md:w-64 lg:w-68 bg-bg border-r border-border flex flex-col justify-between p-5 z-20 shrink-0">
           <div>
             {/* Top Logo */}
             <div className="pt-2 pb-6 px-1 flex items-center justify-start">
@@ -297,6 +293,7 @@ export const DataIngestion: React.FC = () => {
             <nav className="space-y-1.5 pt-2">
               {/* Overview */}
               <button
+                type="button"
                 onClick={() => {
                   setActiveNav('overview');
                   navigate(`/solutions/${solutionId || 'demand-intelligence'}/executive`);
@@ -313,10 +310,11 @@ export const DataIngestion: React.FC = () => {
 
               {/* Data Ingestion (Active) */}
               <button
+                type="button"
                 onClick={() => setActiveNav('ingestion')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                   activeNav === 'ingestion'
-                    ? 'bg-primary text-white shadow-sm'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'text-body hover:text-deep hover:bg-muted'
                 }`}
               >
@@ -326,6 +324,7 @@ export const DataIngestion: React.FC = () => {
 
               {/* Connections */}
               <button
+                type="button"
                 onClick={() => setActiveNav('connections')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'connections'
@@ -339,7 +338,11 @@ export const DataIngestion: React.FC = () => {
 
               {/* Data Mapping */}
               <button
-                onClick={() => setActiveNav('mapping')}
+                type="button"
+                onClick={() => {
+                  setActiveNav('mapping');
+                  setCurrentStep(4);
+                }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'mapping'
                     ? 'bg-primary text-white font-semibold'
@@ -352,6 +355,7 @@ export const DataIngestion: React.FC = () => {
 
               {/* Sync History */}
               <button
+                type="button"
                 onClick={() => setActiveNav('history')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'history'
@@ -365,6 +369,7 @@ export const DataIngestion: React.FC = () => {
 
               {/* Settings */}
               <button
+                type="button"
                 onClick={() => setActiveNav('settings')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'settings'
@@ -381,6 +386,7 @@ export const DataIngestion: React.FC = () => {
           {/* Bottom Sign Out */}
           <div className="pt-6 border-t border-border flex items-center justify-between">
             <button
+              type="button"
               onClick={handleSignOut}
               className="flex items-center gap-2.5 text-xs text-subtle hover:text-deep transition-colors p-1"
             >
@@ -393,36 +399,45 @@ export const DataIngestion: React.FC = () => {
 
         {/* Right Main Content Area */}
         <main className="flex-1 min-w-0 p-6 sm:p-8 lg:p-10 flex flex-col justify-between">
-          
           <div className="space-y-6 max-w-6xl mx-auto w-full">
-            
-            {/* Top Header: Title & Subtitle + Top-Right Current Solution Name Badge */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+            {/* Top Header: Title & Subtitle + Solution Badge */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-                  Connect Your Data
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-primary font-bold">
+                    AITEK Data Selection Pipeline
+                  </span>
+                  {hasLoadedSavedConfig && (
+                    <span className="inline-flex items-center gap-1 text-[10px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full border border-primary/20">
+                      <BookmarkCheck className="w-3 h-3" />
+                      Saved Session Loaded
+                    </span>
+                  )}
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-deep mt-1">
+                  Data Selection &amp; Ingestion Wizard
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                  Bring together the data that powers your AITEK solution.
+                <p className="text-xs sm:text-sm text-subtle mt-0.5">
+                  Select master material, define historical period, specify dependent &amp; independent variables, map sources, and run time-scoped ingestion.
                 </p>
               </div>
 
-              {/* Requirement: Top Right Current Solution Name Displayed */}
+              {/* Solution Name Badge */}
               <div className="self-start sm:self-auto">
-                <div className="inline-flex items-center gap-2 bg-[#e9f2ff] border border-blue-200/90 text-[#0052b3] font-semibold px-4 py-1.5 rounded-full text-xs shadow-xs">
-                  <span className="w-2 h-2 rounded-full bg-[#0062d2] animate-pulse" />
+                <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary font-semibold px-4 py-1.5 rounded-full text-xs shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   <span>{activeSolution.name}</span>
                 </div>
               </div>
             </div>
 
-            {/* Stepper Progress Indicator (6 Steps matching reference) */}
-            <div className="py-3 px-2 overflow-x-auto">
-              <div className="flex items-center justify-between min-w-[560px] relative">
-                {/* Connecting Track Line */}
-                <div className="absolute top-4 left-6 right-6 h-[2px] bg-slate-200 -z-0" />
+            {/* 7-Step Stepper Progress Indicator matching im_saas_user_flow.pdf */}
+            <div className="py-2.5 px-1 overflow-x-auto">
+              <div className="flex items-center justify-between min-w-[700px] relative">
+                {/* Background Connecting Track Line */}
+                <div className="absolute top-4 left-6 right-6 h-[2px] bg-border -z-0" />
                 <div
-                  className="absolute top-4 left-6 h-[2px] bg-[#0062d2] -z-0 transition-all duration-300"
+                  className="absolute top-4 left-6 h-[2px] bg-primary -z-0 transition-all duration-300"
                   style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
                 />
 
@@ -431,117 +446,172 @@ export const DataIngestion: React.FC = () => {
                   const isDone = step.num < currentStep;
 
                   return (
-                    <div
+                    <button
                       key={step.num}
-                      onClick={() => setCurrentStep(step.num)}
-                      className="flex flex-col items-center gap-1.5 z-10 cursor-pointer group"
+                      type="button"
+                      onClick={() => {
+                        // Allow jumping back to earlier steps or completed steps
+                        if (step.num <= currentStep || isDone) {
+                          setCurrentStep(step.num);
+                        }
+                      }}
+                      className="flex flex-col items-center gap-1.5 z-10 group text-center cursor-pointer disabled:cursor-not-allowed"
                     >
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                           isActive
-                            ? 'bg-[#0062d2] text-white shadow-md shadow-blue-500/30 ring-4 ring-blue-100'
+                            ? 'bg-primary text-white shadow-md ring-4 ring-primary/20'
                             : isDone
                             ? 'bg-emerald-600 text-white'
-                            : 'bg-white border-2 border-slate-300 text-slate-500 group-hover:border-slate-400'
+                            : 'bg-white dark:bg-slate-900 border-2 border-border text-subtle group-hover:border-primary/40'
                         }`}
                       >
                         {isDone ? <CheckCircle2 className="w-4 h-4" /> : step.num}
                       </div>
-                      <span
-                        className={`text-[11px] whitespace-nowrap transition-colors ${
-                          isActive
-                            ? 'font-bold text-[#0062d2]'
-                            : isDone
-                            ? 'font-medium text-slate-700'
-                            : 'font-normal text-slate-500'
-                        }`}
-                      >
-                        {step.label}
-                      </span>
-                    </div>
+                      <div className="flex flex-col items-center">
+                        <span
+                          className={`text-[11px] whitespace-nowrap transition-colors ${
+                            isActive
+                              ? 'font-bold text-primary'
+                              : isDone
+                              ? 'font-medium text-deep'
+                              : 'font-normal text-subtle'
+                          }`}
+                        >
+                          {step.label}
+                        </span>
+                      </div>
+                    </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Category Filter Pills Toolbar */}
-            <div className="flex items-center gap-2 pt-2 overflow-x-auto pb-1">
-              {(['all', 'ERP', 'Databases', 'Cloud', 'Files', 'APIs'] as const).map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-[#1053b8] text-white shadow-sm'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-                  }`}
-                >
-                  {cat === 'all' ? 'All Sources' : cat}
-                </button>
-              ))}
+            {/* Dynamic Step Body View */}
+            <div className="pt-2">
+              {/* STEP 1: MATERIAL SELECTION (Screen 3) */}
+              {currentStep === 1 && (
+                <MaterialSelectionStep
+                  selectedMaterial={material}
+                  onSelectMaterial={setMaterial}
+                />
+              )}
+
+              {/* STEP 2: DATA PERIOD SELECTION (Screen 4) */}
+              {currentStep === 2 && (
+                <PeriodSelectionStep
+                  period={period}
+                  onPeriodChange={setPeriod}
+                  material={material}
+                />
+              )}
+
+              {/* STEP 3: VARIABLES SELECTION (Screen 5) */}
+              {currentStep === 3 && (
+                <VariablesSelectionStep
+                  selectedVariableIds={selectedVariableIds}
+                  onToggleVariable={handleToggleVariable}
+                  onSelectRecommended={handleSelectRecommended}
+                  customFields={customFields}
+                  onAddCustomField={handleAddCustomField}
+                  onRemoveCustomField={handleRemoveCustomField}
+                />
+              )}
+
+              {/* STEP 4: FIELD MAPPING (Screen 6) */}
+              {currentStep === 4 && (
+                <FieldMappingStep
+                  mappings={mappings}
+                  onUpdateMapping={handleUpdateMapping}
+                  onAutoMapAll={handleAutoMapAll}
+                />
+              )}
+
+              {/* STEP 5: REVIEW & SAVE (Screen 6 Review) */}
+              {currentStep === 5 && (
+                <ReviewAndSaveStep
+                  material={material}
+                  period={period}
+                  mappings={mappings}
+                  isConfigSaved={isConfigSaved}
+                  onToggleSaveConfig={handleToggleSaveConfig}
+                  onGoBack={() => setCurrentStep(3)}
+                  onStartIngestion={handleStartIngestion}
+                />
+              )}
+
+              {/* STEP 6: INGESTION PIPELINE (Section D) */}
+              {currentStep === 6 && (
+                <IngestionRunningStep
+                  material={material}
+                  period={period}
+                  mappings={mappings}
+                  onComplete={handleIngestionComplete}
+                />
+              )}
+
+              {/* STEP 7: WORKBENCH LAUNCHPAD (Section E) */}
+              {currentStep === 7 && (
+                <WorkbenchLaunchStep
+                  material={material}
+                  period={period}
+                  mappings={mappings}
+                  onRestartPeriod={() => setCurrentStep(2)}
+                  solutionId={solutionId || 'demand-intelligence'}
+                />
+              )}
             </div>
 
-            {/* 12 Connector Cards Grid (Matching reference 2 rows of 6) */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4 pt-2">
-              {filteredSources.map((source) => {
-                const isSelected = selectedSourceId === source.id;
-
-                return (
-                  <div
-                    key={source.id}
-                    onClick={() => setSelectedSourceId(source.id)}
-                    className={`rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 min-h-[120px] bg-white border ${
-                      isSelected
-                        ? 'border-transparent ring-2 ring-[#0062d2] shadow-md shadow-blue-500/10 bg-blue-50/15'
-                        : 'border-slate-200/90 shadow-xs hover:border-blue-300 hover:shadow-sm'
-                    }`}
+            {/* Bottom Stepper Controls (Visible on steps 1 to 4) */}
+            {currentStep < 5 && (
+              <div className="flex items-center justify-between pt-6 border-t border-border">
+                {currentStep > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep((prev) => prev - 1)}
+                    className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 border border-border hover:bg-muted text-body hover:text-deep text-xs font-semibold px-5 py-2.5 rounded-lg shadow-xs transition-all"
                   >
-                    {/* Brand Vector Logo */}
-                    <div className="mb-2 transition-transform duration-200 hover:scale-105">
-                      {source.logo}
-                    </div>
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
 
-                    {/* Source Name */}
-                    <span className="text-xs font-semibold text-slate-800 tracking-tight mt-1">
-                      {source.name}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Bottom Right Next Action Button */}
-            <div className="flex items-center justify-end pt-4">
-              <button
-                type="button"
-                onClick={handleNext}
-                className="inline-flex items-center gap-2 bg-[#0062d2] hover:bg-[#0051b3] active:bg-[#004294] text-white font-semibold text-sm px-7 py-2.5 rounded-lg shadow-sm transition-all"
-              >
-                <span>Next</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep((prev) => prev + 1)}
+                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 active:bg-primary/95 text-white font-bold text-xs px-7 py-2.5 rounded-lg shadow-xs transition-all"
+                >
+                  <span>
+                    {currentStep === 1 && 'Next: Select Data Period'}
+                    {currentStep === 2 && 'Next: Select Variables'}
+                    {currentStep === 3 && 'Next: Map Source Fields'}
+                    {currentStep === 4 && 'Next: Review & Save Configuration'}
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Spacer */}
           <div className="h-6" />
-
         </main>
       </div>
 
       {/* Bottom Docked Presentation Strip: 04 DATA INGESTION */}
       <div className="relative z-30 w-full bg-deep border-t border-border px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-white">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded bg-[#0062d2] flex items-center justify-center text-white font-bold text-xs tracking-wider">
+          <div className="w-7 h-7 rounded bg-primary flex items-center justify-center text-white font-bold text-xs tracking-wider">
             04
           </div>
           <div>
             <span className="font-bold text-xs text-white tracking-wider mr-2 uppercase">
-              DATA INGESTION
+              DATA SELECTION &amp; INGESTION
             </span>
             <span className="text-xs text-white/60 hidden sm:inline">
-              Connect, configure and activate your enterprise data
+              Selected Material: {material.description.split('(')[0]} ({material.code}) &bull; {mappings.length} Fields
             </span>
           </div>
         </div>
@@ -551,17 +621,6 @@ export const DataIngestion: React.FC = () => {
           <div className="w-16 h-[1px] bg-white/20 hidden md:block" />
         </div>
       </div>
-
-      {/* Guided Multi-Step Connection Flow Wizard Modal */}
-      {isWizardOpen && (
-        <ConnectionWizardModal
-          connector={currentConnector}
-          isOpen={isWizardOpen}
-          onClose={() => setIsWizardOpen(false)}
-          onComplete={handleCompleteConnection}
-        />
-      )}
-
     </div>
   );
 };

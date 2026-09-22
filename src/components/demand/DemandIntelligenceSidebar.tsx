@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Sparkles,
   Cpu,
+  Database,
 } from 'lucide-react';
 import aitekLogo from '../../assets/aitek_logo.png';
 
@@ -38,6 +39,7 @@ export const DemandIntelligenceSidebar: React.FC<DemandIntelligenceSidebarProps>
       'risk-exceptions': '/solutions/demand-intelligence/risk-exceptions',
       copilot: '/solutions/demand-intelligence/copilot',
       'agent-control': '/solutions/demand-intelligence/agent-control',
+      'data-ingestion': '/solutions/demand-intelligence/data-ingestion',
     };
     if (routeMap[id]) {
       navigate(routeMap[id]);
@@ -58,6 +60,7 @@ export const DemandIntelligenceSidebar: React.FC<DemandIntelligenceSidebarProps>
 
   const operationsItems = [
     { id: 'agent-control', label: 'Agent Control Center', icon: Cpu },
+    { id: 'data-ingestion', label: 'Data Selection & Pipeline', icon: Database },
   ];
 
   return (
