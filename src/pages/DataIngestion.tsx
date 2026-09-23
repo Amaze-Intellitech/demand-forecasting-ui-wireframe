@@ -17,7 +17,6 @@ import {
 import { MaterialSelectionStep } from '../components/aitek/dataSelection/MaterialSelectionStep';
 import { PeriodSelectionStep } from '../components/aitek/dataSelection/PeriodSelectionStep';
 import { VariablesSelectionStep } from '../components/aitek/dataSelection/VariablesSelectionStep';
-import { FieldMappingStep } from '../components/aitek/dataSelection/FieldMappingStep';
 import { ReviewAndSaveStep } from '../components/aitek/dataSelection/ReviewAndSaveStep';
 import { IngestionRunningStep } from '../components/aitek/dataSelection/IngestionRunningStep';
 import { WorkbenchLaunchStep } from '../components/aitek/dataSelection/WorkbenchLaunchStep';
@@ -62,7 +61,7 @@ export const DataIngestion: React.FC = () => {
   // Sidebar navigation state
   const [activeNav, setActiveNav] = useState<'overview' | 'ingestion' | 'connections' | 'mapping' | 'history' | 'settings'>('ingestion');
 
-  // Stepper state: 1 (Material) -> 2 (Period) -> 3 (Variables) -> 4 (Mapping) -> 5 (Review) -> 6 (Ingestion) -> 7 (Workbench)
+  // Stepper state: 1 (Material) -> 2 (Period) -> 3 (Variables & Mapping) -> 4 (Review) -> 5 (Ingestion) -> 6 (Workbench)
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   // Core Data Selection Wizard State
@@ -144,7 +143,7 @@ export const DataIngestion: React.FC = () => {
     generateMappings(DEFAULT_SELECTED_VARIABLE_IDS, [])
   );
 
-  // Load saved configuration on mount if present in localStorage (PDF Screen 6: "Reloaded at next login")
+  // Load saved configuration on mount if present in localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -162,13 +161,46 @@ export const DataIngestion: React.FC = () => {
     }
   }, []);
 
-  // Sync mappings whenever variables or custom fields change
+  // Toggle variable removal / addition
   const handleToggleVariable = (id: string) => {
     if (id === 'stock_level') return; // Mandatory
     setSelectedVariableIds((prev) => {
       const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
       setMappings((currentMappings) => generateMappings(next, customFields, currentMappings));
       return next;
+    });
+  };
+
+  // Add variable with custom field mapping from dialog
+  const handleAddMappedVariable = (
+    variableId: string,
+    mappingUpdates: Partial<ColumnMappingConfig>
+  ) => {
+    setSelectedVariableIds((prev) => {
+      const next = prev.includes(variableId) ? prev : [...prev, variableId];
+      return next;
+    });
+
+    setMappings((prev) => {
+      const existingIdx = prev.findIndex((m) => m.id === variableId);
+      if (existingIdx >= 0) {
+        return prev.map((m) =>
+          m.id === variableId ? { ...m, ...mappingUpdates, status: 'valid' } : m
+        );
+      }
+      const v = MOCK_VARIABLES.find((item) => item.id === variableId);
+      const newMapping: ColumnMappingConfig = {
+        id: variableId,
+        columnName: v ? v.name : variableId,
+        role: v?.isDependent ? 'Dependent Variable' : 'Independent Variable',
+        dataType: mappingUpdates.dataType || v?.dataType || 'VARCHAR(64)',
+        sourceSystem: mappingUpdates.sourceSystem || v?.defaultSourceSystem || 'SAP S/4HANA',
+        sourceTable: mappingUpdates.sourceTable || v?.defaultTable || 'VBAP',
+        sourceField: mappingUpdates.sourceField || v?.defaultField || 'NETPR',
+        status: 'valid',
+        unit: v?.unit,
+      };
+      return [...prev, newMapping];
     });
   };
 
@@ -201,24 +233,6 @@ export const DataIngestion: React.FC = () => {
     );
   };
 
-  const handleAutoMapAll = () => {
-    setMappings((prev) =>
-      prev.map((m) => {
-        const v = MOCK_VARIABLES.find((item) => item.id === m.id);
-        if (v) {
-          return {
-            ...m,
-            sourceSystem: v.defaultSourceSystem,
-            sourceTable: v.defaultTable,
-            sourceField: v.defaultField,
-            status: 'valid',
-          };
-        }
-        return m;
-      })
-    );
-  };
-
   const handleToggleSaveConfig = (saved: boolean) => {
     setIsConfigSaved(saved);
     if (saved) {
@@ -246,13 +260,13 @@ export const DataIngestion: React.FC = () => {
   };
 
   const handleStartIngestion = () => {
-    setCurrentStep(6);
+    setCurrentStep(5);
   };
 
   const handleIngestionComplete = () => {
     // Notify AitekContext that data is connected
     updateConnectorStatus('sap-erp', 'connected', 1428500);
-    setCurrentStep(7);
+    setCurrentStep(6);
   };
 
   const handleSignOut = () => {
@@ -260,15 +274,14 @@ export const DataIngestion: React.FC = () => {
     navigate('/login');
   };
 
-  // Stepper definition matching im_saas_user_flow.pdf Screens 3 to 7
+  // Streamlined 6-step definition (Field Mapping screen eliminated & unified into Step 3)
   const STEPS = [
     { num: 1, label: '1. Material', shortDesc: 'Customer Master Data' },
     { num: 2, label: '2. Data Period', shortDesc: 'From & To Window' },
-    { num: 3, label: '3. Variables', shortDesc: 'Stock & 50 Columns' },
-    { num: 4, label: '4. Field Mapping', shortDesc: 'Source System & Table' },
-    { num: 5, label: '5. Review & Save', shortDesc: 'Verify & Config Save' },
-    { num: 6, label: '6. Ingestion', shortDesc: 'Time-Scoped Pipeline' },
-    { num: 7, label: '7. Workbench', shortDesc: 'Analytics Components' },
+    { num: 3, label: '3. Variables & Mapping', shortDesc: 'Drag & Drop + Mapping Dialog' },
+    { num: 4, label: '4. Review & Save', shortDesc: 'Verify & Config Save' },
+    { num: 5, label: '5. Ingestion', shortDesc: 'Time-Scoped Pipeline' },
+    { num: 6, label: '6. Workbench', shortDesc: 'Analytics Components' },
   ];
 
   return (
@@ -336,12 +349,12 @@ export const DataIngestion: React.FC = () => {
                 <span>Connections</span>
               </button>
 
-              {/* Data Mapping */}
+              {/* Data Mapping (Directly jumps to Step 3 Variables & Mapping) */}
               <button
                 type="button"
                 onClick={() => {
                   setActiveNav('mapping');
-                  setCurrentStep(4);
+                  setCurrentStep(3);
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeNav === 'mapping'
@@ -350,7 +363,7 @@ export const DataIngestion: React.FC = () => {
                 }`}
               >
                 <TableProperties className="w-4 h-4" />
-                <span>Data Mapping</span>
+                <span>Variables &amp; Mapping</span>
               </button>
 
               {/* Sync History */}
@@ -400,12 +413,12 @@ export const DataIngestion: React.FC = () => {
         {/* Right Main Content Area */}
         <main className="flex-1 min-w-0 p-6 sm:p-8 lg:p-10 flex flex-col justify-between">
           <div className="space-y-6 max-w-6xl mx-auto w-full">
-            {/* Top Header: Title & Subtitle + Solution Badge */}
+            {/* Top Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-primary font-bold">
-                    AITEK Data Selection Pipeline
+                    AITEK Streamlined Pipeline
                   </span>
                   {hasLoadedSavedConfig && (
                     <span className="inline-flex items-center gap-1 text-[10px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full border border-primary/20">
@@ -418,7 +431,7 @@ export const DataIngestion: React.FC = () => {
                   Data Selection &amp; Ingestion Wizard
                 </h1>
                 <p className="text-xs sm:text-sm text-subtle mt-0.5">
-                  Select master material, define historical period, specify dependent &amp; independent variables, map sources, and run time-scoped ingestion.
+                  Select master material, define historical period, drag &amp; drop variables with instant field mapping, and run time-scoped ingestion.
                 </p>
               </div>
 
@@ -431,9 +444,9 @@ export const DataIngestion: React.FC = () => {
               </div>
             </div>
 
-            {/* 7-Step Stepper Progress Indicator matching im_saas_user_flow.pdf */}
+            {/* 6-Step Stepper Progress Indicator */}
             <div className="py-2.5 px-1 overflow-x-auto">
-              <div className="flex items-center justify-between min-w-[700px] relative">
+              <div className="flex items-center justify-between min-w-[640px] relative">
                 {/* Background Connecting Track Line */}
                 <div className="absolute top-4 left-6 right-6 h-[2px] bg-border -z-0" />
                 <div
@@ -450,7 +463,6 @@ export const DataIngestion: React.FC = () => {
                       key={step.num}
                       type="button"
                       onClick={() => {
-                        // Allow jumping back to earlier steps or completed steps
                         if (step.num <= currentStep || isDone) {
                           setCurrentStep(step.num);
                         }
@@ -506,7 +518,7 @@ export const DataIngestion: React.FC = () => {
                 />
               )}
 
-              {/* STEP 3: VARIABLES SELECTION (Screen 5) */}
+              {/* STEP 3: VARIABLES SELECTION + INLINE FIELD MAPPING (Screens 5 & 6 Unified) */}
               {currentStep === 3 && (
                 <VariablesSelectionStep
                   selectedVariableIds={selectedVariableIds}
@@ -515,20 +527,14 @@ export const DataIngestion: React.FC = () => {
                   customFields={customFields}
                   onAddCustomField={handleAddCustomField}
                   onRemoveCustomField={handleRemoveCustomField}
-                />
-              )}
-
-              {/* STEP 4: FIELD MAPPING (Screen 6) */}
-              {currentStep === 4 && (
-                <FieldMappingStep
                   mappings={mappings}
                   onUpdateMapping={handleUpdateMapping}
-                  onAutoMapAll={handleAutoMapAll}
+                  onAddMappedVariable={handleAddMappedVariable}
                 />
               )}
 
-              {/* STEP 5: REVIEW & SAVE (Screen 6 Review) */}
-              {currentStep === 5 && (
+              {/* STEP 4: REVIEW & SAVE (Screen 6 Review) */}
+              {currentStep === 4 && (
                 <ReviewAndSaveStep
                   material={material}
                   period={period}
@@ -540,8 +546,8 @@ export const DataIngestion: React.FC = () => {
                 />
               )}
 
-              {/* STEP 6: INGESTION PIPELINE (Section D) */}
-              {currentStep === 6 && (
+              {/* STEP 5: INGESTION PIPELINE (Section D) */}
+              {currentStep === 5 && (
                 <IngestionRunningStep
                   material={material}
                   period={period}
@@ -550,8 +556,8 @@ export const DataIngestion: React.FC = () => {
                 />
               )}
 
-              {/* STEP 7: WORKBENCH LAUNCHPAD (Section E) */}
-              {currentStep === 7 && (
+              {/* STEP 6: WORKBENCH LAUNCHPAD (Section E) */}
+              {currentStep === 6 && (
                 <WorkbenchLaunchStep
                   material={material}
                   period={period}
@@ -562,8 +568,8 @@ export const DataIngestion: React.FC = () => {
               )}
             </div>
 
-            {/* Bottom Stepper Controls (Visible on steps 1 to 4) */}
-            {currentStep < 5 && (
+            {/* Bottom Stepper Controls (Visible on steps 1, 2, 3) */}
+            {currentStep < 4 && (
               <div className="flex items-center justify-between pt-6 border-t border-border">
                 {currentStep > 1 ? (
                   <button
@@ -585,9 +591,8 @@ export const DataIngestion: React.FC = () => {
                 >
                   <span>
                     {currentStep === 1 && 'Next: Select Data Period'}
-                    {currentStep === 2 && 'Next: Select Variables'}
-                    {currentStep === 3 && 'Next: Map Source Fields'}
-                    {currentStep === 4 && 'Next: Review & Save Configuration'}
+                    {currentStep === 2 && 'Next: Select Variables & Mappings'}
+                    {currentStep === 3 && 'Next: Review Pipeline & Save Configuration'}
                   </span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
@@ -611,7 +616,7 @@ export const DataIngestion: React.FC = () => {
               DATA SELECTION &amp; INGESTION
             </span>
             <span className="text-xs text-white/60 hidden sm:inline">
-              Selected Material: {material.description.split('(')[0]} ({material.code}) &bull; {mappings.length} Fields
+              Selected Material: {material.description.split('(')[0]} ({material.code}) &bull; {mappings.length} Fields Mapped
             </span>
           </div>
         </div>
