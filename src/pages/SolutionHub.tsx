@@ -5,8 +5,6 @@ import { Solution } from '../types';
 import {
   Search,
   Layers,
-  Globe,
-  Users,
   User,
   LogOut,
   Bell,
@@ -14,7 +12,8 @@ import {
   ArrowRight,
   Edit3,
   X,
-  CheckCircle2
+  CheckCircle2,
+  Lock,
 } from 'lucide-react';
 import aitekLogo from '../assets/aitek_logo.png';
 import plantHeroBg from '../assets/plant_hero_bg.jpg';
@@ -24,7 +23,7 @@ export const SolutionHub: React.FC = () => {
   const { solutions, selectSolution, connectors, user, updateUserName, logout } = useAitek();
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'solutions' | 'support' | 'org' | 'profile'>('solutions');
+  const [activeTab, setActiveTab] = useState<'solutions' | 'profile'>('solutions');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   
   // State for editing username
@@ -50,7 +49,8 @@ export const SolutionHub: React.FC = () => {
   }, [user?.name]);
 
   const handleOpenSolution = (solution: Solution) => {
-    if (solution.status === 'coming_soon') return;
+    // Only paid solutions can be opened; locked or coming soon solutions cannot be accessed
+    if (!solution.isPaid || solution.status === 'coming_soon') return;
     selectSolution(solution.id);
 
     // Single sign-on: opening a solution is a pure entitlement check against the
@@ -185,32 +185,6 @@ export const SolutionHub: React.FC = () => {
               >
                 <Layers className="w-4 h-4" />
                 <span>Solutions</span>
-              </button>
-
-              {/* Support */}
-              <button
-                onClick={() => setActiveTab('support')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === 'support'
-                    ? 'bg-primary text-white'
-                    : 'text-body hover:text-deep hover:bg-muted'
-                }`}
-              >
-                <Globe className="w-4 h-4" />
-                <span>Support</span>
-              </button>
-
-              {/* Organization */}
-              <button
-                onClick={() => setActiveTab('org')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === 'org'
-                    ? 'bg-primary text-white'
-                    : 'text-body hover:text-deep hover:bg-muted'
-                }`}
-              >
-                <Users className="w-4 h-4" />
-                <span>Organization</span>
               </button>
 
               {/* Profile - Allows editing username directly */}
@@ -348,38 +322,65 @@ export const SolutionHub: React.FC = () => {
               </p>
             </div>
 
-            {/* Search Input Bar */}
-            <div className="relative w-full max-w-sm sm:max-w-md pt-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search solutions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 sm:h-11 pl-10 pr-4 rounded-full border border-slate-200/90 bg-white/95 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-              />
+            {/* Enterprise Solution Entitlement Note */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+              {/* Search Input Bar */}
+              <div className="relative w-full max-w-sm sm:max-w-md">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search solutions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-10 sm:h-11 pl-10 pr-4 rounded-full border border-slate-200/90 bg-white/95 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+              </div>
+
+              {/* Entitlement indicator */}
+              <div className="flex items-center gap-2 text-xs text-slate-500 bg-white/80 border border-slate-200/80 px-3 py-1.5 rounded-full shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span>Active Subscription: <strong className="text-slate-800 font-semibold">Demand Forecasting</strong></span>
+              </div>
             </div>
 
             {/* Five Solution Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4 xl:gap-5 pt-4">
               {filteredSolutions.map((solution) => {
                 const isComingSoon = solution.status === 'coming_soon';
-                const isAvailable = solution.status === 'available';
+                const isPaid = Boolean(solution.isPaid);
 
                 return (
                   <div
                     key={solution.id}
-                    className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] flex flex-col justify-between hover:shadow-md transition-all duration-200"
+                    className={`rounded-2xl p-5 border flex flex-col justify-between transition-all duration-200 relative overflow-hidden select-none ${
+                      isPaid
+                        ? 'bg-white border-blue-300 shadow-[0_8px_30px_-6px_rgba(0,102,204,0.14)] ring-1 ring-blue-500/20 hover:shadow-lg'
+                        : 'bg-slate-50/70 border-slate-200/80 opacity-70 grayscale-[0.8] hover:grayscale-[0.4] shadow-xs'
+                    }`}
                   >
                     {/* Top Content */}
                     <div>
-                      {/* Icon */}
-                      <div className="mb-2 flex items-center justify-start">
-                        {renderSolutionIcon(solution.id)}
+                      {/* Icon & Access Badge */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-start">
+                          {renderSolutionIcon(solution.id)}
+                        </div>
+                        {isPaid ? (
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+                            Licensed
+                          </span>
+                        ) : (
+                          <div
+                            className="w-6 h-6 rounded-full bg-slate-200/80 border border-slate-300/80 flex items-center justify-center text-slate-500"
+                            title="Locked • Requires Subscription"
+                          >
+                            <Lock className="w-3 h-3 text-slate-500" />
+                          </div>
+                        )}
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-base font-bold text-slate-900 mt-3 leading-snug">
+                      <h3 className={`text-base font-bold leading-snug mt-1 ${isPaid ? 'text-slate-900' : 'text-slate-700'}`}>
                         {solution.name}
                       </h3>
 
@@ -393,38 +394,42 @@ export const SolutionHub: React.FC = () => {
                     <div className="mt-4 pt-2">
                       {/* Status Pill Badge */}
                       <div className="mb-4">
-                        {isComingSoon ? (
-                          <span className="bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-medium rounded-full px-3 py-0.5 inline-block">
+                        {isPaid ? (
+                          <span className="bg-emerald-50 border border-emerald-300 text-emerald-700 text-[11px] font-semibold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1.5 shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Active Subscription
+                          </span>
+                        ) : isComingSoon ? (
+                          <span className="bg-slate-100 border border-slate-200 text-slate-500 text-[11px] font-medium rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                            <Lock className="w-3 h-3 text-slate-400" />
                             Coming Soon
                           </span>
-                        ) : isAvailable ? (
-                          <span className="bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-medium rounded-full px-3 py-0.5 inline-block">
-                            Available
-                          </span>
                         ) : (
-                          <span className="bg-emerald-50 border border-emerald-300 text-emerald-700 text-[11px] font-medium rounded-full px-3 py-0.5 inline-block">
-                            Active
+                          <span className="bg-slate-100 border border-slate-200/90 text-slate-600 text-[11px] font-medium rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                            <Lock className="w-3 h-3 text-slate-400" />
+                            Locked • Not Subscribed
                           </span>
                         )}
                       </div>
 
                       {/* Action Button */}
-                      {isComingSoon ? (
+                      {isPaid ? (
                         <button
                           type="button"
-                          disabled
-                          className="w-full py-2 px-3 rounded-lg bg-slate-100 text-slate-400 font-medium text-xs flex items-center justify-center cursor-not-allowed select-none"
+                          onClick={() => handleOpenSolution(solution)}
+                          className="w-full py-2 px-3 rounded-lg bg-[#0062d2] hover:bg-[#0051b3] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                         >
-                          Learn More
+                          <span>Open Solution</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       ) : (
                         <button
                           type="button"
-                          onClick={() => handleOpenSolution(solution)}
-                          className="w-full py-2 px-3 rounded-lg border border-blue-300 bg-white hover:bg-blue-50/80 text-[#0066cc] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                          disabled
+                          className="w-full py-2 px-3 rounded-lg bg-slate-100/90 border border-slate-200 text-slate-400 font-medium text-xs flex items-center justify-center gap-1.5 cursor-not-allowed select-none"
                         >
-                          <span>Open Solution</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <Lock className="w-3 h-3 text-slate-400" />
+                          <span>{isComingSoon ? 'Coming Soon' : 'Locked'}</span>
                         </button>
                       )}
                     </div>

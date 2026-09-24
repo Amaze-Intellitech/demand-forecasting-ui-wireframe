@@ -21,6 +21,7 @@ import { AIRecommendationCard } from '../components/demand/forecast/AIRecommenda
 import { ModelDetailDrawer } from '../components/demand/forecast/ModelDetailDrawer';
 import { SkuForecastDrawer } from '../components/demand/forecast/SkuForecastDrawer';
 import { ExportForecastModal } from '../components/demand/forecast/ExportForecastModal';
+import { ExpandableCard } from '../components/ui/ExpandableCard';
 
 import { mockDemandForecastRepository } from '../repositories/mock/demandForecastRepository';
 import {
@@ -154,7 +155,7 @@ export const DemandForecastPage: React.FC = () => {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-500">Demand Intelligence</span>
+            <span className="text-slate-500">Demand Forecasting</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-slate-900 font-bold">Forecast Intelligence</span>
           </nav>
@@ -209,33 +210,51 @@ export const DemandForecastPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-[48fr_30fr_22fr] gap-5 items-stretch">
             {/* Column 1: Probabilistic Demand Forecast (48%) */}
             <div className="lg:col-span-12 xl:col-auto flex flex-col min-w-0">
-              <ProbabilisticFanChart
-                data={probabilisticData}
-                quantiles={quantilesDec}
-                granularity={granularity}
-                onGranularityChange={setGranularity}
-              />
+              <ExpandableCard
+                title="Probabilistic Demand Forecast"
+                subtitle="P10, P50, and P90 confidence intervals across forward horizon"
+                className="h-full"
+              >
+                <ProbabilisticFanChart
+                  data={probabilisticData}
+                  quantiles={quantilesDec}
+                  granularity={granularity}
+                  onGranularityChange={setGranularity}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 2: Model Performance Tournament (30%) */}
             <div className="lg:col-span-6 xl:col-auto flex flex-col min-w-0">
-              <ModelTournamentCard
-                models={modelTournament}
-                selectedModelId={selectedModel?.modelId}
-                onSelectModel={handleSelectModel}
-                onViewComparison={() => {
-                  const champion = modelTournament.find((m) => m.status === 'Champion') || modelTournament[0];
-                  handleSelectModel(champion);
-                }}
-              />
+              <ExpandableCard
+                title="Model Performance Tournament"
+                subtitle="Continuous algorithmic bake-off and accuracy benchmarking"
+                className="h-full"
+              >
+                <ModelTournamentCard
+                  models={modelTournament}
+                  selectedModelId={selectedModel?.modelId}
+                  onSelectModel={handleSelectModel}
+                  onViewComparison={() => {
+                    const champion = modelTournament.find((m) => m.status === 'Champion') || modelTournament[0];
+                    handleSelectModel(champion);
+                  }}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 3: Key Forecast Insights (22%) */}
             <div className="lg:col-span-6 xl:col-auto flex flex-col min-w-0">
-              <ForecastInsightsCard
-                insights={forecastInsights}
-                onSelectInsight={handleSelectInsight}
-              />
+              <ExpandableCard
+                title="Key Forecast Insights"
+                subtitle="Automated drivers, risks, and anomaly detections"
+                className="h-full"
+              >
+                <ForecastInsightsCard
+                  insights={forecastInsights}
+                  onSelectInsight={handleSelectInsight}
+                />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -243,23 +262,41 @@ export const DemandForecastPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-3 gap-5 items-stretch">
             {/* Column 1: Forecast Value Added (FVA) Waterfall */}
             <div className="lg:col-span-12 xl:col-auto flex flex-col min-w-0">
-              <FvaWaterfallCard stages={fvaStages} />
+              <ExpandableCard
+                title="Forecast Value Added (FVA) Waterfall"
+                subtitle="Stage-by-stage accuracy contribution and human touch impact"
+                className="h-full"
+              >
+                <FvaWaterfallCard stages={fvaStages} />
+              </ExpandableCard>
             </div>
 
             {/* Column 2: Forecast by Product Category */}
             <div className="lg:col-span-6 xl:col-auto flex flex-col min-w-0">
-              <ForecastByCategory
-                categories={categoryDistribution}
-                onSelectCategory={(cat) => setSelectedProduct(cat.name)}
-              />
+              <ExpandableCard
+                title="Forecast by Product Category"
+                subtitle="Volume distribution across active product portfolios"
+                className="h-full"
+              >
+                <ForecastByCategory
+                  categories={categoryDistribution}
+                  onSelectCategory={(cat) => setSelectedProduct(cat.name)}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 3: Forecast by Region */}
             <div className="lg:col-span-6 xl:col-auto flex flex-col min-w-0">
-              <ForecastByRegion
-                regions={regionalGrowth}
-                onSelectRegion={(reg) => setSelectedRegion(reg.region)}
-              />
+              <ExpandableCard
+                title="Forecast by Region"
+                subtitle="Geographic demand distribution and projected growth"
+                className="h-full"
+              >
+                <ForecastByRegion
+                  regions={regionalGrowth}
+                  onSelectRegion={(reg) => setSelectedRegion(reg.region)}
+                />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -267,31 +304,49 @@ export const DemandForecastPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-3 gap-5 items-stretch">
             {/* Column 1: Top SKUs by Forecast Change */}
             <div className="lg:col-span-12 xl:col-auto flex flex-col min-w-0">
-              <TopSkuForecastChanges
-                skus={topSkuChanges}
-                onSelectSku={handleSelectSku}
-                onViewAll={() => {
-                  const firstSku = topSkuChanges[0];
-                  if (firstSku) handleSelectSku(firstSku);
-                }}
-              />
+              <ExpandableCard
+                title="Top SKUs by Forecast Change"
+                subtitle="Items with highest volume variance vs. baseline plan"
+                className="h-full"
+              >
+                <TopSkuForecastChanges
+                  skus={topSkuChanges}
+                  onSelectSku={handleSelectSku}
+                  onViewAll={() => {
+                    const firstSku = topSkuChanges[0];
+                    if (firstSku) handleSelectSku(firstSku);
+                  }}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 2: Forecast Scenario Comparison */}
             <div className="lg:col-span-6 xl:col-auto flex flex-col min-w-0">
-              <ForecastScenarioComparison
-                scenarios={scenarioComparison}
-                onSelectScenario={() => navigate('/solutions/demand-intelligence/scenarios')}
-                onViewAll={() => navigate('/solutions/demand-intelligence/scenarios')}
-              />
+              <ExpandableCard
+                title="Forecast Scenario Comparison"
+                subtitle="Base vs. upside, downside, and supply-constrained scenarios"
+                className="h-full"
+              >
+                <ForecastScenarioComparison
+                  scenarios={scenarioComparison}
+                  onSelectScenario={() => navigate('/solutions/demand-intelligence/scenarios')}
+                  onViewAll={() => navigate('/solutions/demand-intelligence/scenarios')}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 3: AI Recommendation Card */}
             <div className="lg:col-span-6 xl:col-auto flex flex-col min-w-0">
-              <AIRecommendationCard
-                recommendation={aiRecommendation}
-                onExplore={(route) => navigate(route)}
-              />
+              <ExpandableCard
+                title="Autonomous AI Recommendation"
+                subtitle="High-confidence consensus adjustment advice"
+                className="h-full"
+              >
+                <AIRecommendationCard
+                  recommendation={aiRecommendation}
+                  onExplore={(route) => navigate(route)}
+                />
+              </ExpandableCard>
             </div>
           </div>
 

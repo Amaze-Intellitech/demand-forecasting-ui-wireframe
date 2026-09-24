@@ -3,13 +3,14 @@ import { Solution, Connector } from '../types';
 export const INITIAL_SOLUTIONS: Solution[] = [
   {
     id: 'demand-intelligence',
-    name: 'Demand Intelligence',
+    name: 'Demand Forecasting',
     tagline: 'Autonomous demand sensing & multi-horizon forecasting',
     description: 'Forecast demand and identify future requirements.',
     category: 'operations',
     status: 'active',
     version: 'v2.4.1 Enterprise',
     leadTime: 'Real-time telemetry',
+    isPaid: true,
   },
   {
     id: 'inventory-intelligence',
@@ -17,9 +18,10 @@ export const INITIAL_SOLUTIONS: Solution[] = [
     tagline: 'Multi-echelon inventory optimization & safety stock calibration',
     description: 'Optimize inventory and working capital.',
     category: 'operations',
-    status: 'active',
+    status: 'available',
     version: 'v3.1.0 Enterprise',
     leadTime: 'Hourly batch updates',
+    isPaid: false,
   },
   {
     id: 'manufacturing-excellence',
@@ -27,9 +29,10 @@ export const INITIAL_SOLUTIONS: Solution[] = [
     tagline: 'Predictive maintenance, OEE optimization & yield analytics',
     description: 'Improve plant performance and operational efficiency.',
     category: 'manufacturing',
-    status: 'active',
+    status: 'available',
     version: 'v1.8.2 Certified',
     leadTime: 'Sub-second SCADA ingest',
+    isPaid: false,
   },
   {
     id: 'cement-intelligence',
@@ -40,6 +43,7 @@ export const INITIAL_SOLUTIONS: Solution[] = [
     status: 'available',
     version: 'v2.0.4 Process-AI',
     leadTime: '15-min sensor cycles',
+    isPaid: false,
   },
   {
     id: 'supply-chain-intelligence',
@@ -50,6 +54,7 @@ export const INITIAL_SOLUTIONS: Solution[] = [
     status: 'coming_soon',
     version: 'Preview v0.9-alpha',
     leadTime: 'Q3 Enterprise Release',
+    isPaid: false,
   }
 ];
 

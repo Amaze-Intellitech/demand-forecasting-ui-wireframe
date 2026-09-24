@@ -7,7 +7,7 @@ interface CriticalExceptionBannerProps {
 }
 
 export const CriticalExceptionBanner: React.FC<CriticalExceptionBannerProps> = ({
-  criticalCount = 3,
+  criticalCount = 2,
   onViewExceptions,
 }) => {
   return (
@@ -23,7 +23,7 @@ export const CriticalExceptionBanner: React.FC<CriticalExceptionBannerProps> = (
             {criticalCount} critical exceptions require executive attention
           </h2>
           <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-            Supplier capacity constraint, demand surge in Packaging, and elevated inventory risk in APAC region.
+            Supplier C capacity constraint (Plant A) and HDPE Resin stockout risk in APAC region.
           </p>
         </div>
       </div>

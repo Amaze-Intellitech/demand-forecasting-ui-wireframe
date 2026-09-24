@@ -8,6 +8,7 @@ import { RiskExceptionDetailDrawer } from '../components/demand/risk/RiskExcepti
 import { Card } from '../components/ui/Card';
 import { Badge, BadgeProps } from '../components/ui/Badge';
 import { Table, TableWrap, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
+import { ExpandableCard } from '../components/ui/ExpandableCard';
 
 import { mockRiskExceptionCenterRepository } from '../repositories/mock/riskExceptionCenterRepository';
 import { RiskException } from '../types/domain/riskExceptionCenter';
@@ -108,7 +109,7 @@ export const RiskExceptionCenterPage: React.FC = () => {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span>Demand Intelligence</span>
+            <span>Demand Forecasting</span>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-deep font-bold">Risk & Exception Center</span>
           </nav>
@@ -167,60 +168,65 @@ export const RiskExceptionCenterPage: React.FC = () => {
           </Card>
 
           {/* Table */}
-          <TableWrap>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Exception</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Affected</TableHead>
-                  <TableHead>Detected</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Owner</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {exceptions.map((exception) => (
-                  <TableRow
-                    key={exception.id}
-                    className="cursor-pointer"
-                    onClick={() => handleRowClick(exception)}
-                  >
-                    <TableCell>
-                      <Badge variant={severityVariant[exception.severity]} size="sm">
-                        {exception.severity[0].toUpperCase() + exception.severity.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-semibold text-deep max-w-xs truncate">{exception.title}</TableCell>
-                    <TableCell>{exception.category}</TableCell>
-                    <TableCell className="text-subtle">
-                      {[exception.affectedSku, exception.affectedPlant, exception.affectedRegion]
-                        .filter(Boolean)
-                        .join(' · ') || '—'}
-                    </TableCell>
-                    <TableCell className="text-subtle">{exception.detectedAt}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant[exception.status]} size="sm" dot={false}>
-                        {exception.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-subtle">{exception.owner}</TableCell>
-                  </TableRow>
-                ))}
-                {exceptions.length === 0 && (
+          <ExpandableCard
+            title="Risk & Exception Ledger"
+            subtitle="Prioritized network anomalies and operational disruptions"
+          >
+            <TableWrap>
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-subtle py-8">
-                      <div className="flex flex-col items-center gap-2">
-                        <ShieldAlert className="w-6 h-6 text-subtle" />
-                        No exceptions match the current filters.
-                      </div>
-                    </TableCell>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Exception</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Affected</TableHead>
+                    <TableHead>Detected</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Owner</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableWrap>
+                </TableHeader>
+                <TableBody>
+                  {exceptions.map((exception) => (
+                    <TableRow
+                      key={exception.id}
+                      className="cursor-pointer"
+                      onClick={() => handleRowClick(exception)}
+                    >
+                      <TableCell>
+                        <Badge variant={severityVariant[exception.severity]} size="sm">
+                          {exception.severity[0].toUpperCase() + exception.severity.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-semibold text-deep max-w-xs truncate">{exception.title}</TableCell>
+                      <TableCell>{exception.category}</TableCell>
+                      <TableCell className="text-subtle">
+                        {[exception.affectedSku, exception.affectedPlant, exception.affectedRegion]
+                          .filter(Boolean)
+                          .join(' · ') || '—'}
+                      </TableCell>
+                      <TableCell className="text-subtle">{exception.detectedAt}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariant[exception.status]} size="sm" dot={false}>
+                          {exception.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-subtle">{exception.owner}</TableCell>
+                    </TableRow>
+                  ))}
+                  {exceptions.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-subtle py-8">
+                        <div className="flex flex-col items-center gap-2">
+                          <ShieldAlert className="w-6 h-6 text-subtle" />
+                          No exceptions match the current filters.
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableWrap>
+          </ExpandableCard>
         </main>
       </div>
 

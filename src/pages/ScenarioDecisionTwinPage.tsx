@@ -23,6 +23,7 @@ import { ScenarioDetailDrawer } from '../components/demand/scenario/ScenarioDeta
 import { DriverAdjustmentDrawer } from '../components/demand/scenario/DriverAdjustmentDrawer';
 import { RegionDetailDrawer } from '../components/demand/scenario/RegionDetailDrawer';
 import { ApplyPlanningModal } from '../components/demand/scenario/ApplyPlanningModal';
+import { ExpandableCard } from '../components/ui/ExpandableCard';
 
 import { mockScenarioDecisionTwinRepository } from '../repositories/mock/scenarioDecisionTwinRepository';
 import {
@@ -207,7 +208,7 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-500">Demand Intelligence</span>
+            <span className="text-slate-500">Demand Forecasting</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-slate-900 font-bold">Scenario & Decision Twin</span>
           </nav>
@@ -255,21 +256,33 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* Left 46%: Demand Comparison Across Scenarios */}
             <div className="lg:col-span-6 xl:col-span-5">
-              <ScenarioDemandComparisonChart
-                data={trajectoryData}
-                selectedScenarioId={selectedScenarioId}
-                granularity={chartGranularity}
-                onGranularityChange={setChartGranularity}
-              />
+              <ExpandableCard
+                title="Scenario Trajectory Comparison"
+                subtitle="Consensus baseline vs. alternative probabilistic scenario projections"
+                className="h-full"
+              >
+                <ScenarioDemandComparisonChart
+                  data={trajectoryData}
+                  selectedScenarioId={selectedScenarioId}
+                  granularity={chartGranularity}
+                  onGranularityChange={setChartGranularity}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Right 54%: Scenario Impact Summary Table */}
             <div className="lg:col-span-6 xl:col-span-7">
-              <ScenarioImpactSummaryTable
-                rows={comparisonRows}
-                selectedScenarioId={selectedScenarioId}
-                onSelectScenario={handleSelectScenario}
-              />
+              <ExpandableCard
+                title="Scenario Impact Matrix"
+                subtitle="Comparative enterprise outcome metrics across evaluated presets"
+                className="h-full"
+              >
+                <ScenarioImpactSummaryTable
+                  rows={comparisonRows}
+                  selectedScenarioId={selectedScenarioId}
+                  onSelectScenario={handleSelectScenario}
+                />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -277,29 +290,47 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* Left 33%: Key Drivers and Assumptions */}
             <div className="lg:col-span-4">
-              <ScenarioDriversTable
-                drivers={driverRows}
-                scenarios={scenarios}
-                activeScenarioId={driversScenarioId}
-                onScenarioChange={setDriversScenarioId}
-                onSelectDriver={handleDriverSelect}
-              />
+              <ExpandableCard
+                title="Key Scenario Drivers & Sensitivities"
+                subtitle="Primary econometric and operational levers powering this simulation"
+                className="h-full"
+              >
+                <ScenarioDriversTable
+                  drivers={driverRows}
+                  scenarios={scenarios}
+                  activeScenarioId={driversScenarioId}
+                  onScenarioChange={setDriversScenarioId}
+                  onSelectDriver={handleDriverSelect}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Center 37%: Network View (Scenario: High Demand) */}
             <div className="lg:col-span-5">
-              <ScenarioNetworkView
-                scenarioName={selectedScenario.name}
-                regionalData={regionalData}
-                selectedMetric={networkMetric}
-                onMetricChange={setNetworkMetric}
-                onSelectRegion={handleSelectRegion}
-              />
+              <ExpandableCard
+                title="Enterprise Operational Footprint"
+                subtitle="Regional supply chain network strain under simulated conditions"
+                className="h-full"
+              >
+                <ScenarioNetworkView
+                  scenarioName={selectedScenario.name}
+                  regionalData={regionalData}
+                  selectedMetric={networkMetric}
+                  onMetricChange={setNetworkMetric}
+                  onSelectRegion={handleSelectRegion}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Right 30%: Scenario Trade-offs */}
             <div className="lg:col-span-3">
-              <ScenarioTradeoffsCard tradeoffs={tradeoffs} />
+              <ExpandableCard
+                title="Strategic Trade-off Analysis"
+                subtitle="Evaluating risk, margin, and service-level trade-offs"
+                className="h-full"
+              >
+                <ScenarioTradeoffsCard tradeoffs={tradeoffs} />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -307,32 +338,50 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* Left 33%: What-if Analysis */}
             <div className="lg:col-span-4">
-              <WhatIfAnalysisCard
-                currentOutcome={whatIfOutcome}
-                onRunSimulation={handleRunWhatIfSimulation}
-                isRunning={isSimulating}
-              />
+              <ExpandableCard
+                title="Interactive What-If Simulation Sandbox"
+                subtitle="Adjust macroeconomic shocks and assess network resilience"
+                className="h-full"
+              >
+                <WhatIfAnalysisCard
+                  currentOutcome={whatIfOutcome}
+                  onRunSimulation={handleRunWhatIfSimulation}
+                  isRunning={isSimulating}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Center 37%: Recommended Scenario */}
             <div className="lg:col-span-5">
-              <RecommendedScenarioCard
-                data={recommendedData}
-                onApplyToPlanning={() => setIsApplyModalOpen(true)}
-                onViewDetailedAnalysis={() => setIsDetailDrawerOpen(true)}
-              />
+              <ExpandableCard
+                title="Autonomous Recommended Scenario"
+                subtitle="Optimized balance of financial return, customer service, and working capital"
+                className="h-full"
+              >
+                <RecommendedScenarioCard
+                  data={recommendedData}
+                  onApplyToPlanning={() => setIsApplyModalOpen(true)}
+                  onViewDetailedAnalysis={() => setIsDetailDrawerOpen(true)}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Right 30%: Recent Scenarios */}
             <div className="lg:col-span-3">
-              <RecentScenariosCard
-                items={recentScenarios}
-                onSelectScenario={(name) => {
-                  const match = scenarios.find((s) => s.name === name);
-                  if (match) handleSelectScenario(match.id);
-                }}
-                onViewAll={() => setIsDetailDrawerOpen(true)}
-              />
+              <ExpandableCard
+                title="Recent Scenario History"
+                subtitle="Audit trail of executive planning simulations"
+                className="h-full"
+              >
+                <RecentScenariosCard
+                  items={recentScenarios}
+                  onSelectScenario={(name) => {
+                    const match = scenarios.find((s) => s.name === name);
+                    if (match) handleSelectScenario(match.id);
+                  }}
+                  onViewAll={() => setIsDetailDrawerOpen(true)}
+                />
+              </ExpandableCard>
             </div>
           </div>
 

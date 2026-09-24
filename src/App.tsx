@@ -60,7 +60,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Executive Command Center */}
+      {/* Demand Forecasting: Executive Command Center */}
       <Route
         path="/solutions/demand-intelligence/executive"
         element={
@@ -78,7 +78,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Demand Sensing */}
+      {/* Demand Forecasting: Demand Sensing */}
       <Route
         path="/solutions/demand-intelligence/demand-sensing"
         element={
@@ -96,7 +96,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Forecast Intelligence */}
+      {/* Demand Forecasting: Forecast Intelligence */}
       <Route
         path="/solutions/demand-intelligence/forecast"
         element={
@@ -114,7 +114,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Driver & Causal Intelligence */}
+      {/* Demand Forecasting: Driver & Causal Intelligence */}
       <Route
         path="/solutions/demand-intelligence/drivers"
         element={
@@ -132,7 +132,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Inventory Intelligence */}
+      {/* Demand Forecasting: Inventory Intelligence */}
       <Route
         path="/solutions/demand-intelligence/inventory"
         element={
@@ -150,7 +150,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Scenario & Decision Twin */}
+      {/* Demand Forecasting: Scenario & Decision Twin */}
       <Route
         path="/solutions/demand-intelligence/scenarios"
         element={
@@ -168,7 +168,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Supply & Capacity Optimization */}
+      {/* Demand Forecasting: Supply & Capacity Optimization */}
       <Route
         path="/solutions/demand-intelligence/supply-capacity"
         element={
@@ -186,7 +186,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Risk & Exception Center */}
+      {/* Demand Forecasting: Risk & Exception Center */}
       <Route
         path="/solutions/demand-intelligence/risk-exceptions"
         element={
@@ -204,7 +204,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: AI Decision Copilot */}
+      {/* Demand Forecasting: AI Decision Copilot */}
       <Route
         path="/solutions/demand-intelligence/copilot"
         element={
@@ -222,7 +222,7 @@ export const AppContent: React.FC = () => {
         }
       />
 
-      {/* Demand Intelligence: Agent Control Center */}
+      {/* Demand Forecasting: Agent Control Center */}
       <Route
         path="/solutions/demand-intelligence/agent-control"
         element={

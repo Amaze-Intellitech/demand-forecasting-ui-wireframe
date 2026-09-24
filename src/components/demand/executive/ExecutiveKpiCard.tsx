@@ -9,6 +9,7 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowRight,
+  Maximize2,
 } from 'lucide-react';
 import { ExecutiveKpi } from '../../../types/domain/executiveCommandCenter';
 
@@ -67,10 +68,16 @@ export const ExecutiveKpiCard: React.FC<ExecutiveKpiCardProps> = ({ kpi, onClick
   return (
     <div
       onClick={onClick}
-      className={`bg-white border border-slate-200/80 rounded-xl p-4 sm:p-4.5 shadow-xs hover:shadow-sm hover:border-slate-300 transition-all flex items-start gap-3.5 select-none ${
-        onClick ? 'cursor-pointer hover:bg-slate-50/50' : ''
+      className={`bg-white border border-slate-200/80 rounded-xl p-4 sm:p-4.5 shadow-xs hover:shadow-md hover:border-blue-400/80 transition-all flex items-start gap-3.5 select-none relative group cursor-pointer ${
+        onClick ? 'hover:bg-slate-50/50' : ''
       }`}
+      title="Click to maximize KPI details"
     >
+      {/* Maximize affordance button on hover */}
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 p-1 rounded-md bg-slate-100/90 text-slate-400 hover:text-slate-700 shadow-2xs">
+        <Maximize2 className="w-3.5 h-3.5" />
+      </div>
+
       {/* Icon Badge */}
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${bgColor}`}>
         <Icon className="w-5 h-5" />

@@ -21,6 +21,7 @@ import { SignalSourceDrawer } from '../components/demand/sensing/SignalSourceDra
 import { DemandEventDrawer } from '../components/demand/sensing/DemandEventDrawer';
 import { SkuDetailDrawer } from '../components/demand/sensing/SkuDetailDrawer';
 import { SensedAdjustmentModal } from '../components/demand/sensing/SensedAdjustmentModal';
+import { ExpandableCard } from '../components/ui/ExpandableCard';
 
 import { mockDemandSensingRepository } from '../repositories/mock/demandSensingRepository';
 import {
@@ -159,7 +160,7 @@ export const DemandSensingPage: React.FC = () => {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-500">Demand Intelligence</span>
+            <span className="text-slate-500">Demand Forecasting</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-slate-900 font-bold">Demand Sensing</span>
           </nav>
@@ -229,29 +230,47 @@ export const DemandSensingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-[46fr_22fr_32fr] gap-5 items-stretch">
             {/* Column 1: Sensed Demand vs. Baseline Forecast (46%) */}
             <div className="lg:col-span-6 xl:col-auto flex flex-col min-w-0">
-              <NearTermSensingChart
-                data={sensedSeries}
-                selectedHorizon={selectedHorizon}
-                onHorizonChange={setSelectedHorizon}
-              />
+              <ExpandableCard
+                title="Sensed Demand vs. Baseline Forecast"
+                subtitle="Near-term AI sensed adjustments against baseline consensus plan"
+                className="h-full"
+              >
+                <NearTermSensingChart
+                  data={sensedSeries}
+                  selectedHorizon={selectedHorizon}
+                  onHorizonChange={setSelectedHorizon}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 2: Signal Sources (22%) */}
             <div className="lg:col-span-3 xl:col-auto flex flex-col min-w-0">
-              <SignalSourcesCard
-                sources={signalSources}
-                selectedSourceId={activeSource?.id}
-                onSelectSource={handleSelectSource}
-              />
+              <ExpandableCard
+                title="Active Signal Sources"
+                subtitle="Real-time ingestion channels and correlation health"
+                className="h-full"
+              >
+                <SignalSourcesCard
+                  sources={signalSources}
+                  selectedSourceId={activeSource?.id}
+                  onSelectSource={handleSelectSource}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 3: Recent Demand Events (32%) */}
             <div className="lg:col-span-3 xl:col-auto flex flex-col min-w-0">
-              <DemandEventsCard
-                events={demandEvents}
-                onSelectEvent={handleSelectEvent}
-                onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
-              />
+              <ExpandableCard
+                title="Recent Demand Events"
+                subtitle="Live market shifts and autonomous signal captures"
+                className="h-full"
+              >
+                <DemandEventsCard
+                  events={demandEvents}
+                  onSelectEvent={handleSelectEvent}
+                  onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
+                />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -259,21 +278,39 @@ export const DemandSensingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-[40fr_33fr_27fr] gap-5 items-stretch">
             {/* Column 1: Short-Term Demand Adjustment Waterfall (40%) */}
             <div className="lg:col-span-5 xl:col-auto flex flex-col min-w-0">
-              <AdjustmentWaterfall data={shortTermAdjustmentData} />
+              <ExpandableCard
+                title="Short-Term Demand Adjustment Waterfall"
+                subtitle="Step-by-step impact of external signals on forward demand"
+                className="h-full"
+              >
+                <AdjustmentWaterfall data={shortTermAdjustmentData} />
+              </ExpandableCard>
             </div>
 
             {/* Column 2: Top SKUs with Demand Change (33%) */}
             <div className="lg:col-span-4 xl:col-auto flex flex-col min-w-0">
-              <SkuDemandChanges
-                skus={skuChanges}
-                onSelectSku={handleSelectSku}
-                onViewAll={() => navigate('/solutions/demand-intelligence/forecast')}
-              />
+              <ExpandableCard
+                title="Top SKUs with Sensed Demand Shift"
+                subtitle="Individual SKU adjustments flagged for supply attention"
+                className="h-full"
+              >
+                <SkuDemandChanges
+                  skus={skuChanges}
+                  onSelectSku={handleSelectSku}
+                  onViewAll={() => navigate('/solutions/demand-intelligence/forecast')}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 3: Demand by Channel Donut (27%) */}
             <div className="lg:col-span-3 xl:col-auto flex flex-col min-w-0">
-              <ChannelDemand channels={channelDemand} />
+              <ExpandableCard
+                title="Demand by Commercial Channel"
+                subtitle="Distribution across OEM, Aftermarket, and Direct"
+                className="h-full"
+              >
+                <ChannelDemand channels={channelDemand} />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -281,20 +318,32 @@ export const DemandSensingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
             {/* Left Column: Live Signal Feed (68%) */}
             <div className="lg:col-span-8 flex flex-col min-w-0">
-              <LiveSignalFeed
-                items={liveSignalFeed}
-                activeSourceFilter={activeSourceFilter}
-                onClearSourceFilter={() => setActiveSourceFilter(undefined)}
-                onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
-              />
+              <ExpandableCard
+                title="Autonomous Real-Time Signal Stream"
+                subtitle="Streaming telemetry and predictive signal extractions"
+                className="h-full"
+              >
+                <LiveSignalFeed
+                  items={liveSignalFeed}
+                  activeSourceFilter={activeSourceFilter}
+                  onClearSourceFilter={() => setActiveSourceFilter(undefined)}
+                  onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Right Column: AI Insight (32%) */}
             <div className="lg:col-span-4 flex flex-col min-w-0">
-              <SensingAIInsight
-                insight={aiInsight}
-                onExplore={(route) => navigate(route)}
-              />
+              <ExpandableCard
+                title="Strategic Sensing Intelligence"
+                subtitle="AI diagnostic evaluation of incoming market volatility"
+                className="h-full"
+              >
+                <SensingAIInsight
+                  insight={aiInsight}
+                  onExplore={(route) => navigate(route)}
+                />
+              </ExpandableCard>
             </div>
           </div>
 

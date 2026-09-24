@@ -28,8 +28,11 @@ import {
   DecisionTrigger,
   PlanningEvent,
   ExecutiveInsight,
+  ExecutiveKpi,
 } from '../types/domain/executiveCommandCenter';
 import { useDemandFilters } from '../hooks/useDemandFilters';
+import { KpiDetailModal } from '../components/demand/executive/KpiDetailModal';
+import { ExpandableCard } from '../components/ui/ExpandableCard';
 
 export const ExecutiveCommandCenterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,6 +52,10 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
   const [isEventDrawerOpen, setIsEventDrawerOpen] = useState<boolean>(false);
 
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+
+  // Maximized KPI Detail Modal state
+  const [selectedKpiForModal, setSelectedKpiForModal] = useState<ExecutiveKpi | null>(null);
+  const [isKpiModalOpen, setIsKpiModalOpen] = useState<boolean>(false);
 
   // Local state for decision triggers so users can approve/modify/reject them interactively
   const [decisionTriggers, setDecisionTriggers] = useState<DecisionTrigger[]>(() =>
@@ -261,7 +268,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-500">Demand Intelligence</span>
+            <span className="text-slate-500">Demand Forecasting</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-slate-900 font-bold">Executive Command Center</span>
           </nav>
@@ -329,18 +336,17 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
               <ExecutiveKpiCard
                 key={kpi.id}
                 kpi={kpi}
-                onClick={
-                  kpi.id === 'kpi-exceptions'
-                    ? () => navigate('/solutions/demand-intelligence/risk-exceptions')
-                    : undefined
-                }
+                onClick={() => {
+                  setSelectedKpiForModal(kpi);
+                  setIsKpiModalOpen(true);
+                }}
               />
             ))}
           </div>
 
           {/* Section 2: Critical Exception Banner */}
           <CriticalExceptionBanner
-            criticalCount={3}
+            criticalCount={2}
             onViewExceptions={() => navigate('/solutions/demand-intelligence/risk-exceptions?severity=critical')}
           />
 
@@ -348,30 +354,48 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[10fr_7fr_8fr] gap-5 items-stretch">
             {/* Column 1: Demand vs. Supply Outlook (40% on desktop) */}
             <div className="flex flex-col min-w-0">
-              <DemandSupplyOutlook
-                data={demandSupplyData}
-                period={chartPeriod}
-                onPeriodChange={setChartPeriod}
-              />
+              <ExpandableCard
+                title="Demand vs. Supply Outlook"
+                subtitle="Consensus forecast vs. operational supply plan"
+                className="h-full"
+              >
+                <DemandSupplyOutlook
+                  data={demandSupplyData}
+                  period={chartPeriod}
+                  onPeriodChange={setChartPeriod}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 2: Demand by Region (28% on desktop) */}
             <div className="flex flex-col min-w-0">
-              <RegionalDemand
-                regions={regionalDemandData}
-                selectedRegion={selectedRegion}
-                onSelectRegion={(regId) => {
-                  setSelectedRegion(regId);
-                }}
-              />
+              <ExpandableCard
+                title="Demand by Region"
+                subtitle="Geographic demand distribution and status"
+                className="h-full"
+              >
+                <RegionalDemand
+                  regions={regionalDemandData}
+                  selectedRegion={selectedRegion}
+                  onSelectRegion={(regId) => {
+                    setSelectedRegion(regId);
+                  }}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 3: Top Executive Insights (32% on desktop) */}
             <div className="flex flex-col min-w-0">
-              <ExecutiveInsights
-                insights={executiveInsights}
-                onSelectInsight={handleSelectInsight}
-              />
+              <ExpandableCard
+                title="Top Executive Insights"
+                subtitle="AI-detected strategic shifts and high-impact actions"
+                className="h-full"
+              >
+                <ExecutiveInsights
+                  insights={executiveInsights}
+                  onSelectInsight={handleSelectInsight}
+                />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -379,25 +403,43 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
             {/* Column 1: Working Capital Risk Waterfall */}
             <div className="flex flex-col">
-              <WorkingCapitalWaterfall data={workingCapitalData} />
+              <ExpandableCard
+                title="Working Capital Risk Waterfall"
+                subtitle="Inventory exposure and carrying cost breakdown"
+                className="h-full"
+              >
+                <WorkingCapitalWaterfall data={workingCapitalData} />
+              </ExpandableCard>
             </div>
 
             {/* Column 2: Service Level by Plant */}
             <div className="flex flex-col">
-              <PlantServiceLevels
-                plants={plantServiceData}
-                selectedPlant={selectedPlant}
-                onSelectPlant={(plant) => setSelectedPlant(plant)}
-              />
+              <ExpandableCard
+                title="Service Level by Plant"
+                subtitle="OTIF performance and constrained capacity alerts"
+                className="h-full"
+              >
+                <PlantServiceLevels
+                  plants={plantServiceData}
+                  selectedPlant={selectedPlant}
+                  onSelectPlant={(plant) => setSelectedPlant(plant)}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Column 3: Demand by Product Category */}
             <div className="flex flex-col">
-              <ProductMix
-                categories={productMixData}
-                selectedCategory={selectedProduct}
-                onSelectCategory={(cat) => setSelectedProduct(cat)}
-              />
+              <ExpandableCard
+                title="Demand by Product Category"
+                subtitle="Category volume breakdown and trend analysis"
+                className="h-full"
+              >
+                <ProductMix
+                  categories={productMixData}
+                  selectedCategory={selectedProduct}
+                  onSelectCategory={(cat) => setSelectedProduct(cat)}
+                />
+              </ExpandableCard>
             </div>
           </div>
 
@@ -405,19 +447,30 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
             {/* Left/Center Column: Recent Activity & Key Events (~68% on desktop) */}
             <div className="lg:col-span-8 flex flex-col">
-              <RecentActivity
-                events={recentEvents}
-                onSelectEvent={handleOpenEvent}
-                onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
-              />
+              <ExpandableCard
+                title="Recent Operational Activity & Key Events"
+                subtitle="Autonomous system changes and exception alerts"
+                className="h-full"
+              >
+                <RecentActivity
+                  events={recentEvents}
+                  onSelectEvent={handleOpenEvent}
+                  onViewAll={() => navigate('/solutions/demand-intelligence/risk-exceptions')}
+                />
+              </ExpandableCard>
             </div>
 
             {/* Right Column: C-Suite Decision Triggers & Quick Actions (~32% on desktop) */}
             <div className="lg:col-span-4 flex flex-col space-y-5">
-              <DecisionTriggers
-                triggers={decisionTriggers}
-                onSelectTrigger={handleOpenDecisionTrigger}
-              />
+              <ExpandableCard
+                title="C-Suite Decision Triggers"
+                subtitle="Pending autonomous decisions requiring executive approval"
+              >
+                <DecisionTriggers
+                  triggers={decisionTriggers}
+                  onSelectTrigger={handleOpenDecisionTrigger}
+                />
+              </ExpandableCard>
               <QuickActionsCard
                 onNavigate={(route) => navigate(route)}
               />
@@ -428,6 +481,15 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
       </div>
 
       {/* ── Drawers & Modals ── */}
+      <KpiDetailModal
+        kpi={selectedKpiForModal}
+        isOpen={isKpiModalOpen}
+        onClose={() => {
+          setIsKpiModalOpen(false);
+          setSelectedKpiForModal(null);
+        }}
+      />
+
       <DecisionApprovalDrawer
         trigger={activeDecisionTrigger}
         isOpen={isDecisionDrawerOpen}

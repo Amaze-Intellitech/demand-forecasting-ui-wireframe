@@ -11,6 +11,7 @@ export interface Solution {
   leadTime: string;
   keyMetrics?: { label: string; value: string }[];
   accentColor?: string;
+  isPaid?: boolean;
 }
 
 export type ConnectorCategory = 'ERP' | 'Databases' | 'Cloud/Data platforms' | 'Files' | 'APIs';

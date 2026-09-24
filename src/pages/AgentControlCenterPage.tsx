@@ -63,7 +63,7 @@ export const AgentControlCenterPage: React.FC = () => {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span>Demand Intelligence</span>
+            <span>Demand Forecasting</span>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-deep font-bold">Agent Control Center</span>
           </nav>

@@ -164,7 +164,7 @@ export const DriverCausalIntelligencePage: React.FC = () => {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-500">Demand Intelligence</span>
+            <span className="text-slate-500">Demand Forecasting</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-slate-900 font-bold">Driver & Causal Intelligence</span>
           </nav>

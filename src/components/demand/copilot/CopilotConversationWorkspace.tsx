@@ -297,7 +297,7 @@ export const CopilotConversationWorkspace: React.FC<CopilotConversationWorkspace
             </div>
             <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 text-xs text-slate-600">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0062d2]" />
-              <span>Analyzing demand intelligence models...</span>
+              <span>Analyzing demand forecasting models...</span>
             </div>
           </div>
         )}
@@ -336,7 +336,7 @@ export const CopilotConversationWorkspace: React.FC<CopilotConversationWorkspace
         </form>
 
         <p className="text-[10px] text-slate-400 text-center mt-2">
-          AI responses are powered by AITEK&apos;s demand intelligence models. Please validate critical decisions.
+          AI responses are powered by AITEK&apos;s demand forecasting models. Please validate critical decisions.
         </p>
       </div>
     </div>

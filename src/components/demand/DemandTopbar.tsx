@@ -47,22 +47,13 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
     <header className="h-16 bg-white border-b border-slate-200/80 px-6 sm:px-8 flex items-center justify-between z-20 flex-shrink-0 select-none">
       
       {/* Left: Product Name & Tagline */}
-      <div className="flex items-center gap-3">
-        {/* Solution Icon: Ascending 3 Bars in Blue */}
-        <div className="w-8 h-8 rounded-lg bg-info-bg border border-border flex items-end justify-center p-1.5 gap-1">
-          <span className="w-1.5 h-3 bg-[#0062d2] rounded-xs inline-block" />
-          <span className="w-1.5 h-4.5 bg-[#0062d2] rounded-xs inline-block" />
-          <span className="w-1.5 h-6 bg-[#0062d2] rounded-xs inline-block" />
-        </div>
-
-        <div>
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
-            Demand Intelligence
-          </h1>
-          <p className="text-xs text-slate-500 font-normal">
-            Forecast Today. Prepare Tomorrow.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
+          Demand Forecasting
+        </h1>
+        <p className="text-xs text-slate-500 font-normal">
+          Forecast Today. Prepare Tomorrow.
+        </p>
       </div>
 
       {/* Right Controls: Date Range, Notifications, User Menu */}
