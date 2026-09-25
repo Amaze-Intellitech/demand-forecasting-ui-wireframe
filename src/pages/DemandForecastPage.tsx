@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDemandFilters } from '../hooks/useDemandFilters';
 import { ChevronRight } from 'lucide-react';
@@ -29,6 +29,10 @@ import {
   ForecastSkuChange,
   ForecastInsight,
 } from '../types/domain/demandForecast';
+import { parameterMetadataService, INGESTION_SELECTION_EVENT } from '../services/parameterMetadataService';
+import { AnalysisParameterSelect } from '../components/demand/analysis/AnalysisParameterSelect';
+import { AnalysisStateBanner } from '../components/demand/analysis/AnalysisStateBanner';
+import { AnalysisStatus } from '../types/analysisConfig';
 
 export const DemandForecastPage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,6 +52,40 @@ export const DemandForecastPage: React.FC = () => {
   } = useDemandFilters();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FY 2025');
 
+  // Parameter-Driven Univariate Analysis state (Default: 'demand_sales' / Demand / Sales)
+  const [selectedParameter, setSelectedParameter] = useState<string>('demand_sales');
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>('idle');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Ingested columns strictly scoped to Data Ingestion selection
+  const [eligibleParameters, setEligibleParameters] = useState(() =>
+    parameterMetadataService.getAllParameters()
+  );
+
+  useEffect(() => {
+    const handleSchemaUpdate = () => {
+      const updated = parameterMetadataService.getAllParameters();
+      setEligibleParameters(updated);
+      setSelectedParameter((prev) => {
+        if (!updated.some((p) => p.id === prev)) {
+          return updated[0]?.id || 'demand_sales';
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener(INGESTION_SELECTION_EVENT, handleSchemaUpdate);
+    window.addEventListener('storage', handleSchemaUpdate);
+    return () => {
+      window.removeEventListener(INGESTION_SELECTION_EVENT, handleSchemaUpdate);
+      window.removeEventListener('storage', handleSchemaUpdate);
+    };
+  }, []);
+
+  const selectedParamMetadata = useMemo(() => {
+    return parameterMetadataService.getParameterById(selectedParameter);
+  }, [selectedParameter]);
+
   // Granularity state
   const [granularity, setGranularity] = useState<'Monthly' | 'Quarterly'>('Monthly');
 
@@ -61,45 +99,48 @@ export const DemandForecastPage: React.FC = () => {
 
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
-  // Repository-driven data with contextual filters
+  // Repository-driven data with contextual filters and active parameter
   const filterOptions = useMemo(() => mockDemandForecastRepository.getFilterOptions(), []);
 
   const kpis = useMemo(() => {
-    return mockDemandForecastRepository.getForecastKpis({
-      plant: selectedPlant,
-      product: selectedProduct,
-      region: selectedRegion,
-      planningPeriod: selectedPeriod,
-    });
-  }, [selectedPlant, selectedProduct, selectedRegion, selectedPeriod]);
+    return mockDemandForecastRepository.getForecastKpis(
+      {
+        plant: selectedPlant,
+        product: selectedProduct,
+        region: selectedRegion,
+        planningPeriod: selectedPeriod,
+      },
+      selectedParameter
+    );
+  }, [selectedPlant, selectedProduct, selectedRegion, selectedPeriod, selectedParameter]);
 
   const probabilisticData = useMemo(() => {
-    return mockDemandForecastRepository.getProbabilisticForecast(granularity);
-  }, [granularity]);
+    return mockDemandForecastRepository.getProbabilisticForecast(granularity, '12 Months', selectedParameter);
+  }, [granularity, selectedParameter]);
 
   const quantilesDec = useMemo(() => {
-    return mockDemandForecastRepository.getForecastQuantilesDec();
-  }, []);
+    return mockDemandForecastRepository.getForecastQuantilesDec(selectedParameter);
+  }, [selectedParameter]);
 
   const modelTournament = useMemo(() => {
-    return mockDemandForecastRepository.getModelTournament();
-  }, []);
+    return mockDemandForecastRepository.getModelTournament('All', 'wape', selectedParameter);
+  }, [selectedParameter]);
 
   const forecastInsights = useMemo(() => {
-    return mockDemandForecastRepository.getForecastInsights();
-  }, []);
+    return mockDemandForecastRepository.getForecastInsights(selectedParameter);
+  }, [selectedParameter]);
 
   const fvaStages = useMemo(() => {
     return mockDemandForecastRepository.getFvaWaterfall();
   }, []);
 
   const categoryDistribution = useMemo(() => {
-    return mockDemandForecastRepository.getCategoryDistribution();
-  }, []);
+    return mockDemandForecastRepository.getCategoryDistribution(selectedParameter);
+  }, [selectedParameter]);
 
   const regionalGrowth = useMemo(() => {
-    return mockDemandForecastRepository.getRegionalGrowth();
-  }, []);
+    return mockDemandForecastRepository.getRegionalGrowth(selectedParameter);
+  }, [selectedParameter]);
 
   const topSkuChanges = useMemo(() => {
     return mockDemandForecastRepository.getTopSkuChanges();
@@ -110,8 +151,28 @@ export const DemandForecastPage: React.FC = () => {
   }, []);
 
   const aiRecommendation = useMemo(() => {
-    return mockDemandForecastRepository.getAIRecommendation(selectedRegion, selectedProduct);
-  }, [selectedRegion, selectedProduct]);
+    return mockDemandForecastRepository.getAIRecommendation(selectedRegion, selectedProduct, selectedParameter);
+  }, [selectedRegion, selectedProduct, selectedParameter]);
+
+  const handleParameterChange = (newParamId: string) => {
+    const validation = parameterMetadataService.validateConfig({
+      mode: 'univariate',
+      dependentVariable: newParamId,
+    });
+
+    if (!validation.isValid) {
+      setValidationError(validation.message || 'Invalid parameter selection');
+      setAnalysisStatus('error');
+      return;
+    }
+
+    setValidationError(null);
+    setAnalysisStatus('loading');
+    setTimeout(() => {
+      setSelectedParameter(newParamId);
+      setAnalysisStatus('success');
+    }, 280);
+  };
 
   // Handlers
   const handleSelectModel = (model: ForecastModelResult) => {
@@ -186,6 +247,38 @@ export const DemandForecastPage: React.FC = () => {
             />
           </div>
 
+          {/* Parameter-Driven Univariate Analysis Toolbar */}
+          <div className="bg-white border border-slate-200/80 rounded-xl px-4 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <AnalysisParameterSelect
+                label="Analyze Parameter"
+                selectedId={selectedParameter}
+                onChange={handleParameterChange}
+                parameters={eligibleParameters}
+                disabled={analysisStatus === 'loading'}
+              />
+              {selectedParamMetadata?.unit && (
+                <span className="text-[11px] text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded border border-slate-200/60">
+                  UOM: <span className="text-slate-700 font-semibold">{selectedParamMetadata.unit}</span>
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                Univariate Analysis Active: {selectedParamMetadata?.name || 'Demand / Sales'}
+              </span>
+            </div>
+          </div>
+
+          {/* Analysis Feedback / Status Banner */}
+          <AnalysisStateBanner
+            status={analysisStatus}
+            parameterName={selectedParamMetadata?.name}
+            errorMessage={validationError || undefined}
+          />
+
           {/* Section 1: Forecast KPI Strip (6 Cards) */}
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5">
             {kpis.map((kpi) => (
@@ -211,8 +304,8 @@ export const DemandForecastPage: React.FC = () => {
             {/* Column 1: Probabilistic Demand Forecast (48%) */}
             <div className="lg:col-span-12 xl:col-auto flex flex-col min-w-0">
               <ExpandableCard
-                title="Probabilistic Demand Forecast"
-                subtitle="P10, P50, and P90 confidence intervals across forward horizon"
+                title={selectedParameter === 'demand_sales' ? 'Probabilistic Demand Forecast' : `Probabilistic Forecast: ${selectedParamMetadata?.name || 'Selected Parameter'}`}
+                subtitle={selectedParameter === 'demand_sales' ? 'P10, P50, and P90 confidence intervals across forward horizon' : `P10, P50, and P90 projection intervals for ${selectedParamMetadata?.name} across forward horizon`}
                 className="h-full"
               >
                 <ProbabilisticFanChart

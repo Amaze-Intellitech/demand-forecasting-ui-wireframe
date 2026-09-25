@@ -35,8 +35,9 @@ import {
 } from 'lucide-react';
 import aitekLogo from '../assets/aitek_logo.png';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { parameterMetadataService, INGESTION_SESSION_STORAGE_KEY } from '../services/parameterMetadataService';
 
-const STORAGE_KEY = 'aitek_data_selection_session';
+const STORAGE_KEY = INGESTION_SESSION_STORAGE_KEY;
 
 export const DataIngestion: React.FC = () => {
   const { solutionId } = useParams<{ solutionId: string }>();
@@ -78,26 +79,30 @@ export const DataIngestion: React.FC = () => {
       const existingMap = new Map(existingMappings.map((m) => [m.id, m]));
       const result: ColumnMappingConfig[] = [];
 
-      // 1. Mandatory stock variable
-      const stockVar = MOCK_VARIABLES.find((v) => v.id === 'stock_level')!;
-      const existingStock = existingMap.get(stockVar.id);
-      result.push(
-        existingStock || {
-          id: stockVar.id,
-          columnName: stockVar.name,
-          role: 'Dependent Variable',
-          dataType: stockVar.dataType,
-          sourceSystem: stockVar.defaultSourceSystem,
-          sourceTable: stockVar.defaultTable,
-          sourceField: stockVar.defaultField,
-          status: 'valid',
-          unit: stockVar.unit,
-        }
-      );
+      // 1. Mandatory dependent target variables
+      const mandatoryDependentIds = ['demand_sales', 'stock_level'];
+      mandatoryDependentIds.forEach((mId) => {
+        const mv = MOCK_VARIABLES.find((v) => v.id === mId);
+        if (!mv) return;
+        const existing = existingMap.get(mv.id);
+        result.push(
+          existing || {
+            id: mv.id,
+            columnName: mv.name,
+            role: 'Dependent Variable',
+            dataType: mv.dataType,
+            sourceSystem: mv.defaultSourceSystem,
+            sourceTable: mv.defaultTable,
+            sourceField: mv.defaultField,
+            status: 'valid',
+            unit: mv.unit,
+          }
+        );
+      });
 
       // 2. Selected independent variables
       varIds.forEach((id) => {
-        if (id === 'stock_level') return;
+        if (id === 'stock_level' || id === 'demand_sales') return;
         const v = MOCK_VARIABLES.find((item) => item.id === id);
         if (!v) return;
 
@@ -143,6 +148,23 @@ export const DataIngestion: React.FC = () => {
     generateMappings(DEFAULT_SELECTED_VARIABLE_IDS, [])
   );
 
+  // Helper to persist active session and notify parameterMetadataService
+  const persistSession = useCallback(
+    (vars: string[], cFields: CustomFieldItem[], curMappings: ColumnMappingConfig[], saved = isConfigSaved) => {
+      const sessionData: DataSelectionSession = {
+        material,
+        period,
+        selectedVariableIds: vars,
+        customFields: cFields,
+        mappings: curMappings,
+        isConfigSaved: saved,
+        savedAt: new Date().toISOString(),
+      };
+      parameterMetadataService.saveActiveSession(sessionData);
+    },
+    [material, period, isConfigSaved]
+  );
+
   // Load saved configuration on mount if present in localStorage
   useEffect(() => {
     try {
@@ -163,10 +185,12 @@ export const DataIngestion: React.FC = () => {
 
   // Toggle variable removal / addition
   const handleToggleVariable = (id: string) => {
-    if (id === 'stock_level') return; // Mandatory
+    if (id === 'stock_level' || id === 'demand_sales') return; // Mandatory
     setSelectedVariableIds((prev) => {
       const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
-      setMappings((currentMappings) => generateMappings(next, customFields, currentMappings));
+      const nextMappings = generateMappings(next, customFields, mappings);
+      setMappings(nextMappings);
+      persistSession(next, customFields, nextMappings);
       return next;
     });
   };
@@ -176,96 +200,86 @@ export const DataIngestion: React.FC = () => {
     variableId: string,
     mappingUpdates: Partial<ColumnMappingConfig>
   ) => {
-    setSelectedVariableIds((prev) => {
-      const next = prev.includes(variableId) ? prev : [...prev, variableId];
-      return next;
-    });
+    const nextVars = selectedVariableIds.includes(variableId)
+      ? selectedVariableIds
+      : [...selectedVariableIds, variableId];
+
+    setSelectedVariableIds(nextVars);
 
     setMappings((prev) => {
       const existingIdx = prev.findIndex((m) => m.id === variableId);
+      let updated: ColumnMappingConfig[];
       if (existingIdx >= 0) {
-        return prev.map((m) =>
-          m.id === variableId ? { ...m, ...mappingUpdates, status: 'valid' } : m
+        updated = prev.map((m) =>
+          m.id === variableId ? { ...m, ...mappingUpdates, status: 'valid' as const } : m
         );
+      } else {
+        const v = MOCK_VARIABLES.find((item) => item.id === variableId);
+        const newMapping: ColumnMappingConfig = {
+          id: variableId,
+          columnName: v ? v.name : variableId,
+          role: v?.isDependent ? 'Dependent Variable' : 'Independent Variable',
+          dataType: mappingUpdates.dataType || v?.dataType || 'VARCHAR(64)',
+          sourceSystem: mappingUpdates.sourceSystem || v?.defaultSourceSystem || 'SAP S/4HANA',
+          sourceTable: mappingUpdates.sourceTable || v?.defaultTable || 'VBAP',
+          sourceField: mappingUpdates.sourceField || v?.defaultField || 'NETPR',
+          status: 'valid' as const,
+          unit: v?.unit,
+        };
+        updated = [...prev, newMapping];
       }
-      const v = MOCK_VARIABLES.find((item) => item.id === variableId);
-      const newMapping: ColumnMappingConfig = {
-        id: variableId,
-        columnName: v ? v.name : variableId,
-        role: v?.isDependent ? 'Dependent Variable' : 'Independent Variable',
-        dataType: mappingUpdates.dataType || v?.dataType || 'VARCHAR(64)',
-        sourceSystem: mappingUpdates.sourceSystem || v?.defaultSourceSystem || 'SAP S/4HANA',
-        sourceTable: mappingUpdates.sourceTable || v?.defaultTable || 'VBAP',
-        sourceField: mappingUpdates.sourceField || v?.defaultField || 'NETPR',
-        status: 'valid',
-        unit: v?.unit,
-      };
-      return [...prev, newMapping];
+      persistSession(nextVars, customFields, updated);
+      return updated;
     });
   };
 
   const handleSelectRecommended = () => {
     setSelectedVariableIds(DEFAULT_SELECTED_VARIABLE_IDS);
-    setMappings((currentMappings) =>
-      generateMappings(DEFAULT_SELECTED_VARIABLE_IDS, customFields, currentMappings)
-    );
+    const nextMappings = generateMappings(DEFAULT_SELECTED_VARIABLE_IDS, customFields, mappings);
+    setMappings(nextMappings);
+    persistSession(DEFAULT_SELECTED_VARIABLE_IDS, customFields, nextMappings);
   };
 
   const handleAddCustomField = (newField: CustomFieldItem) => {
     const updatedCustom = [...customFields, newField];
     setCustomFields(updatedCustom);
-    setMappings((currentMappings) =>
-      generateMappings(selectedVariableIds, updatedCustom, currentMappings)
-    );
+    const nextMappings = generateMappings(selectedVariableIds, updatedCustom, mappings);
+    setMappings(nextMappings);
+    persistSession(selectedVariableIds, updatedCustom, nextMappings);
   };
 
   const handleRemoveCustomField = (id: string) => {
     const updatedCustom = customFields.filter((f) => f.id !== id);
     setCustomFields(updatedCustom);
-    setMappings((currentMappings) =>
-      generateMappings(selectedVariableIds, updatedCustom, currentMappings)
-    );
+    const nextMappings = generateMappings(selectedVariableIds, updatedCustom, mappings);
+    setMappings(nextMappings);
+    persistSession(selectedVariableIds, updatedCustom, nextMappings);
   };
 
   const handleUpdateMapping = (id: string, updates: Partial<ColumnMappingConfig>) => {
-    setMappings((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, ...updates, status: 'valid' } : m))
-    );
+    setMappings((prev) => {
+      const next: ColumnMappingConfig[] = prev.map((m) =>
+        m.id === id ? { ...m, ...updates, status: (updates.status || 'valid') as 'valid' | 'custom' | 'pending' } : m
+      );
+      persistSession(selectedVariableIds, customFields, next);
+      return next;
+    });
   };
 
   const handleToggleSaveConfig = (saved: boolean) => {
     setIsConfigSaved(saved);
-    if (saved) {
-      const sessionData: DataSelectionSession = {
-        material,
-        period,
-        selectedVariableIds,
-        customFields,
-        mappings,
-        isConfigSaved: true,
-        savedAt: new Date().toISOString(),
-      };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
-      } catch {
-        // ignore storage error
-      }
-    } else {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // ignore
-      }
-    }
+    persistSession(selectedVariableIds, customFields, mappings, saved);
   };
 
   const handleStartIngestion = () => {
+    persistSession(selectedVariableIds, customFields, mappings, true);
     setCurrentStep(5);
   };
 
   const handleIngestionComplete = () => {
     // Notify AitekContext that data is connected
     updateConnectorStatus('sap-erp', 'connected', 1428500);
+    persistSession(selectedVariableIds, customFields, mappings, true);
     setCurrentStep(6);
   };
 

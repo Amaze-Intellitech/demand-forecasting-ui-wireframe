@@ -52,9 +52,9 @@ const AitekContext = createContext<AitekContextType | undefined>(undefined);
 
 export const AitekProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserSession | null>(() => {
-    // Check if previously logged in for smooth navigation
+    // Check if previously logged in for smooth navigation, fallback to DEFAULT_USER
     const saved = sessionStorage.getItem('aitek_auth_user');
-    return saved ? JSON.parse(saved) : null;
+    return saved ? JSON.parse(saved) : DEFAULT_USER;
   });
 
   const [selectedSolutionId, setSelectedSolutionId] = useState<string>(() => {

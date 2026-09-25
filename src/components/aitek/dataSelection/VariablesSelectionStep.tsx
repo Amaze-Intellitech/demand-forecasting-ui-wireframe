@@ -98,13 +98,14 @@ export const VariablesSelectionStep: React.FC<VariablesSelectionStepProps> = ({
     });
   }, [selectedCategory, searchTerm]);
 
-  // Mandatory stock variable definition
+  // Mandatory dependent variables definitions
+  const demandVariable = MOCK_VARIABLES.find((v) => v.id === 'demand_sales')!;
   const stockVariable = MOCK_VARIABLES.find((v) => v.id === 'stock_level')!;
 
   // Selected independent variables currently in the active pipeline
   const activeSelectedVariables = useMemo(() => {
     return selectedVariableIds
-      .filter((id) => id !== 'stock_level')
+      .filter((id) => id !== 'stock_level' && id !== 'demand_sales')
       .map((id) => MOCK_VARIABLES.find((v) => v.id === id))
       .filter(Boolean) as typeof MOCK_VARIABLES;
   }, [selectedVariableIds]);
@@ -426,28 +427,81 @@ export const VariablesSelectionStep: React.FC<VariablesSelectionStepProps> = ({
         {/* ============================================================ */}
         <div className="lg:col-span-7 space-y-4">
           
-          {/* Top Pinned Card: Mandatory Dependent Variable (Stock) */}
-          <div className="border-2 border-emerald-500/60 bg-emerald-50/40 dark:bg-emerald-950/20 rounded-2xl p-4 shadow-xs">
-            <div className="flex items-start sm:items-center justify-between gap-3">
-              <div className="flex items-start sm:items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <Lock className="w-4 h-4" />
+          {/* Top Pinned Card: Mandatory Dependent Variables (Demand Target + Stock) */}
+          <div className="border-2 border-emerald-500/60 bg-emerald-50/40 dark:bg-emerald-950/20 rounded-2xl p-4 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-1 border-b border-emerald-200/60 dark:border-emerald-800/60">
+              <div className="flex items-center gap-2">
+                <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200 uppercase tracking-wider">
+                  Mandatory Dependent Target Variables (2 Pinned)
+                </span>
+              </div>
+              <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-mono font-medium">
+                Core Forecast &amp; Inventory Targets
+              </span>
+            </div>
+
+            {/* 1. Demand / Sales Target */}
+            <div className="flex items-start sm:items-center justify-between gap-3 bg-white/70 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80">
+              <div className="flex items-start sm:items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs text-xs font-bold font-mono">
+                  Y1
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-bold text-deep">
-                      {stockVariable.name}
+                    <h3 className="text-xs font-bold text-deep">
+                      {demandVariable.name}
                     </h3>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-xs">
-                      Mandatory Dependent Variable
+                    <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-2xs">
+                      Primary Forecast Target
                     </span>
                   </div>
-                  {/* Active mapped source pill */}
-                  <div className="text-xs text-body mt-0.5 flex items-center gap-2 flex-wrap">
+                  <div className="text-[11px] text-body mt-0.5">
+                    {(() => {
+                      const demandMap = mappings.find((m) => m.id === 'demand_sales');
+                      return (
+                        <span className="font-mono text-deep font-semibold bg-emerald-100/70 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                          {demandMap?.sourceSystem || demandVariable.defaultSourceSystem} &rarr; {demandMap?.sourceTable || demandVariable.defaultTable}.{demandMap?.sourceField || demandVariable.defaultField}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => openMappingDialogForVariable(demandVariable, true)}
+                  className="p-1.5 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold border border-emerald-300 dark:border-emerald-800"
+                  title="Configure demand source mapping"
+                >
+                  <Settings2 className="w-3.5 h-3.5" />
+                  <span>Configure Source</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Stock Level Target */}
+            <div className="flex items-start sm:items-center justify-between gap-3 bg-white/70 dark:bg-slate-900/60 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80">
+              <div className="flex items-start sm:items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-700 text-white flex items-center justify-center shrink-0 shadow-2xs text-xs font-bold font-mono">
+                  Y2
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-xs font-bold text-deep">
+                      {stockVariable.name}
+                    </h3>
+                    <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-700 text-white shadow-2xs">
+                      Inventory Balance Target
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-body mt-0.5">
                     {(() => {
                       const stockMap = mappings.find((m) => m.id === 'stock_level');
                       return (
-                        <span className="font-mono text-deep font-semibold bg-emerald-100/70 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                        <span className="font-mono text-deep font-semibold bg-emerald-100/70 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                           {stockMap?.sourceSystem || stockVariable.defaultSourceSystem} &rarr; {stockMap?.sourceTable || stockVariable.defaultTable}.{stockMap?.sourceField || stockVariable.defaultField}
                         </span>
                       );
@@ -461,7 +515,7 @@ export const VariablesSelectionStep: React.FC<VariablesSelectionStepProps> = ({
                   type="button"
                   onClick={() => openMappingDialogForVariable(stockVariable, true)}
                   className="p-1.5 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold border border-emerald-300 dark:border-emerald-800"
-                  title="Edit stock source mapping"
+                  title="Configure stock source mapping"
                 >
                   <Settings2 className="w-3.5 h-3.5" />
                   <span>Configure Source</span>
@@ -486,12 +540,12 @@ export const VariablesSelectionStep: React.FC<VariablesSelectionStepProps> = ({
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
                 <h3 className="text-xs font-bold text-deep uppercase tracking-wider">
-                  Active Ingestion Pipeline ({totalSelectedCount} Variables Mapped)
+                  Active Ingestion Pipeline ({activeSelectedVariables.length} Independent Drivers Mapped)
                 </h3>
               </div>
 
               <span className="text-[11px] font-mono text-primary font-semibold">
-                1 Dependent &bull; {activeSelectedVariables.length} Independent &bull; {customFields.length} Custom
+                2 Dependent &bull; {activeSelectedVariables.length} Independent &bull; {customFields.length} Custom
               </span>
             </div>
 

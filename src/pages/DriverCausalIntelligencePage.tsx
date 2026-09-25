@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDemandFilters } from '../hooks/useDemandFilters';
 import { ChevronRight, Info } from 'lucide-react';
@@ -28,6 +28,10 @@ import {
   CausalNetworkNode,
   DriverBreakEvent,
 } from '../types/domain/causalIntelligence';
+import { parameterMetadataService, INGESTION_SELECTION_EVENT } from '../services/parameterMetadataService';
+import { BivariateVariableSelector } from '../components/demand/analysis/BivariateVariableSelector';
+import { AnalysisStateBanner } from '../components/demand/analysis/AnalysisStateBanner';
+import { AnalysisStatus } from '../types/analysisConfig';
 
 export const DriverCausalIntelligencePage: React.FC = () => {
   const navigate = useNavigate();
@@ -47,6 +51,52 @@ export const DriverCausalIntelligencePage: React.FC = () => {
   } = useDemandFilters();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FY 2025');
 
+  // Parameter-Driven Bivariate Analysis state
+  // Default: dependent = 'demand_sales' (Demand / Sales), independent = 'all' (All Drivers)
+  const [dependentVariable, setDependentVariable] = useState<string>('demand_sales');
+  const [independentVariable, setIndependentVariable] = useState<string>('all');
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>('idle');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Ingested dependent and independent variables strictly scoped to Data Ingestion
+  const [eligibleDependent, setEligibleDependent] = useState(() =>
+    parameterMetadataService.getEligibleDependentVariables()
+  );
+
+  const [eligibleIndependent, setEligibleIndependent] = useState(() =>
+    parameterMetadataService.getEligibleIndependentVariables()
+  );
+
+  useEffect(() => {
+    const handleSchemaUpdate = () => {
+      const updatedDep = parameterMetadataService.getEligibleDependentVariables();
+      const updatedIndep = parameterMetadataService.getEligibleIndependentVariables();
+      setEligibleDependent(updatedDep);
+      setEligibleIndependent(updatedIndep);
+
+      setDependentVariable((prev) => {
+        if (!updatedDep.some((p) => p.id === prev)) {
+          return updatedDep[0]?.id || 'demand_sales';
+        }
+        return prev;
+      });
+
+      setIndependentVariable((prev) => {
+        if (prev !== 'all' && !updatedIndep.some((p) => p.id === prev)) {
+          return 'all';
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener(INGESTION_SELECTION_EVENT, handleSchemaUpdate);
+    window.addEventListener('storage', handleSchemaUpdate);
+    return () => {
+      window.removeEventListener(INGESTION_SELECTION_EVENT, handleSchemaUpdate);
+      window.removeEventListener('storage', handleSchemaUpdate);
+    };
+  }, []);
+
   // Interactive selectors
   const [selectedDriverForChart, setSelectedDriverForChart] = useState<string>('Price Index');
   const [selectedDriverForScenario, setSelectedDriverForScenario] = useState<string>('Price Index');
@@ -64,33 +114,38 @@ export const DriverCausalIntelligencePage: React.FC = () => {
 
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
-  // Repository-driven data with contextual filters
+  // Repository-driven data with contextual filters and bivariate parameters
   const filterOptions = useMemo(() => mockCausalIntelligenceRepository.getFilterOptions(), []);
 
   const kpis = useMemo(() => {
-    return mockCausalIntelligenceRepository.getCausalKpis({
-      plant: selectedPlant,
-      product: selectedProduct,
-      region: selectedRegion,
-      period: selectedPeriod,
-    });
-  }, [selectedPlant, selectedProduct, selectedRegion, selectedPeriod]);
+    return mockCausalIntelligenceRepository.getCausalKpis(
+      {
+        plant: selectedPlant,
+        product: selectedProduct,
+        region: selectedRegion,
+        period: selectedPeriod,
+      },
+      dependentVariable,
+      independentVariable
+    );
+  }, [selectedPlant, selectedProduct, selectedRegion, selectedPeriod, dependentVariable, independentVariable]);
 
   const topDrivers = useMemo(() => {
-    return mockCausalIntelligenceRepository.getTopDemandDrivers();
-  }, []);
+    return mockCausalIntelligenceRepository.getTopDemandDrivers(dependentVariable, independentVariable);
+  }, [dependentVariable, independentVariable]);
 
   const causalNetwork = useMemo(() => {
     return mockCausalIntelligenceRepository.getCausalNetwork();
   }, []);
 
   const timeSeriesData = useMemo(() => {
-    return mockCausalIntelligenceRepository.getCausalImpactOverTime(selectedDriverForChart);
-  }, [selectedDriverForChart]);
+    return mockCausalIntelligenceRepository.getCausalImpactOverTime(selectedDriverForChart, dependentVariable);
+  }, [selectedDriverForChart, dependentVariable]);
 
   const insightsTable = useMemo(() => {
-    return mockCausalIntelligenceRepository.getCausalInsightsTable(insightsFilter);
-  }, [insightsFilter]);
+    const activeFilter = independentVariable !== 'all' ? selectedDriverForChart : insightsFilter;
+    return mockCausalIntelligenceRepository.getCausalInsightsTable(activeFilter);
+  }, [independentVariable, selectedDriverForChart, insightsFilter]);
 
   const scenarioSimulation = useMemo(() => {
     return mockCausalIntelligenceRepository.getScenarioSimulation(selectedDriverForScenario);
@@ -105,8 +160,56 @@ export const DriverCausalIntelligencePage: React.FC = () => {
   }, []);
 
   const aiInterpretation = useMemo(() => {
-    return mockCausalIntelligenceRepository.getAIInterpretation(selectedDriverForScenario);
-  }, [selectedDriverForScenario]);
+    return mockCausalIntelligenceRepository.getAIInterpretation(selectedDriverForScenario, dependentVariable);
+  }, [selectedDriverForScenario, dependentVariable]);
+
+  const handleDependentChange = (newDepId: string) => {
+    const validation = parameterMetadataService.validateConfig({
+      mode: 'bivariate',
+      dependentVariable: newDepId,
+      independentVariable: independentVariable,
+    });
+
+    if (!validation.isValid) {
+      setValidationError(validation.message || 'Invalid variable selection');
+      setAnalysisStatus('error');
+      return;
+    }
+
+    setValidationError(null);
+    setAnalysisStatus('loading');
+    setTimeout(() => {
+      setDependentVariable(newDepId);
+      setAnalysisStatus('success');
+    }, 280);
+  };
+
+  const handleIndependentChange = (newIndepId: string) => {
+    const validation = parameterMetadataService.validateConfig({
+      mode: 'bivariate',
+      dependentVariable: dependentVariable,
+      independentVariable: newIndepId,
+    });
+
+    if (!validation.isValid) {
+      setValidationError(validation.message || 'Invalid variable selection');
+      setAnalysisStatus('error');
+      return;
+    }
+
+    setValidationError(null);
+    setAnalysisStatus('loading');
+    setTimeout(() => {
+      setIndependentVariable(newIndepId);
+      if (newIndepId !== 'all') {
+        const param = parameterMetadataService.getParameterById(newIndepId);
+        const name = param ? param.name : newIndepId;
+        setSelectedDriverForChart(name);
+        setSelectedDriverForScenario(name);
+      }
+      setAnalysisStatus('success');
+    }, 280);
+  };
 
   // Handlers
   const handleSelectDriver = (driver: TopDemandDriver) => {
@@ -204,6 +307,26 @@ export const DriverCausalIntelligencePage: React.FC = () => {
               isRunning={isAnalyzing}
             />
           </div>
+
+          {/* Parameter-Driven Bivariate Analysis Toolbar */}
+          <div className="bg-white border border-slate-200/80 rounded-xl px-4 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+            <BivariateVariableSelector
+              dependentId={dependentVariable}
+              independentId={independentVariable}
+              onDependentChange={handleDependentChange}
+              onIndependentChange={handleIndependentChange}
+              dependentOptions={eligibleDependent}
+              independentOptions={eligibleIndependent}
+              disabled={analysisStatus === 'loading'}
+            />
+          </div>
+
+          {/* Analysis Feedback / Status Banner */}
+          <AnalysisStateBanner
+            status={analysisStatus}
+            parameterName={independentVariable === 'all' ? 'All Drivers' : parameterMetadataService.getParameterById(independentVariable)?.name}
+            errorMessage={validationError || undefined}
+          />
 
           {/* Section 1: Executive KPI Strip (6 Cards) */}
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5">

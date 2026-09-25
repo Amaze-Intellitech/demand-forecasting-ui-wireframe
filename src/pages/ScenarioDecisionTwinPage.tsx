@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDemandFilters } from '../hooks/useDemandFilters';
 import { ChevronRight } from 'lucide-react';
@@ -32,6 +32,10 @@ import {
   ScenarioRegionalImpact,
   WhatIfDriverOption,
 } from '../types/domain/scenarioDecisionTwin';
+import { parameterMetadataService, INGESTION_SELECTION_EVENT } from '../services/parameterMetadataService';
+import { MultivariateVariableSelector } from '../components/demand/analysis/MultivariateVariableSelector';
+import { AnalysisStateBanner } from '../components/demand/analysis/AnalysisStateBanner';
+import { AnalysisStatus } from '../types/analysisConfig';
 
 export const ScenarioDecisionTwinPage: React.FC = () => {
   // Topbar and Shell State
@@ -48,6 +52,51 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
     setRegion: setSelectedRegion,
   } = useDemandFilters();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('FY 2025');
+
+  // Parameter-Driven Multivariate Analysis State
+  // Default: dependent = 'demand_sales' (Demand / Sales), independent = All Ingested Drivers
+  const [eligibleDependent, setEligibleDependent] = useState(() =>
+    parameterMetadataService.getEligibleDependentVariables()
+  );
+
+  const [eligibleIndependent, setEligibleIndependent] = useState(() =>
+    parameterMetadataService.getEligibleIndependentVariables()
+  );
+
+  const [dependentVariable, setDependentVariable] = useState<string>('demand_sales');
+  const [independentVariables, setIndependentVariables] = useState<string[]>(() =>
+    parameterMetadataService.getEligibleIndependentVariables().map((p) => p.id)
+  );
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>('idle');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleSchemaUpdate = () => {
+      const updatedDep = parameterMetadataService.getEligibleDependentVariables();
+      const updatedIndep = parameterMetadataService.getEligibleIndependentVariables();
+      setEligibleDependent(updatedDep);
+      setEligibleIndependent(updatedIndep);
+
+      setDependentVariable((prev) => {
+        if (!updatedDep.some((p) => p.id === prev)) {
+          return updatedDep[0]?.id || 'demand_sales';
+        }
+        return prev;
+      });
+
+      setIndependentVariables((prev) => {
+        const filtered = prev.filter((id) => updatedIndep.some((p) => p.id === id));
+        return filtered.length > 0 ? filtered : updatedIndep.map((p) => p.id);
+      });
+    };
+
+    window.addEventListener(INGESTION_SELECTION_EVENT, handleSchemaUpdate);
+    window.addEventListener('storage', handleSchemaUpdate);
+    return () => {
+      window.removeEventListener(INGESTION_SELECTION_EVENT, handleSchemaUpdate);
+      window.removeEventListener('storage', handleSchemaUpdate);
+    };
+  }, []);
 
   // Scenario Presets State
   const [scenarios, setScenarios] = useState<ScenarioPreset[]>(() =>
@@ -77,7 +126,7 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
 
   const [driverOverrides, setDriverOverrides] = useState<Record<string, string>>({});
 
-  // Derived Repository Data
+  // Derived Repository Data with active multivariate drivers
   const filterOptions = useMemo(
     () => mockScenarioDecisionTwinRepository.getScenarioFilters(),
     []
@@ -91,33 +140,77 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
   }, [scenarios, selectedScenarioId]);
 
   const trajectoryData = useMemo(() => {
-    return mockScenarioDecisionTwinRepository.getScenarioForecastSeries(chartGranularity);
-  }, [chartGranularity]);
+    return mockScenarioDecisionTwinRepository.getScenarioForecastSeries(chartGranularity, independentVariables);
+  }, [chartGranularity, independentVariables]);
 
   const comparisonRows = useMemo(() => {
-    return mockScenarioDecisionTwinRepository.getScenarioComparisonRows();
-  }, [scenarios]);
+    return mockScenarioDecisionTwinRepository.getScenarioComparisonRows(independentVariables);
+  }, [scenarios, independentVariables]);
 
   const driverRows = useMemo(() => {
-    const rows = mockScenarioDecisionTwinRepository.getScenarioDrivers(driversScenarioId);
+    const rows = mockScenarioDecisionTwinRepository.getScenarioDrivers(driversScenarioId, independentVariables);
     return rows.map((r) =>
       driverOverrides[`${driversScenarioId}:${r.id}`]
         ? { ...r, scenarioValue: driverOverrides[`${driversScenarioId}:${r.id}`] }
         : r
     );
-  }, [driversScenarioId, driverOverrides]);
+  }, [driversScenarioId, driverOverrides, independentVariables]);
 
   const regionalData = useMemo(() => {
     return mockScenarioDecisionTwinRepository.getRegionalImpact(networkMetric);
   }, [networkMetric]);
 
   const tradeoffs = useMemo(() => {
-    return mockScenarioDecisionTwinRepository.getScenarioTradeoffs(selectedScenarioId);
-  }, [selectedScenarioId]);
+    return mockScenarioDecisionTwinRepository.getScenarioTradeoffs(selectedScenarioId, independentVariables);
+  }, [selectedScenarioId, independentVariables]);
 
   const recommendedData = useMemo(() => {
     return mockScenarioDecisionTwinRepository.getRecommendedScenario();
   }, []);
+
+  const handleDependentChange = (newDepId: string) => {
+    const validation = parameterMetadataService.validateConfig({
+      mode: 'multivariate',
+      dependentVariable: newDepId,
+      independentVariables: independentVariables,
+    });
+
+    if (!validation.isValid) {
+      setValidationError(validation.message || 'Invalid variable selection');
+      setAnalysisStatus('error');
+      return;
+    }
+
+    setValidationError(null);
+    setAnalysisStatus('loading');
+    setTimeout(() => {
+      setDependentVariable(newDepId);
+      setIndependentVariables((prev) => prev.filter((id) => id !== newDepId));
+      setAnalysisStatus('success');
+    }, 280);
+  };
+
+  const handleIndependentChange = (newIndepIds: string[]) => {
+    const validation = parameterMetadataService.validateConfig({
+      mode: 'multivariate',
+      dependentVariable: dependentVariable,
+      independentVariables: newIndepIds,
+    });
+
+    if (!validation.isValid) {
+      setValidationError(validation.message || 'At least one driver is required');
+      setAnalysisStatus('error');
+      setIndependentVariables(newIndepIds);
+      return;
+    }
+
+    setValidationError(null);
+    setAnalysisStatus('loading');
+    setTimeout(() => {
+      setIndependentVariables(newIndepIds);
+      setAnalysisStatus('success');
+    }, 280);
+  };
 
   const recentScenarios = useMemo(() => {
     return mockScenarioDecisionTwinRepository.getRecentScenarios();
@@ -238,6 +331,26 @@ export const ScenarioDecisionTwinPage: React.FC = () => {
               onCreateScenario={() => setIsCreateDrawerOpen(true)}
             />
           </div>
+
+          {/* Parameter-Driven Multivariate Analysis Toolbar */}
+          <div className="bg-white border border-slate-200/80 rounded-xl px-4 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+            <MultivariateVariableSelector
+              dependentId={dependentVariable}
+              independentIds={independentVariables}
+              onDependentChange={handleDependentChange}
+              onIndependentChange={handleIndependentChange}
+              dependentOptions={eligibleDependent}
+              independentOptions={eligibleIndependent}
+              disabled={analysisStatus === 'loading'}
+            />
+          </div>
+
+          {/* Analysis Feedback / Status Banner */}
+          <AnalysisStateBanner
+            status={analysisStatus}
+            parameterName={`${independentVariables.length} explanatory drivers`}
+            errorMessage={validationError || undefined}
+          />
 
           {/* Section 1: Scenario Navigation Strip (6 Cards) */}
           <ScenarioSelectorStrip

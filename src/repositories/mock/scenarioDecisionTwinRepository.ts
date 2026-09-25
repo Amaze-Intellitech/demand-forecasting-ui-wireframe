@@ -22,6 +22,7 @@ import {
   RecommendedScenarioData,
   RecentScenarioItem,
 } from '../../types/domain/scenarioDecisionTwin';
+import { parameterMetadataService } from '../../services/parameterMetadataService';
 
 export class ScenarioDecisionTwinRepository {
   private presets: ScenarioPreset[] = [...mockScenarioPresets];
@@ -39,27 +40,85 @@ export class ScenarioDecisionTwinRepository {
     return this.presets.find((p) => p.id === id);
   }
 
-  getScenarioForecastSeries(granularity: 'Monthly' | 'Quarterly' = 'Monthly'): ScenarioTrajectoryPoint[] {
-    if (granularity === 'Quarterly') {
-      return [
-        { month: 'Q1 2025', monthShort: 'Q1', baseCase: 92, highDemand: 102, commodityShock: 85, supplyDisruption: 89, pricingOptimization: 97, isForecast: false },
-        { month: 'Q2 2025', monthShort: 'Q2', baseCase: 98, highDemand: 115, commodityShock: 89, supplyDisruption: 78, pricingOptimization: 108, isForecast: false },
-        { month: 'Q3 2025', monthShort: 'Q3', baseCase: 115, highDemand: 150, commodityShock: 99, supplyDisruption: 65, pricingOptimization: 132, isForecast: true },
-        { month: 'Q4 2025', monthShort: 'Q4', baseCase: 155, highDemand: 217, commodityShock: 117, supplyDisruption: 87, pricingOptimization: 177, isForecast: true },
-      ];
+  getScenarioForecastSeries(
+    granularity: 'Monthly' | 'Quarterly' = 'Monthly',
+    activeDriverIds?: string[]
+  ): ScenarioTrajectoryPoint[] {
+    const rawQuarterly: ScenarioTrajectoryPoint[] = [
+      { month: 'Q1 2025', monthShort: 'Q1', baseCase: 92, highDemand: 102, commodityShock: 85, supplyDisruption: 89, pricingOptimization: 97, isForecast: false },
+      { month: 'Q2 2025', monthShort: 'Q2', baseCase: 98, highDemand: 115, commodityShock: 89, supplyDisruption: 78, pricingOptimization: 108, isForecast: false },
+      { month: 'Q3 2025', monthShort: 'Q3', baseCase: 115, highDemand: 150, commodityShock: 99, supplyDisruption: 65, pricingOptimization: 132, isForecast: true },
+      { month: 'Q4 2025', monthShort: 'Q4', baseCase: 155, highDemand: 217, commodityShock: 117, supplyDisruption: 87, pricingOptimization: 177, isForecast: true },
+    ];
+
+    const sourcePoints = granularity === 'Quarterly' ? rawQuarterly : mockScenarioTrajectoryPoints;
+
+    if (!activeDriverIds || activeDriverIds.length === 0 || activeDriverIds.length >= 7) {
+      return sourcePoints;
     }
-    return mockScenarioTrajectoryPoints;
+
+    // Scale trajectory divergence based on the active multivariate explanatory factors
+    const weight = Math.max(0.35, activeDriverIds.length / 7);
+
+    return sourcePoints.map((pt) => {
+      if (!pt.isForecast) return pt;
+      const base = pt.baseCase;
+      return {
+        ...pt,
+        highDemand: Math.round(base + (pt.highDemand - base) * weight),
+        commodityShock: Math.round(base + (pt.commodityShock - base) * weight),
+        supplyDisruption: Math.round(base + (pt.supplyDisruption - base) * weight),
+        pricingOptimization: Math.round(base + (pt.pricingOptimization - base) * weight),
+      };
+    });
   }
 
-  getScenarioComparisonRows(): ScenarioComparisonRow[] {
-    return this.comparisons;
+  getScenarioComparisonRows(activeDriverIds?: string[]): ScenarioComparisonRow[] {
+    if (!activeDriverIds || activeDriverIds.length === 0 || activeDriverIds.length >= 7) {
+      return this.comparisons;
+    }
+
+    const weight = Math.max(0.4, activeDriverIds.length / 7);
+
+    return this.comparisons.map((row) => {
+      if (row.scenarioId === 'scenario-base') return row;
+      const numericBase = parseFloat(row.vsBase.replace(/[^\d.-]/g, '')) || 0;
+      const adjustedVsBase = (numericBase * weight).toFixed(1);
+      const sign = numericBase >= 0 ? '+' : '';
+      return {
+        ...row,
+        vsBase: `${sign}${adjustedVsBase}%`,
+      };
+    });
   }
 
-  getScenarioDrivers(scenarioId: string = 'scenario-base'): ScenarioDriverRow[] {
-    return (
+  getScenarioDrivers(scenarioId: string = 'scenario-base', activeDriverIds?: string[]): ScenarioDriverRow[] {
+    const baseRows =
       mockScenarioDriversByScenario[scenarioId] ||
-      mockScenarioDriversByScenario['scenario-base']
-    );
+      mockScenarioDriversByScenario['scenario-base'];
+
+    if (!activeDriverIds || activeDriverIds.length === 0) {
+      return baseRows;
+    }
+
+    // Filter down to the active explanatory drivers in the multivariate model
+    const filtered = baseRows.filter((r) => {
+      const rLower = r.driver.toLowerCase();
+      return activeDriverIds.some((id) => {
+        const param = parameterMetadataService.getParameterById(id);
+        const pName = param ? param.name.toLowerCase() : id.toLowerCase();
+        if (id === 'unit_price' && rLower.includes('price index')) return true;
+        if ((id === 'promotions' || id === 'marketing_spend') && rLower.includes('promotion')) return true;
+        if (id === 'manufacturing_pmi_index' && (rLower.includes('gdp') || rLower.includes('economic'))) return true;
+        if (id === 'brent_crude_oil_feedstock' && rLower.includes('raw material')) return true;
+        if (id === 'competitor_price_index' && rLower.includes('competitor')) return true;
+        if ((id === 'plant_uptime_oee' || id === 'stock_level') && rLower.includes('supply')) return true;
+        if (id === 'temp_variance_weather' && rLower.includes('weather')) return true;
+        return pName.includes(rLower.split(' ')[0]);
+      });
+    });
+
+    return filtered.length > 0 ? filtered : baseRows;
   }
 
   getRegionalImpact(metric: string = 'Demand Change'): ScenarioRegionalImpact[] {
@@ -78,33 +137,35 @@ export class ScenarioDecisionTwinRepository {
     return mockRegionalScenarioImpacts;
   }
 
-  getScenarioTradeoffs(scenarioId: string = 'scenario-high-demand'): ScenarioTradeoff[] {
+  getScenarioTradeoffs(scenarioId: string = 'scenario-high-demand', activeDriverIds?: string[]): ScenarioTradeoff[] {
     const scenario = this.getScenarioById(scenarioId);
     if (!scenario) return mockScenarioTradeoffs;
+
+    const factor = activeDriverIds && activeDriverIds.length > 0 ? Math.max(0.5, activeDriverIds.length / 7) : 1;
 
     return [
       {
         dimension: 'Service Level',
         value: scenario.outcomes.serviceLevel,
-        progress: Math.min(100, scenario.outcomes.serviceLevelNumeric),
+        progress: Math.min(100, Math.round(scenario.outcomes.serviceLevelNumeric * factor)),
         color: '#0284c7',
       },
       {
         dimension: 'Working Capital',
         value: scenario.outcomes.workingCapital,
-        progress: Math.min(100, Math.round((scenario.outcomes.workingCapitalNumeric / 2.0) * 100)),
+        progress: Math.min(100, Math.round(((scenario.outcomes.workingCapitalNumeric / 2.0) * 100) * factor)),
         color: '#0284c7',
       },
       {
         dimension: 'Cost to Serve',
         value: scenario.outcomes.costToServe,
-        progress: Math.min(100, Math.round((parseFloat(scenario.outcomes.costToServe.replace(/[^\d.]/g, '')) / 2.5) * 100)),
+        progress: Math.min(100, Math.round(((parseFloat(scenario.outcomes.costToServe.replace(/[^\d.]/g, '')) / 2.5) * 100) * factor)),
         color: '#0284c7',
       },
       {
         dimension: 'CO₂ Emissions',
         value: scenario.outcomes.emissionsChange,
-        progress: 60,
+        progress: Math.round(60 * factor),
         color: '#10b981',
       },
     ];
@@ -115,7 +176,6 @@ export class ScenarioDecisionTwinRepository {
     if (mockWhatIfOptions[key]) {
       return mockWhatIfOptions[key];
     }
-    // Fallback baseline dynamic estimate
     const isNegative = change.startsWith('-');
     return {
       driver,
@@ -186,7 +246,6 @@ export class ScenarioDecisionTwinRepository {
 
     this.presets.push(fullPreset);
 
-    // Also add to comparison rows
     this.comparisons.push({
       scenarioId: fullPreset.id,
       scenarioName: fullPreset.name,

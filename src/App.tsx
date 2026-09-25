@@ -240,6 +240,12 @@ export const AppContent: React.FC = () => {
         }
       />
 
+      {/* Short Alias Routes matching GEMINI.md & User Specs */}
+      <Route path="/forecast" element={<Navigate to="/solutions/demand-intelligence/forecast" replace />} />
+      <Route path="/drivers" element={<Navigate to="/solutions/demand-intelligence/drivers" replace />} />
+      <Route path="/scenarios" element={<Navigate to="/solutions/demand-intelligence/scenarios" replace />} />
+      <Route path="/demand-sensing" element={<Navigate to="/solutions/demand-intelligence/demand-sensing" replace />} />
+
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

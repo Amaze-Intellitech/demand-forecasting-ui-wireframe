@@ -95,6 +95,20 @@ export const MOCK_MATERIALS: MaterialMasterItem[] = [
 export const MOCK_VARIABLES: VariableColumnItem[] = [
   // 1. Mandatory Dependent Variable
   {
+    id: 'demand_sales',
+    name: 'Demand / Sales',
+    description: 'Actual invoiced sales order quantity and forward baseline demand volume',
+    category: 'Dependent Variable',
+    isDependent: true,
+    isMandatory: true,
+    dataType: 'DECIMAL(13,3)',
+    defaultSourceSystem: 'SAP S/4HANA',
+    defaultTable: 'VBRP (Billing Item Data)',
+    defaultField: 'FKIMG (Actual Invoiced Quantity)',
+    unit: 'Units / MT',
+    recommended: true,
+  },
+  {
     id: 'stock_level',
     name: 'Stock Level / Finished Goods Inventory',
     description: 'Physical on-hand balance at distribution centers and warehouse locations',
@@ -176,6 +190,33 @@ export const MOCK_VARIABLES: VariableColumnItem[] = [
     defaultField: 'BENCHMARK_CLOSE_USD',
     unit: 'Index (Base 100)',
     recommended: true,
+  },
+  {
+    id: 'promotions',
+    name: 'Promotions (Depth)',
+    description: 'Promotional discount depth and co-marketing allowance percentage',
+    category: 'Commercial & Pricing',
+    isDependent: false,
+    isMandatory: false,
+    dataType: 'DECIMAL(5,2)',
+    defaultSourceSystem: 'SAP S/4HANA',
+    defaultTable: 'KONP (Pricing Conditions)',
+    defaultField: 'KBETR_PROMO',
+    unit: '% Depth',
+    recommended: true,
+  },
+  {
+    id: 'marketing_spend',
+    name: 'Commercial Marketing Spend',
+    description: 'Monthly regional brand and trade marketing investment',
+    category: 'Commercial & Pricing',
+    isDependent: false,
+    isMandatory: false,
+    dataType: 'DECIMAL(12,2)',
+    defaultSourceSystem: 'Oracle Fusion ERP',
+    defaultTable: 'GL_BALANCES',
+    defaultField: 'PERIOD_NET_DR',
+    unit: 'USD',
   },
   {
     id: 'payment_terms_days',
@@ -576,14 +617,23 @@ export const computePeriodDates = (preset: '1' | '3' | '5' | '10' | 'custom'): D
   };
 };
 
+// Canonical Default Selected Independent Variable IDs (around 8-10 continuous analytical drivers)
+export const DEFAULT_SELECTED_INDEPENDENT_VARIABLE_IDS = [
+  'unit_price',                // Commercial & Pricing
+  'wholesale_discount',        // Commercial & Pricing
+  'promotions',                // Commercial & Pricing (Depth %)
+  'competitor_price_index',    // Commercial & Pricing
+  'manufacturing_pmi_index',   // Market & Substitution
+  'seasonality_index',         // Seasonality & Calendar
+  'temp_variance_weather',     // Seasonality & Calendar
+  'plant_uptime_oee',          // Supply Chain & Sourcing (Plant Yield)
+  'supplier_lead_time',        // Supply Chain & Sourcing
+  'quality_purity',            // Quality & Specifications
+];
+
+// Default Selected Variable IDs includes mandatory dependent targets + default independent drivers
 export const DEFAULT_SELECTED_VARIABLE_IDS = [
-  'stock_level', // Mandatory
-  'unit_price',
-  'competitor_price_index',
-  'quality_purity',
-  'seasonality_index',
-  'substitution_elasticity',
-  'manufacturing_pmi_index',
-  'supplier_lead_time',
-  'promotional_lift_flag',
+  'demand_sales', // Primary Target Dependent Variable
+  'stock_level',  // Secondary Dependent / Inventory Variable
+  ...DEFAULT_SELECTED_INDEPENDENT_VARIABLE_IDS,
 ];
