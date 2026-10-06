@@ -1,33 +1,41 @@
-import React from 'react';
-import * as RadixTooltip from '@radix-ui/react-tooltip';
-import { cn } from '../../lib/utils';
+import * as React from 'react';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { cn } from '@/lib/utils';
 
-export const TooltipProvider = RadixTooltip.Provider;
+export const TooltipProvider = TooltipPrimitive.Provider;
+export const RadixTooltipRoot = TooltipPrimitive.Root;
+export const TooltipTrigger = TooltipPrimitive.Trigger;
 
-export interface TooltipProps {
-  content: React.ReactNode;
-  children: React.ReactNode;
-  side?: 'top' | 'right' | 'bottom' | 'left';
-  className?: string;
+export const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={cn(
+      'z-50 overflow-hidden rounded-sm bg-deep px-2.5 py-1.5 text-xs font-medium text-white shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 max-w-xs leading-tight',
+      className
+    )}
+    {...props}
+  />
+));
+TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+
+export interface TooltipProps extends React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root> {
+  content?: React.ReactNode;
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({ content, children, side = 'top', className }) => (
-  <RadixTooltip.Provider delayDuration={150}>
-    <RadixTooltip.Root>
-      <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
-      <RadixTooltip.Portal>
-        <RadixTooltip.Content
-          side={side}
-          sideOffset={6}
-          className={cn(
-            'z-50 max-w-xs rounded-md bg-deep px-3 py-2 text-xs leading-relaxed text-white shadow-lg',
-            className
-          )}
-        >
-          {content}
-          <RadixTooltip.Arrow className="fill-deep" />
-        </RadixTooltip.Content>
-      </RadixTooltip.Portal>
-    </RadixTooltip.Root>
-  </RadixTooltip.Provider>
-);
+export const Tooltip: React.FC<TooltipProps> = ({ content, children, ...props }) => {
+  if (content) {
+    return (
+      <RadixTooltipRoot {...props}>
+        <TooltipTrigger asChild>
+          {typeof children === 'string' ? <span>{children}</span> : children}
+        </TooltipTrigger>
+        <TooltipContent>{content}</TooltipContent>
+      </RadixTooltipRoot>
+    );
+  }
+  return <RadixTooltipRoot {...props}>{children}</RadixTooltipRoot>;
+};

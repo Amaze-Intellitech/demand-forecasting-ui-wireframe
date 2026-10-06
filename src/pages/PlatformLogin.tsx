@@ -33,47 +33,26 @@ export const PlatformLogin: React.FC = () => {
   const [errors, setErrors] = useState<{ identifier?: string; password?: string; general?: string }>({});
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
-  const validate = () => {
-    const newErrors: { identifier?: string; password?: string; general?: string } = {};
-
-    if (!identifier.trim()) {
-      newErrors.identifier = 'Work email or username is required';
-    } else if (identifier.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) {
-      newErrors.identifier = 'Please enter a valid work email address';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 4) {
-      newErrors.password = 'Password must be at least 4 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setFeedbackMessage(null);
-
-    if (!validate()) {
-      return;
-    }
+    setErrors({});
 
     setIsLoading(true);
     try {
-      if (rememberMe) {
+      const emailToUse = identifier.trim() || 'user@aitek.ai';
+      if (rememberMe && identifier.trim()) {
         localStorage.setItem('aitek_remember_me', 'true');
         localStorage.setItem('aitek_remembered_identifier', identifier.trim());
-      } else {
+      } else if (!rememberMe) {
         localStorage.removeItem('aitek_remember_me');
         localStorage.removeItem('aitek_remembered_identifier');
       }
 
-      await login(identifier.trim());
+      await login(emailToUse);
       navigate('/solutions');
     } catch {
-      setErrors({ general: 'Authentication failed. Please check your credentials and try again.' });
+      setErrors({ general: 'Authentication failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +64,7 @@ export const PlatformLogin: React.FC = () => {
     setIsSsoLoading(true);
     setIsLoading(true);
     try {
-      await login('siddhartha.m@aitek.ai');
+      await login('user@aitek.ai');
       navigate('/solutions');
     } catch {
       setErrors({ general: 'SSO authentication failed. Please try again.' });

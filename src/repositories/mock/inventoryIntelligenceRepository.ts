@@ -144,7 +144,7 @@ export class InventoryIntelligenceRepository {
   updateOpportunityApproval(
     oppId: string,
     status: ApprovalStatus,
-    userName: string = 'Siddhartha M'
+    userName: string = 'Operations Lead'
   ): InventoryOpportunity[] {
     this.opportunities = this.opportunities.map((opp) => {
       if (opp.id === oppId) {

@@ -14,14 +14,14 @@ export const INITIAL_SOLUTIONS: Solution[] = [
   },
   {
     id: 'inventory-intelligence',
-    name: 'Inventory Intelligence',
+    name: 'Inventory Modelling',
     tagline: 'Multi-echelon inventory optimization & safety stock calibration',
     description: 'Optimize inventory and working capital.',
     category: 'operations',
-    status: 'available',
+    status: 'active',
     version: 'v3.1.0 Enterprise',
     leadTime: 'Hourly batch updates',
-    isPaid: false,
+    isPaid: true,
   },
   {
     id: 'manufacturing-excellence',

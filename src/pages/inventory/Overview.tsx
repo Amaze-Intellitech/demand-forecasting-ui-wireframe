@@ -1,0 +1,851 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
+import {
+  Search,
+  ArrowUpDown,
+  Download,
+  ChevronUp,
+  ChevronDown,
+  X,
+} from 'lucide-react';
+import { ViewHead, Badge, Insight, KpiTile } from '@/components/inventory/CommonUI';
+import { LifecycleStrip } from '@/components/inventory/Lifecycle';
+import UnderstandAndPlan from '@/components/inventory/UnderstandAndPlan';
+import FocusStrip from '@/components/inventory/FocusStrip';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/Table';
+import { usePlatform } from '@/context/InventoryContext';
+import { RMLC_STAGES } from '@/data/inventory/mockData';
+import { PersonaKey } from '@/types/inventory';
+
+export interface OverviewItem {
+  id: string;
+  name: string;
+  plant: string;
+  category: string;
+  materialType: string;
+  qty: number;
+  uom: string;
+  unitCost: number;
+  value: number;
+  annualDemand: number;
+  dailyConsumption: number;
+  annualConsumptionValue: number;
+  leadTimeDays: number;
+  demandCV: number;
+  safetyStock: number;
+  reorderPoint: number;
+  currentBatchQty: number;
+  calibratedEOQ: number;
+  daysOfSupply: number;
+  inventoryTurnover: number;
+  abcClass: 'A' | 'B' | 'C' | string;
+  supplier: string;
+  sourcingType: string;
+  criticality: string;
+  stockoutRisk: string;
+  rmlcStatus: string;
+  downstreamLines: string;
+  bomCoverage: string;
+}
+
+const FULL_INVENTORY_DATASET: OverviewItem[] = [
+  {
+    id: 'MAT-1082',
+    name: 'Hydraulic Pump 250BAR',
+    plant: 'Plant 1 — Assembly',
+    category: 'Components',
+    materialType: 'Components & Electronics',
+    qty: 930.0,
+    uom: 'EA',
+    unitCost: 600.0,
+    value: 558000.0,
+    annualDemand: 4800.0,
+    dailyConsumption: 13.15,
+    annualConsumptionValue: 2880000.0,
+    leadTimeDays: 60,
+    demandCV: 0.12,
+    safetyStock: 184.2,
+    reorderPoint: 973.2,
+    currentBatchQty: 600.0,
+    calibratedEOQ: 248.0,
+    daysOfSupply: 70.8,
+    inventoryTurnover: 5.16,
+    abcClass: 'A',
+    supplier: 'HydraTech Dynamics GmbH',
+    sourcingType: 'Sole Source',
+    criticality: 'Critical',
+    stockoutRisk: 'Protected',
+    rmlcStatus: 'Active Circulation',
+    downstreamLines: '14 Lines (HEX-200, IL-450, HC-80, MD-120)',
+    bomCoverage: 'Risk',
+  },
+  {
+    id: 'MAT-4120',
+    name: 'Microcontroller MCU-64',
+    plant: 'Plant 3 — Microelectronics',
+    category: 'Components',
+    materialType: 'Components & Electronics',
+    qty: 920.0,
+    uom: 'EA',
+    unitCost: 78.65,
+    value: 72358.0,
+    annualDemand: 24000.0,
+    dailyConsumption: 65.75,
+    annualConsumptionValue: 1887600.0,
+    leadTimeDays: 60,
+    demandCV: 0.28,
+    safetyStock: 412.0,
+    reorderPoint: 4357.0,
+    currentBatchQty: 3000.0,
+    calibratedEOQ: 1870.0,
+    daysOfSupply: 14.0,
+    inventoryTurnover: 26.09,
+    abcClass: 'A',
+    supplier: 'SiliconFoundry International',
+    sourcingType: 'Allocated Supply',
+    criticality: 'Critical',
+    stockoutRisk: 'High Risk (14-Day)',
+    rmlcStatus: 'At Risk (14-Day)',
+    downstreamLines: '19 SKUs (ECU-400, GW-80, TM-12)',
+    bomCoverage: 'Risk',
+  },
+  {
+    id: 'MAT-2041',
+    name: 'Lithium Cell 21700',
+    plant: 'Plant 2 — Engine Hub',
+    category: 'Raw Materials',
+    materialType: 'Raw Materials',
+    qty: 142000.0,
+    uom: 'EA',
+    unitCost: 5.14,
+    value: 729880.0,
+    annualDemand: 420000.0,
+    dailyConsumption: 1150.68,
+    annualConsumptionValue: 2158800.0,
+    leadTimeDays: 30,
+    demandCV: 0.1,
+    safetyStock: 6840.0,
+    reorderPoint: 41340.0,
+    currentBatchQty: 60000.0,
+    calibratedEOQ: 25050.0,
+    daysOfSupply: 123.4,
+    inventoryTurnover: 2.96,
+    abcClass: 'A',
+    supplier: 'Apex Energy Storage Ltd',
+    sourcingType: 'Dual Sourced',
+    criticality: 'High',
+    stockoutRisk: 'Protected',
+    rmlcStatus: 'Active Circulation',
+    downstreamLines: '8 Lines (BP-800, PM-200, ESS-50)',
+    bomCoverage: 'OK',
+  },
+  {
+    id: 'MAT-5501',
+    name: 'High-Temp Sealant Paste',
+    plant: 'Plant 1 — Assembly',
+    category: 'Consumables',
+    materialType: 'Consumables',
+    qty: 1400.0,
+    uom: 'KG',
+    unitCost: 41.14,
+    value: 57596.0,
+    annualDemand: 6000.0,
+    dailyConsumption: 16.44,
+    annualConsumptionValue: 246840.0,
+    leadTimeDays: 21,
+    demandCV: 0.15,
+    safetyStock: 120.0,
+    reorderPoint: 465.0,
+    currentBatchQty: 1400.0,
+    calibratedEOQ: 1058.0,
+    daysOfSupply: 85.2,
+    inventoryTurnover: 4.29,
+    abcClass: 'C',
+    supplier: 'BondTech Polymer Solutions',
+    sourcingType: 'Multi-Vendor',
+    criticality: 'Moderate',
+    stockoutRisk: 'Protected',
+    rmlcStatus: 'Liquidation (>180d)',
+    downstreamLines: '6 Lines (Flanges, Gaskets)',
+    bomCoverage: 'OK',
+  },
+  {
+    id: 'MAT-3390',
+    name: 'Steel Housing Cast-Iron',
+    plant: 'Plant 1 — Assembly',
+    category: 'Structural Parts',
+    materialType: 'Fabricated Parts',
+    qty: 1800.0,
+    uom: 'EA',
+    unitCost: 185.0,
+    value: 333000.0,
+    annualDemand: 7200.0,
+    dailyConsumption: 19.73,
+    annualConsumptionValue: 1332000.0,
+    leadTimeDays: 45,
+    demandCV: 0.14,
+    safetyStock: 320.0,
+    reorderPoint: 1208.0,
+    currentBatchQty: 1200.0,
+    calibratedEOQ: 772.0,
+    daysOfSupply: 91.2,
+    inventoryTurnover: 4.0,
+    abcClass: 'B',
+    supplier: 'Precision Forge & Cast Corp',
+    sourcingType: 'Sole Source',
+    criticality: 'High',
+    stockoutRisk: 'Watch (45-Day)',
+    rmlcStatus: 'Active Circulation',
+    downstreamLines: '4 Lines (HEX-200, HC-80)',
+    bomCoverage: 'Watch',
+  },
+  {
+    id: 'MAT-1177',
+    name: 'High-Pressure Seal Kit',
+    plant: 'Plant 1 — Assembly',
+    category: 'Spare Parts',
+    materialType: 'MRO Spares',
+    qty: 3600.0,
+    uom: 'SET',
+    unitCost: 45.0,
+    value: 162000.0,
+    annualDemand: 14400.0,
+    dailyConsumption: 39.45,
+    annualConsumptionValue: 648000.0,
+    leadTimeDays: 15,
+    demandCV: 0.08,
+    safetyStock: 480.0,
+    reorderPoint: 1072.0,
+    currentBatchQty: 2400.0,
+    calibratedEOQ: 1714.0,
+    daysOfSupply: 91.3,
+    inventoryTurnover: 4.0,
+    abcClass: 'B',
+    supplier: 'Elastomer Seals Global',
+    sourcingType: 'Dual Sourced',
+    criticality: 'Low',
+    stockoutRisk: 'Protected',
+    rmlcStatus: 'Active Circulation',
+    downstreamLines: '12 Lines (Sub-Assemblies)',
+    bomCoverage: 'OK',
+  },
+];
+
+interface ColumnConfig {
+  key: keyof OverviewItem;
+  label: string;
+  align: 'left' | 'center' | 'right';
+  minWidth: string;
+}
+
+const COLUMNS_CONFIG: ColumnConfig[] = [
+  { key: 'id', label: 'Material ID', align: 'left', minWidth: '110px' },
+  { key: 'name', label: 'Description', align: 'left', minWidth: '190px' },
+  { key: 'plant', label: 'Plant', align: 'left', minWidth: '160px' },
+  { key: 'category', label: 'Category', align: 'left', minWidth: '130px' },
+  { key: 'materialType', label: 'Material Type', align: 'left', minWidth: '160px' },
+  { key: 'abcClass', label: 'ABC Class', align: 'center', minWidth: '90px' },
+  { key: 'qty', label: 'On-Hand Qty', align: 'right', minWidth: '130px' },
+  { key: 'uom', label: 'UoM', align: 'center', minWidth: '70px' },
+  { key: 'unitCost', label: 'Unit Cost', align: 'right', minWidth: '110px' },
+  { key: 'value', label: 'Inventory Value', align: 'right', minWidth: '140px' },
+  { key: 'annualDemand', label: 'Annual Demand', align: 'right', minWidth: '130px' },
+  { key: 'dailyConsumption', label: 'Daily Consumption', align: 'right', minWidth: '140px' },
+  { key: 'annualConsumptionValue', label: 'Consumption Value', align: 'right', minWidth: '150px' },
+  { key: 'leadTimeDays', label: 'Lead Time', align: 'right', minWidth: '100px' },
+  { key: 'demandCV', label: 'Demand CV', align: 'right', minWidth: '100px' },
+  { key: 'safetyStock', label: 'Safety Stock', align: 'right', minWidth: '120px' },
+  { key: 'reorderPoint', label: 'Reorder Point', align: 'right', minWidth: '120px' },
+  { key: 'currentBatchQty', label: 'Batch Qty', align: 'right', minWidth: '110px' },
+  { key: 'calibratedEOQ', label: 'Calibrated EOQ', align: 'right', minWidth: '130px' },
+  { key: 'daysOfSupply', label: 'Days of Supply', align: 'right', minWidth: '120px' },
+  { key: 'inventoryTurnover', label: 'Turnover', align: 'right', minWidth: '100px' },
+  { key: 'stockoutRisk', label: 'Stockout Risk', align: 'left', minWidth: '140px' },
+  { key: 'rmlcStatus', label: 'Lifecycle Status', align: 'left', minWidth: '150px' },
+  { key: 'bomCoverage', label: 'BOM Coverage', align: 'center', minWidth: '120px' },
+  { key: 'supplier', label: 'Supplier', align: 'left', minWidth: '220px' },
+  { key: 'sourcingType', label: 'Sourcing Model', align: 'left', minWidth: '130px' },
+  { key: 'criticality', label: 'Criticality', align: 'left', minWidth: '110px' },
+  { key: 'downstreamLines', label: 'Downstream Scope', align: 'left', minWidth: '200px' },
+];
+
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+
+const LISTED = (() => {
+  const rows = FULL_INVENTORY_DATASET;
+  const byCover = [...rows].sort((a, b) => a.daysOfSupply - b.daysOfSupply);
+  const byCv = [...rows].sort((a, b) => b.demandCV - a.demandCV);
+  return {
+    count: rows.length,
+    belowReorder: rows.filter((r) => r.qty < r.reorderPoint),
+    highRisk: rows.filter((r) => r.stockoutRisk.startsWith('High')),
+    shortestCover: byCover[0],
+    medianCv: median(rows.map((r) => r.demandCV)),
+    mostVolatile: byCv[0],
+    critical: rows.filter((r) => r.criticality === 'Critical'),
+    bomRisk: rows.filter((r) => r.bomCoverage === 'Risk'),
+  };
+})();
+
+const joinIds = (rows: OverviewItem[]) => rows.map((r) => r.id).join(' and ');
+
+const PERSONA_COLUMNS: Record<PersonaKey, (keyof OverviewItem)[]> = {
+  supervisor: ['id', 'name', 'plant', 'qty', 'uom', 'daysOfSupply', 'leadTimeDays', 'stockoutRisk', 'criticality', 'bomCoverage', 'downstreamLines'],
+  warehouse: ['id', 'name', 'plant', 'category', 'qty', 'uom', 'unitCost', 'value', 'daysOfSupply', 'inventoryTurnover', 'rmlcStatus'],
+  planner: ['id', 'name', 'plant', 'qty', 'uom', 'dailyConsumption', 'daysOfSupply', 'demandCV', 'leadTimeDays', 'safetyStock', 'bomCoverage', 'downstreamLines'],
+  procurement: ['id', 'name', 'plant', 'qty', 'uom', 'daysOfSupply', 'reorderPoint', 'safetyStock', 'leadTimeDays', 'currentBatchQty', 'calibratedEOQ', 'supplier', 'sourcingType'],
+  finance: ['id', 'name', 'plant', 'category', 'qty', 'uom', 'unitCost', 'value', 'annualConsumptionValue', 'daysOfSupply', 'inventoryTurnover', 'stockoutRisk'],
+};
+
+const PERSONA_SORT: Record<PersonaKey, { field: keyof OverviewItem; direction: 'asc' | 'desc' }> = {
+  supervisor: { field: 'daysOfSupply', direction: 'asc' },
+  warehouse: { field: 'daysOfSupply', direction: 'desc' },
+  planner: { field: 'daysOfSupply', direction: 'asc' },
+  procurement: { field: 'daysOfSupply', direction: 'asc' },
+  finance: { field: 'value', direction: 'desc' },
+};
+
+const DEFAULT_LENS: PersonaKey = 'supervisor';
+
+const stage = (key: string) => RMLC_STAGES.find((s) => s.key === key) || { value: 0, count: 0 };
+const money = (v: number) => `$${v.toFixed(2)}M`;
+
+const SOLE_OR_ALLOCATED = FULL_INVENTORY_DATASET.filter((r) => /sole|allocated/i.test(r.sourcingType));
+const LONGEST_LEAD = [...FULL_INVENTORY_DATASET].sort((a, b) => b.leadTimeDays - a.leadTimeDays)[0];
+
+interface PersonaLensConfig {
+  label: string;
+  insight: React.ReactNode;
+  kpis: Array<{
+    label: string;
+    value: string;
+    delta?: string;
+    deltaTone?: 'up' | 'down';
+    sub?: string;
+    to?: string;
+  }>;
+}
+
+const PERSONA_LENS: Record<PersonaKey, PersonaLensConfig> = {
+  supervisor: {
+    label: 'Where production is exposed',
+    insight: (
+      <>
+        <span className="metric">{LISTED.belowReorder.length} of the {LISTED.count} listed materials</span> are below their reorder
+        point: <span className="metric">{joinIds(LISTED.belowReorder)}</span>. <span className="metric">{LISTED.shortestCover.id}</span> has
+        only <span className="metric">{LISTED.shortestCover.daysOfSupply.toFixed(1)} days</span> of cover against a{' '}
+        {LISTED.shortestCover.leadTimeDays}-day lead time, and it feeds {LISTED.shortestCover.downstreamLines}. The table is sorted
+        shortest cover first.
+      </>
+    ),
+    kpis: [
+      { label: 'High stockout risk', value: String(LISTED.highRisk.length), delta: `of ${LISTED.count} listed materials`, deltaTone: 'down', sub: `AI: ${joinIds(LISTED.highRisk)} could run out inside 14 days.` },
+      { label: 'Below reorder point', value: String(LISTED.belowReorder.length), delta: `of ${LISTED.count} listed materials`, deltaTone: 'down', sub: `AI: ${joinIds(LISTED.belowReorder)} need a replenishment decision now.` },
+      { label: 'Shortest cover', value: `${LISTED.shortestCover.daysOfSupply.toFixed(1)} days`, delta: LISTED.shortestCover.id, sub: `AI: ${LISTED.shortestCover.name}, ${LISTED.shortestCover.sourcingType.toLowerCase()}.` },
+      { label: 'Critical materials', value: String(LISTED.critical.length), delta: `of ${LISTED.count} listed materials`, sub: 'AI: a stock-out on any of these stops a downstream line.' },
+    ],
+  },
+  warehouse: {
+    label: 'What is sitting in stores',
+    insight: (
+      <>
+        <span className="metric">{money(stage('atrisk').value + stage('liquidation').value)}</span> of stock across{' '}
+        <span className="metric">{stage('atrisk').count + stage('liquidation').count} SKUs</span> has gone 90 days or more without being
+        used, and <span className="metric">{money(stage('accumulation').value)}</span> more is building faster than it is consumed. About{' '}
+        <span className="metric">$4.2M</span> sits above the optimal position and three transfer options can move it between plants.
+      </>
+    ),
+    kpis: [
+      { label: 'Excess above optimal', value: '$4.2M', delta: '3 transfer options', sub: 'AI: most of it can move between plants instead of being written down.', to: '/solutions/inventory-intelligence/liquidation' },
+      { label: 'Past 180 days', value: money(stage('liquidation').value), delta: `${stage('liquidation').count} SKUs`, deltaTone: 'down', sub: 'AI: candidates to return, sell or transfer.', to: '/solutions/inventory-intelligence/liquidation' },
+      { label: 'At risk, 90 to 180 days', value: money(stage('atrisk').value), delta: `${stage('atrisk').count} SKUs`, deltaTone: 'down', sub: 'AI: cycle-count these before they age further.' },
+      { label: 'Building faster than use', value: money(stage('accumulation').value), delta: `${stage('accumulation').count} SKUs`, sub: 'AI: watch these on the Prevention page.', to: '/solutions/inventory-intelligence/prevention' },
+    ],
+  },
+  planner: {
+    label: 'Cover against the plan',
+    insight: (
+      <>
+        <span className="metric">{LISTED.shortestCover.id}</span> has <span className="metric">{LISTED.shortestCover.daysOfSupply.toFixed(1)} days</span> of
+        cover, the least of the {LISTED.count} listed materials. Demand is least stable for{' '}
+        <span className="metric">{LISTED.mostVolatile.id}</span> (CV <span className="metric">{LISTED.mostVolatile.demandCV.toFixed(2)}</span>), so a
+        high month there would eat into its safety stock first. <span className="metric">{LISTED.bomRisk.length}</span> materials are flagged
+        for BOM coverage risk.
+      </>
+    ),
+    kpis: [
+      { label: 'Shortest cover', value: `${LISTED.shortestCover.daysOfSupply.toFixed(1)} days`, delta: LISTED.shortestCover.id, deltaTone: 'down', sub: `AI: ${LISTED.shortestCover.name}.` },
+      { label: 'Most volatile demand', value: LISTED.mostVolatile.demandCV.toFixed(2), delta: LISTED.mostVolatile.id, deltaTone: 'down', sub: `AI: ${LISTED.mostVolatile.name} has the widest demand swings.` },
+      { label: 'Median demand CV', value: LISTED.medianCv.toFixed(2), delta: `${LISTED.count} listed materials`, sub: 'AI: lower means demand is easier to plan for.' },
+      { label: 'BOM coverage at risk', value: String(LISTED.bomRisk.length), delta: `of ${LISTED.count} listed materials`, deltaTone: 'down', sub: `AI: ${joinIds(LISTED.bomRisk)} may not cover the production plan.` },
+    ],
+  },
+  procurement: {
+    label: 'What to order',
+    insight: (
+      <>
+        <span className="metric">{LISTED.belowReorder.length} of the {LISTED.count} listed materials</span> are below their reorder point (
+        <span className="metric">{joinIds(LISTED.belowReorder)}</span>). <span className="metric">{SOLE_OR_ALLOCATED.length}</span> come from a
+        sole or allocated source, and <span className="metric">{LONGEST_LEAD.id}</span> takes the longest to replenish at{' '}
+        <span className="metric">{LONGEST_LEAD.leadTimeDays} days</span>, so any delay there cannot be made up quickly.
+      </>
+    ),
+    kpis: [
+      { label: 'Below reorder point', value: String(LISTED.belowReorder.length), delta: `of ${LISTED.count} listed materials`, deltaTone: 'down', sub: `AI: ${joinIds(LISTED.belowReorder)} need an order decision now.` },
+      { label: 'Sole or allocated source', value: String(SOLE_OR_ALLOCATED.length), delta: joinIds(SOLE_OR_ALLOCATED) || 'None', deltaTone: 'down', sub: 'AI: no fallback supplier if a delivery slips.' },
+      { label: 'Longest lead time', value: `${LONGEST_LEAD.leadTimeDays} days`, delta: LONGEST_LEAD.id, sub: `AI: ${LONGEST_LEAD.supplier}.` },
+      { label: 'Lot-size recalibrations', value: '46', delta: 'Class A materials', sub: 'AI: recalibrating releases about $3.65M.', to: '/solutions/inventory-intelligence/eoq' },
+    ],
+  },
+  finance: {
+    label: 'Portfolio position',
+    insight: (
+      <>
+        You are holding <span className="metric">$43.86M</span> of raw material against an optimal position of about{' '}
+        <span className="metric">$39.7M</span>. The extra <span className="metric">$4.2M</span> comes mostly from longer,
+        less predictable supplier lead times on Class A materials, while consumption has been flat. Clearing it would
+        lift turnover from 4.1× to about 4.6×.
+      </>
+    ),
+    kpis: [
+      { label: 'Inventory position', value: '$43.86M', delta: '▲ $4.2M above optimal', deltaTone: 'down', sub: 'AI: stock is running about 10% above the level your constraints support.' },
+      { label: 'Inventory coverage ratio (ICR)', value: '22 days', delta: '▼ 3 days vs target', deltaTone: 'down', sub: 'AI: cover is thinner on Class A even though total stock is high.' },
+      { label: 'Inventory turnover', value: '4.1×', delta: '▲ 0.2× vs last quarter', deltaTone: 'up', sub: 'AI: improving, but still below the 5.0× working-capital goal.' },
+      { label: 'Excess & ageing exposure', value: '$4.2M', delta: '3 transfer options', sub: 'AI: most of it can move between plants instead of being written down.', to: '/solutions/inventory-intelligence/liquidation' },
+    ],
+  },
+};
+
+export default function Overview() {
+  const navigate = useNavigate();
+  const { persona } = usePlatform();
+  const shouldReduceMotion = useReducedMotion();
+
+  const lens = PERSONA_LENS[persona] || PERSONA_LENS[DEFAULT_LENS];
+
+  // Search & Sorting State for Table
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<keyof OverviewItem>(PERSONA_SORT[persona]?.field || 'value');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(PERSONA_SORT[persona]?.direction || 'desc');
+  const [showAllColumns, setShowAllColumns] = useState(false);
+
+  // Switching persona re-orders the table for that lens and returns to its column set.
+  useEffect(() => {
+    const sort = PERSONA_SORT[persona] || PERSONA_SORT[DEFAULT_LENS];
+    setSortField(sort.field);
+    setSortDirection(sort.direction);
+    setShowAllColumns(false);
+  }, [persona]);
+
+  const visibleColumns = showAllColumns
+    ? COLUMNS_CONFIG
+    : COLUMNS_CONFIG.filter((c) => (PERSONA_COLUMNS[persona] || PERSONA_COLUMNS[DEFAULT_LENS]).includes(c.key));
+  const show = (key: keyof OverviewItem) => visibleColumns.some((c) => c.key === key);
+
+  const subtitle = {
+    supervisor: 'Which materials could stop a production line, what happens if nothing changes, and the next steps to keep the plant running.',
+    warehouse: 'What is sitting in stores, how old it is, and what clearing it would release.',
+    planner: 'How long each material lasts against the production plan, and how a swing in demand changes that.',
+    procurement: 'What to order and when, given lead times, reorder points and how many suppliers you can fall back on.',
+    finance: "What your working capital, service risk and inventory position mean for this quarter's numbers, and where cash is stuck.",
+  }[persona] || 'Inventory health across the plant, with the decisions worth your attention today.';
+
+  // Sorting Handler
+  const handleSort = (field: keyof OverviewItem) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  // Filtered & Sorted Full Dataset
+  const processedDataset = useMemo(() => {
+    let data = [...FULL_INVENTORY_DATASET];
+
+    // Search Filter across all fields
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      data = data.filter((m) =>
+        Object.values(m).some((val) =>
+          String(val).toLowerCase().includes(q)
+        )
+      );
+    }
+
+    // Sorting
+    data.sort((a, b) => {
+      const valA = a[sortField];
+      const valB = b[sortField];
+
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return sortDirection === 'asc' ? valA - valB : valB - valA;
+      }
+      return sortDirection === 'asc'
+        ? String(valA).localeCompare(String(valB))
+        : String(valB).localeCompare(String(valA));
+    });
+
+    return data;
+  }, [searchQuery, sortField, sortDirection]);
+
+  // Export to CSV Function
+  const exportToCSV = () => {
+    const headers = COLUMNS_CONFIG.map((c) => `"${c.label}"`).join(',');
+    const rows = processedDataset.map((row) =>
+      COLUMNS_CONFIG.map((c) => {
+        const val = row[c.key];
+        if (typeof val === 'number') {
+          return val;
+        }
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(',')
+    );
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `inventory_master_dataset_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <section className="view max-w-7xl mx-auto space-y-6">
+      <ViewHead
+        title="Enterprise Inventory Modelling"
+        subtitle={<p className="text-body-c leading-relaxed">{subtitle}</p>}
+      />
+
+      {/* Focus Strip */}
+      <FocusStrip rows={FULL_INVENTORY_DATASET} />
+
+      <Insight key={persona} label={lens.label} defaultOpen>
+        {lens.insight}
+      </Insight>
+
+      <div className="grid-4 mb-0">
+        {lens.kpis.map(({ to, ...kpi }) => (
+          <KpiTile key={`${persona}-${kpi.label}`} {...kpi} onClick={to ? () => navigate(to) : undefined} />
+        ))}
+      </div>
+
+      <UnderstandAndPlan rows={FULL_INVENTORY_DATASET} />
+
+      <LifecycleStrip />
+
+      {/* COMPLETE INVENTORY DATA TABLE */}
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="bg-surface border border-border rounded-xl p-5 shadow-subtle"
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-base font-bold text-ink tracking-tight m-0">Inventory Data</h2>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-subtle h-3.5 w-3.5 pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Search across all fields..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 pr-7 h-8 text-xs bg-bg border-border"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-subtle hover:text-ink cursor-pointer"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAllColumns((v) => !v)}
+              aria-pressed={showAllColumns}
+              className="h-8 text-xs text-ink hover:text-primary cursor-pointer"
+            >
+              {showAllColumns ? 'Fewer columns' : `All columns (${COLUMNS_CONFIG.length})`}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCSV}
+              className="h-8 gap-1.5 text-xs text-ink hover:text-primary cursor-pointer"
+            >
+              <Download size={13} />
+              <span>Export CSV</span>
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border overflow-hidden max-h-[540px] flex flex-col">
+          <div className="overflow-x-auto overflow-y-auto w-full relative">
+            <Table>
+              <TableHeader className="bg-bg sticky top-0 z-20 border-b border-border shadow-2xs">
+                <TableRow className="hover:bg-transparent">
+                  {visibleColumns.map((col) => {
+                    const isSorted = sortField === col.key;
+                    return (
+                      <TableHead
+                        key={col.key}
+                        style={{ minWidth: col.minWidth }}
+                        className={`text-xs font-bold uppercase tracking-wider text-ink py-2.5 px-3 select-none ${
+                          col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => handleSort(col.key)}
+                          className={`inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer group ${
+                            col.align === 'right' ? 'justify-end w-full' : col.align === 'center' ? 'justify-center w-full' : 'justify-start'
+                          }`}
+                        >
+                          <span>{col.label}</span>
+                          {isSorted ? (
+                            sortDirection === 'asc' ? (
+                              <ChevronUp size={12} className="text-primary" />
+                            ) : (
+                              <ChevronDown size={12} className="text-primary" />
+                            )
+                          ) : (
+                            <ArrowUpDown size={10} className="text-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
+                          )}
+                        </button>
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {processedDataset.length > 0 ? (
+                  processedDataset.map((row) => (
+                    <TableRow key={row.id} className="hover:bg-[color-mix(in_srgb,var(--info-bg)_60%,transparent)] transition-colors">
+                      {show('id') && (
+                        <TableCell className="font-mono font-bold text-primary py-2.5 px-3 text-xs">
+                          {row.id}
+                        </TableCell>
+                      )}
+                      {show('name') && (
+                        <TableCell className="font-semibold text-ink py-2.5 px-3 text-xs">
+                          {row.name}
+                        </TableCell>
+                      )}
+                      {show('plant') && (
+                        <TableCell className="text-body-c text-xs py-2.5 px-3">
+                          {row.plant}
+                        </TableCell>
+                      )}
+                      {show('category') && (
+                        <TableCell className="text-xs py-2.5 px-3 text-ink">
+                          {row.category}
+                        </TableCell>
+                      )}
+                      {show('materialType') && (
+                        <TableCell className="text-body-c text-xs py-2.5 px-3">
+                          {row.materialType}
+                        </TableCell>
+                      )}
+                      {show('abcClass') && (
+                        <TableCell className="text-center py-2.5 px-3">
+                          <Badge tone={row.abcClass === 'A' ? 'accent' : 'neutral'} className="text-xs">
+                            Class {row.abcClass}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {show('qty') && (
+                        <TableCell className="text-right font-mono font-semibold text-ink py-2.5 px-3 text-xs">
+                          {row.qty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('uom') && (
+                        <TableCell className="text-center font-mono text-body-c text-xs py-2.5 px-3">
+                          {row.uom}
+                        </TableCell>
+                      )}
+                      {show('unitCost') && (
+                        <TableCell className="text-right font-mono text-body-c py-2.5 px-3 text-xs">
+                          ${row.unitCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('value') && (
+                        <TableCell className="text-right font-mono font-bold text-ink py-2.5 px-3 text-xs">
+                          ${row.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('annualDemand') && (
+                        <TableCell className="text-right font-mono py-2.5 px-3 text-xs text-ink">
+                          {row.annualDemand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('dailyConsumption') && (
+                        <TableCell className="text-right font-mono text-body-c py-2.5 px-3 text-xs">
+                          {row.dailyConsumption.toFixed(2)}
+                        </TableCell>
+                      )}
+                      {show('annualConsumptionValue') && (
+                        <TableCell className="text-right font-mono font-semibold text-ink py-2.5 px-3 text-xs">
+                          ${row.annualConsumptionValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('leadTimeDays') && (
+                        <TableCell className="text-right font-mono py-2.5 px-3 text-xs text-body-c">
+                          {row.leadTimeDays}d
+                        </TableCell>
+                      )}
+                      {show('demandCV') && (
+                        <TableCell className="text-right font-mono py-2.5 px-3 text-xs text-body-c">
+                          {row.demandCV.toFixed(2)}
+                        </TableCell>
+                      )}
+                      {show('safetyStock') && (
+                        <TableCell className="text-right font-mono py-2.5 px-3 text-xs text-ink">
+                          {row.safetyStock.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('reorderPoint') && (
+                        <TableCell className="text-right font-mono font-semibold text-ink py-2.5 px-3 text-xs">
+                          {row.reorderPoint.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('currentBatchQty') && (
+                        <TableCell className="text-right font-mono text-body-c py-2.5 px-3 text-xs">
+                          {row.currentBatchQty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('calibratedEOQ') && (
+                        <TableCell className="text-right font-mono font-bold text-primary py-2.5 px-3 text-xs">
+                          {row.calibratedEOQ.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                      )}
+                      {show('daysOfSupply') && (
+                        <TableCell className="text-right font-mono py-2.5 px-3 text-xs text-ink">
+                          {row.daysOfSupply.toFixed(1)}d
+                        </TableCell>
+                      )}
+                      {show('inventoryTurnover') && (
+                        <TableCell className="text-right font-mono font-medium py-2.5 px-3 text-xs text-ink">
+                          {row.inventoryTurnover.toFixed(2)}x
+                        </TableCell>
+                      )}
+                      {show('stockoutRisk') && (
+                        <TableCell className="py-2.5 px-3">
+                          <Badge
+                            tone={
+                              row.stockoutRisk.includes('Risk')
+                                ? 'risk'
+                                : row.stockoutRisk.includes('Watch')
+                                ? 'watch'
+                                : 'success'
+                            }
+                            className="text-xs"
+                          >
+                            {row.stockoutRisk}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {show('rmlcStatus') && (
+                        <TableCell className="py-2.5 px-3">
+                          <Badge
+                            tone={
+                              row.rmlcStatus.includes('Liquidation') || row.rmlcStatus.includes('Risk')
+                                ? 'risk'
+                                : 'success'
+                            }
+                            className="text-xs"
+                          >
+                            {row.rmlcStatus}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {show('bomCoverage') && (
+                        <TableCell className="text-center py-2.5 px-3">
+                          <Badge
+                            tone={
+                              row.bomCoverage === 'Risk'
+                                ? 'risk'
+                                : row.bomCoverage === 'Watch'
+                                ? 'watch'
+                                : 'success'
+                            }
+                            className="text-xs"
+                          >
+                            {row.bomCoverage}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {show('supplier') && (
+                        <TableCell className="text-xs text-body-c truncate max-w-[220px] py-2.5 px-3" title={row.supplier}>
+                          {row.supplier}
+                        </TableCell>
+                      )}
+                      {show('sourcingType') && (
+                        <TableCell className="text-xs text-body-c py-2.5 px-3">
+                          {row.sourcingType}
+                        </TableCell>
+                      )}
+                      {show('criticality') && (
+                        <TableCell className="py-2.5 px-3">
+                          <Badge
+                            tone={
+                              row.criticality === 'Critical'
+                                ? 'risk'
+                                : row.criticality === 'High'
+                                ? 'watch'
+                                : 'neutral'
+                            }
+                            className="text-xs"
+                          >
+                            {row.criticality}
+                          </Badge>
+                        </TableCell>
+                      )}
+                      {show('downstreamLines') && (
+                        <TableCell className="text-xs text-body-c truncate max-w-[200px] py-2.5 px-3" title={row.downstreamLines}>
+                          {row.downstreamLines}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length} className="text-center py-10 text-body-c">
+                      No materials matching criteria &quot;{searchQuery}&quot;
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}

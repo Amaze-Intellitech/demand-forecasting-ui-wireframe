@@ -28,7 +28,7 @@ export const SolutionHub: React.FC = () => {
   
   // State for editing username
   const [isEditingUsername, setIsEditingUsername] = useState(false);
-  const [editNameInput, setEditNameInput] = useState(user?.name || 'Siddhartha M');
+  const [editNameInput, setEditNameInput] = useState(user?.name || 'User');
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const filteredSolutions = useMemo(() => {
@@ -40,9 +40,9 @@ export const SolutionHub: React.FC = () => {
     });
   }, [solutions, searchQuery]);
 
-  // Compute initials dynamically from detected user name (e.g. Siddhartha M -> SM)
+  // Compute initials dynamically from detected user name (e.g. User -> U)
   const userInitials = useMemo(() => {
-    if (!user?.name) return 'SM';
+    if (!user?.name) return 'U';
     const parts = user.name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -61,6 +61,8 @@ export const SolutionHub: React.FC = () => {
     );
     if (solution.id === 'demand-intelligence' && hasConnectedData) {
       navigate('/solutions/demand-intelligence/executive');
+    } else if (solution.id === 'inventory-intelligence') {
+      navigate('/solutions/inventory-intelligence/overview');
     } else {
       navigate(`/solutions/${solution.id}/data-ingestion`);
     }
@@ -147,12 +149,12 @@ export const SolutionHub: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-surface text-deep font-sans select-none overflow-x-hidden">
+    <div className="min-h-screen w-full flex flex-col justify-between bg-[#f4f7fb] text-slate-900 font-sans select-none overflow-x-hidden">
 
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-5 right-5 z-50 bg-success-bg text-success-tx border border-success/20 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-semibold backdrop-blur-md animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4" />
+        <div className="fixed top-5 right-5 z-50 bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-semibold backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           <span>{successToast}</span>
         </div>
       )}
@@ -160,15 +162,15 @@ export const SolutionHub: React.FC = () => {
       {/* Top Flex Container: Sidebar + Main Content */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0">
 
-        {/* Left Sidebar */}
-        <aside className="w-full md:w-64 lg:w-68 bg-bg border-r border-border flex flex-col justify-between p-5 z-20 flex-shrink-0">
+        {/* Left Sidebar: Deep Navy Enterprise Style */}
+        <aside className="w-full md:w-64 lg:w-68 bg-[#071120] border-r border-slate-800/80 flex flex-col justify-between p-5 z-20 flex-shrink-0">
           <div>
             {/* Top Logo */}
             <div className="pt-2 pb-6 px-1 flex items-center justify-start">
               <img
                 src={aitekLogo}
                 alt="AITEK"
-                className="h-20 sm:h-24 w-auto object-contain"
+                className="h-16 sm:h-20 w-auto object-contain filter drop-shadow-[0_0_12px_rgba(21,93,252,0.35)]"
               />
             </div>
 
@@ -179,8 +181,8 @@ export const SolutionHub: React.FC = () => {
                 onClick={() => setActiveTab('solutions')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                   activeTab === 'solutions'
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-body hover:text-deep hover:bg-muted'
+                    ? 'bg-[#155dfc] text-white shadow-sm shadow-blue-500/20'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -191,13 +193,13 @@ export const SolutionHub: React.FC = () => {
               <button
                 onClick={() => {
                   setActiveTab('profile');
-                  setEditNameInput(user?.name || 'Siddhartha M');
+                  setEditNameInput(user?.name || 'User');
                   setIsEditingUsername(true);
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   activeTab === 'profile'
-                    ? 'bg-primary text-white'
-                    : 'text-body hover:text-deep hover:bg-muted'
+                    ? 'bg-[#155dfc] text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -207,10 +209,10 @@ export const SolutionHub: React.FC = () => {
           </div>
 
           {/* Bottom Sign Out */}
-          <div className="pt-6 border-t border-border">
+          <div className="pt-6 border-t border-slate-800/80">
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2.5 text-xs text-subtle hover:text-deep transition-colors p-1"
+              className="flex items-center gap-2.5 text-xs text-slate-400 hover:text-rose-400 transition-colors p-1"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
@@ -218,30 +220,30 @@ export const SolutionHub: React.FC = () => {
           </div>
         </aside>
 
-        {/* Right Main Content Area */}
-        <main className="flex-1 min-w-0 relative flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+        {/* Right Main Content Area: Seamless Light Slate Canvas */}
+        <main className="flex-1 min-w-0 relative flex flex-col justify-between p-6 sm:p-8 lg:p-10 bg-[#f4f7fb]">
           
-          {/* Top Industrial Plant Background Layer */}
+          {/* Top Industrial Plant Background Layer - Seamlessly Blended */}
           <div
-            className="absolute top-0 right-0 left-0 h-[280px] sm:h-[340px] bg-cover bg-right-top bg-no-repeat pointer-events-none opacity-90 transition-opacity"
+            className="absolute top-0 right-0 left-0 h-[360px] bg-cover bg-right-top bg-no-repeat pointer-events-none opacity-85 transition-opacity"
             style={{
               backgroundImage: `url(${plantHeroBg})`,
             }}
           >
             {/* Smooth gradient blend into page background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#f4f6fa] via-[#f4f6fa]/85 to-transparent w-full md:w-3/5" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#f4f6fa]/40 to-[#f4f6fa]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#f4f7fb] via-[#f4f7fb]/85 to-transparent w-full md:w-3/5" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#f4f7fb]/60 to-[#f4f7fb]" />
           </div>
 
           <div className="relative z-10 space-y-6">
             
-            {/* Top Bar Header: User Area (Notice: 'transform operate sustain together' removed per instruction) */}
-            <div className="flex items-center justify-end gap-4">
+            {/* Top Bar Header: User Area */}
+            <div className="flex items-center justify-end gap-3.5">
               
               {/* Notification Bell */}
               <button
                 type="button"
-                className="p-2 text-slate-500 hover:text-slate-800 transition-colors"
+                className="p-2 text-slate-500 hover:text-slate-800 bg-white/90 hover:bg-white border border-slate-200/80 rounded-full transition-colors shadow-2xs"
                 title="Notifications"
               >
                 <Bell className="w-4 h-4" />
@@ -252,15 +254,15 @@ export const SolutionHub: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center gap-2.5 hover:opacity-90 transition-opacity p-1 rounded-lg hover:bg-white/60"
+                  className="flex items-center gap-2.5 bg-white/90 hover:bg-white border border-slate-200/80 transition-all px-3 py-1.5 rounded-full shadow-2xs"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#0c1f38] text-white font-semibold text-xs flex items-center justify-center ring-1 ring-slate-300">
+                  <div className="w-7 h-7 rounded-full bg-[#0c1f38] text-white font-semibold text-xs flex items-center justify-center ring-1 ring-slate-300">
                     {userInitials}
                   </div>
                   <span className="text-xs font-semibold text-slate-800 hidden sm:inline">
-                    {user?.name || 'Siddhartha M'}
+                    {user?.name || 'User'}
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-600" />
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
                 </button>
 
                 {/* Profile dropdown */}
@@ -271,15 +273,15 @@ export const SolutionHub: React.FC = () => {
                   >
                     <div className="border-b border-slate-100 pb-2.5 mb-2">
                       <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-                        <span>{user?.name || 'Siddhartha M'}</span>
+                        <span>{user?.name || 'User'}</span>
                         <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono">
                           {userInitials}
                         </span>
                       </div>
                       <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                        {user?.email || 'siddhartha.m@aitek.ai'}
+                        {user?.email || 'user@aitek.ai'}
                       </div>
-                      <div className="text-[10px] text-blue-600 font-medium mt-1 uppercase tracking-wider">
+                      <div className="text-[10px] text-[#155dfc] font-semibold mt-1 uppercase tracking-wider">
                         {user?.orgName || 'ABC Manufacturing'}
                       </div>
                     </div>
@@ -289,10 +291,10 @@ export const SolutionHub: React.FC = () => {
                       <button
                         onClick={() => {
                           setShowProfileDropdown(false);
-                          setEditNameInput(user?.name || 'Siddhartha M');
+                          setEditNameInput(user?.name || 'User');
                           setIsEditingUsername(true);
                         }}
-                        className="w-full text-left text-xs text-blue-600 hover:bg-blue-50 p-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                        className="w-full text-left text-xs text-[#155dfc] hover:bg-blue-50 p-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                         <span>Edit Display Name</span>
@@ -315,7 +317,7 @@ export const SolutionHub: React.FC = () => {
             {/* Greeting & Workspace Subtitle */}
             <div className="space-y-1 pt-2 sm:pt-4 max-w-xl">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-                Good morning, {user?.name?.split(' ')[0] || 'Siddhartha'}
+                Good morning, {user?.name?.split(' ')[0] || 'User'}
               </h1>
               <p className="text-sm sm:text-base text-slate-600 font-normal">
                 Your intelligent operations workspace
@@ -336,10 +338,10 @@ export const SolutionHub: React.FC = () => {
                 />
               </div>
 
-              {/* Entitlement indicator */}
-              <div className="flex items-center gap-2 text-xs text-slate-500 bg-white/80 border border-slate-200/80 px-3 py-1.5 rounded-full shadow-2xs">
+              {/* Entitlement indicator: Updated to Inventory Modelling */}
+              <div className="flex items-center gap-2 text-xs text-slate-600 bg-white/90 border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                <span>Active Subscription: <strong className="text-slate-800 font-semibold">Demand Forecasting</strong></span>
+                <span>Active Subscriptions: <strong className="text-slate-900 font-semibold">Demand Forecasting</strong> &middot; <strong className="text-slate-900 font-semibold">Inventory Modelling</strong></span>
               </div>
             </div>
 
@@ -354,8 +356,8 @@ export const SolutionHub: React.FC = () => {
                     key={solution.id}
                     className={`rounded-2xl p-5 border flex flex-col justify-between transition-all duration-200 relative overflow-hidden select-none ${
                       isPaid
-                        ? 'bg-white border-blue-300 shadow-[0_8px_30px_-6px_rgba(0,102,204,0.14)] ring-1 ring-blue-500/20 hover:shadow-lg'
-                        : 'bg-slate-50/70 border-slate-200/80 opacity-70 grayscale-[0.8] hover:grayscale-[0.4] shadow-xs'
+                        ? 'bg-white border-blue-200 shadow-[0_4px_20px_-4px_rgba(21,93,252,0.12)] ring-1 ring-blue-500/20 hover:shadow-lg hover:border-blue-300'
+                        : 'bg-white/70 border-slate-200/90 text-slate-500 opacity-75 grayscale-[0.5] hover:grayscale-0 shadow-2xs'
                     }`}
                   >
                     {/* Top Content */}
@@ -371,10 +373,10 @@ export const SolutionHub: React.FC = () => {
                           </span>
                         ) : (
                           <div
-                            className="w-6 h-6 rounded-full bg-slate-200/80 border border-slate-300/80 flex items-center justify-center text-slate-500"
+                            className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400"
                             title="Locked • Requires Subscription"
                           >
-                            <Lock className="w-3 h-3 text-slate-500" />
+                            <Lock className="w-3 h-3 text-slate-400" />
                           </div>
                         )}
                       </div>
@@ -395,7 +397,7 @@ export const SolutionHub: React.FC = () => {
                       {/* Status Pill Badge */}
                       <div className="mb-4">
                         {isPaid ? (
-                          <span className="bg-emerald-50 border border-emerald-300 text-emerald-700 text-[11px] font-semibold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1.5 shadow-2xs">
+                          <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1.5 shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             Active Subscription
                           </span>
@@ -405,7 +407,7 @@ export const SolutionHub: React.FC = () => {
                             Coming Soon
                           </span>
                         ) : (
-                          <span className="bg-slate-100 border border-slate-200/90 text-slate-600 text-[11px] font-medium rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
+                          <span className="bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-medium rounded-full px-2.5 py-0.5 inline-flex items-center gap-1">
                             <Lock className="w-3 h-3 text-slate-400" />
                             Locked • Not Subscribed
                           </span>
@@ -417,7 +419,7 @@ export const SolutionHub: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleOpenSolution(solution)}
-                          className="w-full py-2 px-3 rounded-lg bg-[#0062d2] hover:bg-[#0051b3] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                          className="w-full py-2 px-3 rounded-lg bg-[#0062d2] hover:bg-[#0051b3] active:bg-[#004294] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                         >
                           <span>Open Solution</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -426,7 +428,7 @@ export const SolutionHub: React.FC = () => {
                         <button
                           type="button"
                           disabled
-                          className="w-full py-2 px-3 rounded-lg bg-slate-100/90 border border-slate-200 text-slate-400 font-medium text-xs flex items-center justify-center gap-1.5 cursor-not-allowed select-none"
+                          className="w-full py-2 px-3 rounded-lg bg-slate-100 border border-slate-200 text-slate-400 font-medium text-xs flex items-center justify-center gap-1.5 cursor-not-allowed select-none"
                         >
                           <Lock className="w-3 h-3 text-slate-400" />
                           <span>{isComingSoon ? 'Coming Soon' : 'Locked'}</span>
@@ -447,25 +449,25 @@ export const SolutionHub: React.FC = () => {
         </main>
       </div>
 
-      {/* Bottom Docked Presentation Strip: 02 SOLUTION HUB */}
-      <div className="relative z-30 w-full bg-deep border-t border-border px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+      {/* Bottom Docked Presentation Strip: 02 SOLUTION HUB (Matches Sidebar Dark Enterprise Palette) */}
+      <div className="relative z-30 w-full bg-[#071120] border-t border-slate-800/80 px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded bg-primary flex items-center justify-center text-white font-bold text-xs tracking-wider">
+          <div className="w-7 h-7 rounded bg-[#155dfc] flex items-center justify-center text-white font-bold text-xs tracking-wider shadow-xs">
             02
           </div>
           <div>
             <span className="font-bold text-xs text-white tracking-wider mr-2 uppercase">
               SOLUTION HUB
             </span>
-            <span className="text-xs text-white/60 hidden sm:inline">
+            <span className="text-xs text-slate-400 hidden sm:inline">
               Explore and access the AITEK solution portfolio
             </span>
           </div>
         </div>
 
-        <div className="text-xs text-white/60 flex items-center gap-3 self-end sm:self-auto">
+        <div className="text-xs text-slate-400 flex items-center gap-3 self-end sm:self-auto">
           <span>One platform. Multiple possibilities.</span>
-          <div className="w-16 h-[1px] bg-white/20 hidden md:block" />
+          <div className="w-16 h-[1px] bg-slate-800 hidden md:block" />
         </div>
       </div>
 
@@ -502,7 +504,7 @@ export const SolutionHub: React.FC = () => {
                 <input
                   type="text"
                   disabled
-                  value={user?.email || 'siddhartha.m@aitek.ai'}
+                  value={user?.email || 'user@aitek.ai'}
                   className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 text-xs font-mono cursor-not-allowed"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
@@ -518,7 +520,7 @@ export const SolutionHub: React.FC = () => {
                   type="text"
                   value={editNameInput}
                   onChange={(e) => setEditNameInput(e.target.value)}
-                  placeholder="e.g. Siddhartha M"
+                  placeholder="e.g. User"
                   className="w-full h-10 px-3 rounded-lg border border-border bg-bg text-deep text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   autoFocus
                 />

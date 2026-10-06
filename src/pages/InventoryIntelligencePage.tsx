@@ -144,13 +144,13 @@ export const InventoryIntelligencePage: React.FC = () => {
   };
 
   const handleUpdateApproval = (oppId: string, status: ApprovalStatus) => {
-    const updated = mockInventoryRepository.updateOpportunityApproval(oppId, status, 'Siddhartha M');
+    const updated = mockInventoryRepository.updateOpportunityApproval(oppId, status, 'Operations Lead');
     setOpportunities([...updated]);
     if (selectedOpportunity && selectedOpportunity.id === oppId) {
       setSelectedOpportunity({
         ...selectedOpportunity,
         approvalStatus: status,
-        approvedBy: 'Siddhartha M',
+        approvedBy: 'Operations Lead',
         approvedAt: 'Just now',
       });
     }

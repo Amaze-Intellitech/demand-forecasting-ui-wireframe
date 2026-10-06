@@ -126,7 +126,7 @@ export const OptimizationDecisionDrawer: React.FC<OptimizationDecisionDrawerProp
             <div className="p-3.5 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center gap-2.5 text-xs text-emerald-800">
               <Clock className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <div>
-                <span className="font-bold">Approved by {opportunity.approvedBy || 'Siddhartha M'}</span>
+                <span className="font-bold">Approved by {opportunity.approvedBy || 'Operations Lead'}</span>
                 <div className="text-[11px] text-emerald-600">{opportunity.approvedAt || 'Just now'} • Execution batch queued</div>
               </div>
             </div>

@@ -23,7 +23,7 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
   onSelectDateRange,
 }) => {
   const navigate = useNavigate();
-  const { user, logout } = useAitek();
+  const { user } = useAitek();
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -32,15 +32,15 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
 
   // Compute initials dynamically
   const userInitials = React.useMemo(() => {
-    if (!user?.name) return 'SM';
+    if (!user?.name) return 'U';
     const parts = user.name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }, [user?.name]);
 
   const handleSignOut = () => {
-    logout();
-    navigate('/login');
+    setIsUserMenuOpen(false);
+    navigate('/solutions');
   };
 
   return (
@@ -175,7 +175,7 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
               {userInitials}
             </div>
             <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
-              {user?.name || 'Siddhartha M'}
+              {user?.name || 'User'}
             </span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:inline" />
           </button>
@@ -189,8 +189,8 @@ export const DemandTopbar: React.FC<DemandTopbarProps> = ({
               />
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-100">
                 <div className="px-3 py-2 border-b border-slate-100 mb-1">
-                  <div className="font-semibold text-slate-900">{user?.name || 'Siddhartha M'}</div>
-                  <div className="text-slate-400 text-[11px] truncate">{user?.email || 'siddhartha.m@aitek.ai'}</div>
+                  <div className="font-semibold text-slate-900">{user?.name || 'User'}</div>
+                  <div className="text-slate-400 text-[11px] truncate">{user?.email || 'user@aitek.ai'}</div>
                 </div>
 
                 <button

@@ -47,7 +47,6 @@ export const DataIngestion: React.FC = () => {
     selectedSolution,
     selectSolution,
     updateConnectorStatus,
-    logout
   } = useAitek();
 
   const activeSolution =
@@ -284,8 +283,7 @@ export const DataIngestion: React.FC = () => {
   };
 
   const handleSignOut = () => {
-    logout();
-    navigate('/login');
+    navigate('/solutions');
   };
 
   // Streamlined 6-step definition (Field Mapping screen eliminated & unified into Step 3)

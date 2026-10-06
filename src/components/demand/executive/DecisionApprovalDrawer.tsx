@@ -101,7 +101,7 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <div>
-                    <span className="font-bold">APPROVED</span> by {trigger.approvedBy || 'Siddhartha M'}
+                    <span className="font-bold">APPROVED</span> by {trigger.approvedBy || 'Operations Lead'}
                     <div className="text-[10px] text-emerald-600">{trigger.approvedAt || 'Just now'}</div>
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export const DecisionApprovalDrawer: React.FC<DecisionApprovalDrawerProps> = ({
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                   <div>
-                    <span className="font-bold">REJECTED</span> by Siddhartha M
+                    <span className="font-bold">REJECTED</span> by {trigger.approvedBy || 'Operations Lead'}
                     <div className="text-[10px] text-rose-600">Decision marked as declined</div>
                   </div>
                 </div>

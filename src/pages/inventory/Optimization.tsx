@@ -1,0 +1,1295 @@
+import { useState, useMemo } from 'react';
+import OptimizationSetup from '@/components/inventory/OptimizationSetup';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ViewHead, KpiTile, WhyDisclosure, Badge, Insight } from '@/components/inventory/CommonUI';
+import { usePlatform } from '@/context/InventoryContext';
+import { MATERIALS, EOQ_INPUTS, FORECAST_INPUTS } from '@/data/inventory/mockData';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/Table';
+
+// Fixed analytical parameters aligned with authoritative EOQ and inventory intelligence models
+const ORDERING_COST = 230.0; // S = $230.00/order (fixed EDI-automated replenishment cost)
+const HOLDING_RATE = 0.06;   // i = 6.00% annual carrying rate (H = unitCost * 6%)
+const SERVICE_FACTOR_Z = 1.65; // Z = 1.65 for 95.00% one-sided service level constraint
+
+// Horizon length definitions
+const AUTHORITATIVE_HORIZON_DAYS = 84;  // 12 Weeks = 84 discrete daily forecast points from Multivariate engine
+const EXTENDED_HORIZON_DAYS = 182;      // 26 Weeks = 182 days (approx 6 calendar months) modeled extension
+
+interface MaterialMetadataItem {
+  supplier: string;
+  contextTag: string;
+  downstream: string;
+  strategicPriority: string;
+}
+
+// Contextual supplier metadata aligned with enterprise master data
+const MATERIAL_METADATA: Record<string, MaterialMetadataItem> = {
+  'MAT-1082': {
+    supplier: 'HydraTech Dynamics GmbH (Sole Source)',
+    contextTag: 'Class A · High Value · Sole Source Supply',
+    downstream: '14 Downstream Finished Lines (HEX-200, IL-450, HC-80, MD-120)',
+    strategicPriority: 'High-Value Sole Source Supply Continuity',
+  },
+  'MAT-4120': {
+    supplier: 'SiliconFoundry International (Allocated Supply)',
+    contextTag: 'Class A · High Volatility · Allocated Latency',
+    downstream: '19 Downstream Controller SKUs (ECU-400, GW-80, TM-12)',
+    strategicPriority: 'Critical Microcontroller Depletion Mitigation',
+  },
+  'MAT-2041': {
+    supplier: 'Apex Energy Storage Ltd (Dual Sourced)',
+    contextTag: 'Class A · High Velocity · Dual Sourced Feed',
+    downstream: '8 Battery Pack Lines (BP-800, PM-200, ESS-50)',
+    strategicPriority: 'High-Throughput Cell Working Capital Optimization',
+  },
+  'MAT-5501': {
+    supplier: 'BondTech Polymer Solutions (Multi-Vendor)',
+    contextTag: 'Class C · Consumable · Shelf-Life Sensitive',
+    downstream: '6 Assembly Lines (Heavy Equipment Flanges, Gasket Sealing)',
+    strategicPriority: 'Shelf-Life Expiry Risk Governance',
+  },
+};
+
+// Formatting helpers
+const formatNum = (v: number | string, decimals = 2) =>
+  Number(v).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+
+const formatCurrency = (v: number | string, decimals = 2) =>
+  `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+
+export interface OptimizationTimelinePoint {
+  dayIndex: number;
+  date: string;
+  fullDate: string;
+  dataStatus: string;
+  dataStatusLabel: string;
+  statusTone: 'success' | 'accent' | 'neutral' | 'risk';
+  isAuthoritative: boolean;
+  isToday: boolean;
+  abcClass: string;
+  abcValueContribution: number;
+  abcCumulativeContribution: string;
+  abcPriority: string;
+  forecastDemand: number;
+  projectedOnHand: number;
+  targetPosition: number;
+  safetyStock: number;
+  reorderPoint: number;
+  eoq: number;
+  cycleStock: number;
+  modeledAvgInventory: number;
+  optimizationGap: number;
+  inventoryValue: number;
+  targetValue: number;
+  coverageDays: number;
+  coverageGap: number;
+  rollingITR: number;
+  isCoverageBreached: boolean;
+  isRopBreached: boolean;
+  isSsBreached: boolean;
+  isDepleted: boolean;
+  cumulativeDemand: number;
+  cumulativeHoldingSavings: number;
+}
+
+export default function Optimization() {
+  const navigate = useNavigate();
+  const { persona, scope, selectedMaterial } = usePlatform();
+
+  // Horizon selection: '12w' (Authoritative Multivariate Forecast) vs '26w' (Extended Modeled Outlook)
+  const [selectedHorizon, setSelectedHorizon] = useState<'12w' | '26w'>('26w');
+
+  // Chart hover inspection states
+  const [hoveredTimelineIdx, setHoveredTimelineIdx] = useState<number | null>(null);
+  const [hoveredCoverageIdx, setHoveredCoverageIdx] = useState<number | null>(null);
+  const [hoveredItrIdx, setHoveredItrIdx] = useState<number | null>(null);
+  const [hoveredCapitalIdx, setHoveredCapitalIdx] = useState<number | null>(null);
+
+  // 1. Resolve canonical selected material identity (Strict Single Source of Truth)
+  const activeMaterial = selectedMaterial || null;
+
+  // 2. Extract base parameters from authoritative upstream contracts
+  const activeId = activeMaterial?.id || null;
+  const activeMeta = activeId ? (MATERIAL_METADATA[activeId] || {
+    supplier: 'Standard Tier-1 Supplier',
+    contextTag: `Class ${activeMaterial?.abcClass || 'A'} Raw Material`,
+    downstream: 'General Assembly Lines',
+    strategicPriority: 'Inventory Policy Governance',
+  }) : null;
+
+  const eoqInput = activeId ? ((EOQ_INPUTS as Record<string, { demand: number; currentBatchQty: number }>)[activeId] || { demand: 4800.0, currentBatchQty: 600.0 }) : null;
+  const forecastInput = activeId ? ((FORECAST_INPUTS as Record<string, { leadTimeDays: number; demandCV: number; trendPerWeek: number; modelR2: number; rmseRatio: number }>)[activeId] || {
+    leadTimeDays: 30,
+    demandCV: 0.12,
+    trendPerWeek: 0.002,
+    modelR2: 0.85,
+    rmseRatio: 0.09,
+  }) : null;
+
+  const annualDemand = eoqInput?.demand ?? 0; // D (units/year)
+  const currentBatchQty = eoqInput?.currentBatchQty ?? 1; // Q_curr (units/order)
+  const unitCost = activeMaterial?.unitCost ?? 100.0; // standard cost ($/unit)
+  const currentOnHand = activeMaterial?.qty ?? 0.0; // physical on-hand stock (units)
+  const currentOnHandValue = activeMaterial?.value ?? (currentOnHand * unitCost); // physical on-hand value ($)
+  const uom = activeMaterial?.uom || 'EA';
+  const abcClass = activeMaterial?.abcClass || 'A';
+  const plant = activeMaterial?.plant || 'Plant 1';
+  const category = activeMaterial?.category || 'Components';
+  const name = activeMaterial?.name || 'Raw Material';
+
+  const leadTimeDays = forecastInput?.leadTimeDays || 30; // L (days)
+  const demandCV = forecastInput?.demandCV || 0.12;       // CV
+  const trendPerWeek = forecastInput?.trendPerWeek || 0;   // linear weekly slope from Multivariate
+  const modelR2 = forecastInput?.modelR2 ?? 0.85;          // in-sample R2
+
+  // 3. Mathematical Base Derivations for Active Material
+  const holdingCostPerUnit = HOLDING_RATE * unitCost;
+  const qStar = holdingCostPerUnit > 0 ? Math.sqrt((2 * annualDemand * ORDERING_COST) / holdingCostPerUnit) : 0;
+  const cycleStockQty = qStar / 2;
+  const avgWeeklyDemand = annualDemand / 52;
+  const baseDailyDemand = avgWeeklyDemand / 7;
+  const sigmaD = baseDailyDemand * demandCV;
+  const safetyStock = SERVICE_FACTOR_Z * sigmaD * Math.sqrt(leadTimeDays);
+  const safetyStockValue = safetyStock * unitCost;
+  const demandDuringLeadTime = baseDailyDemand * leadTimeDays;
+  const reorderPoint = demandDuringLeadTime + safetyStock;
+  const targetPositionQty = Math.round(safetyStock + qStar);
+  const targetPositionValue = targetPositionQty * unitCost;
+  const targetAvgInventoryQty = safetyStock + cycleStockQty;
+  const modeledAvgInventoryQty = targetAvgInventoryQty;
+  const targetAvgInventoryValue = targetAvgInventoryQty * unitCost;
+
+  // Current State (Day 0 / As of Today) Metrics
+  const currentCoverageDays = baseDailyDemand > 0 ? currentOnHand / baseDailyDemand : 0;
+  const currentCoverageGap = currentCoverageDays - leadTimeDays;
+  const currentAnnualConsumptionValue = annualDemand * unitCost;
+  const currentITR = currentOnHandValue > 0 ? (currentAnnualConsumptionValue / currentOnHandValue) : 0;
+  const targetITR = targetAvgInventoryValue > 0 ? (currentAnnualConsumptionValue / targetAvgInventoryValue) : 0;
+  const currentOptimizationGap = currentOnHand - targetPositionQty;
+  const currentExcessQty = Math.max(0, currentOptimizationGap);
+  const currentExcessValue = currentExcessQty * unitCost;
+  const currentDeficitQty = Math.max(0, -currentOptimizationGap);
+  const currentDeficitValue = currentDeficitQty * unitCost;
+  const currentOrderQty = Math.max(0, targetPositionQty > currentOnHand ? Math.round(targetPositionQty - currentOnHand) : 0);
+  const currentOrderValue = currentOrderQty * unitCost;
+  const currentOrderFreq = currentBatchQty > 0 ? annualDemand / currentBatchQty : 0;
+  const recOrderFreq = qStar > 0 ? annualDemand / qStar : 0;
+
+  // Upstream ABC Analysis Intelligence
+  const abcValueContribution = currentAnnualConsumptionValue;
+  const abcCumulativeContribution = '[Unavailable]';
+  const abcPriority = abcClass === 'A'
+    ? 'High Governance / Critical Control'
+    : abcClass === 'B'
+      ? 'Periodic Control / Standard Optimization'
+      : 'Automated Two-Bin / Low Control';
+  const abcReviewCadence = abcClass === 'A'
+    ? 'Weekly Surveillance'
+    : abcClass === 'B'
+      ? 'Monthly Calibration'
+      : 'Quarterly Review';
+
+  // Current vs Recommended Policy Costs
+  const currentAnnualOrderCost = currentOrderFreq * ORDERING_COST;
+  const currentAnnualHoldCost = (currentBatchQty / 2) * holdingCostPerUnit;
+  const currentTotalCost = currentAnnualOrderCost + currentAnnualHoldCost;
+
+  const recAnnualOrderCost = recOrderFreq * ORDERING_COST;
+  const recAnnualHoldCost = (qStar / 2) * holdingCostPerUnit;
+  const recTotalCost = recAnnualOrderCost + recAnnualHoldCost;
+
+  const netAnnualPolicySavings = Math.max(0, currentTotalCost - recTotalCost);
+  const annualCarryingCostSavings = Math.max(0, currentAnnualHoldCost - recAnnualHoldCost);
+  const modeledCapitalReleaseOpportunity = Math.max(0, currentOnHandValue - targetPositionValue);
+
+  const optimizationConfidence = Math.min(99.9, Math.max(50.0, modelR2 * 100));
+
+  // 4. Build ONE Canonical Daily Time-Phased Optimization Dataset
+  const activeHorizonDays = selectedHorizon === '12w' ? AUTHORITATIVE_HORIZON_DAYS : EXTENDED_HORIZON_DAYS;
+
+  const optimizationTimeline: OptimizationTimelinePoint[] = useMemo(() => {
+    if (!activeMaterial) return [];
+
+    const asOfDate = new Date();
+    const timeline: OptimizationTimelinePoint[] = [];
+    const onHandHistory = [currentOnHand];
+
+    // Day 0: Current / Actual Position As of Today
+    timeline.push({
+      dayIndex: 0,
+      date: asOfDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      fullDate: asOfDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+      dataStatus: '[Actual]',
+      dataStatusLabel: 'Actual Enterprise State',
+      statusTone: 'success',
+      isAuthoritative: true,
+      isToday: true,
+      abcClass: abcClass,
+      abcValueContribution: abcValueContribution,
+      abcCumulativeContribution: abcCumulativeContribution,
+      abcPriority: abcPriority,
+      forecastDemand: baseDailyDemand,
+      projectedOnHand: currentOnHand,
+      targetPosition: targetPositionQty,
+      safetyStock: safetyStock,
+      reorderPoint: reorderPoint,
+      eoq: qStar,
+      cycleStock: cycleStockQty,
+      modeledAvgInventory: modeledAvgInventoryQty,
+      optimizationGap: currentOptimizationGap,
+      inventoryValue: currentOnHandValue,
+      targetValue: targetPositionValue,
+      coverageDays: currentCoverageDays,
+      coverageGap: currentCoverageGap,
+      rollingITR: currentITR,
+      isCoverageBreached: currentCoverageDays < leadTimeDays,
+      isRopBreached: currentOnHand < reorderPoint,
+      isSsBreached: currentOnHand < safetyStock,
+      isDepleted: currentOnHand <= 0,
+      cumulativeDemand: 0,
+      cumulativeHoldingSavings: 0,
+    });
+
+    let runningOnHand = currentOnHand;
+    let sumDemand = 0;
+
+    for (let t = 1; t <= activeHorizonDays; t++) {
+      const dDate = new Date(asOfDate);
+      dDate.setDate(asOfDate.getDate() + t);
+      const dateStr = dDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const fullDateStr = dDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+      const isAuthoritative = t <= AUTHORITATIVE_HORIZON_DAYS;
+      const dataStatus = isAuthoritative ? '[Forecast]' : '[Modeled Extension]';
+      const dataStatusLabel = isAuthoritative ? 'Authoritative Multivariate Forecast' : 'Modeled Optimization Extension';
+      const statusTone: 'accent' | 'neutral' = isAuthoritative ? 'accent' : 'neutral';
+
+      const dailyDemandRate = baseDailyDemand * (1 + trendPerWeek * (t / 7));
+      sumDemand += dailyDemandRate;
+
+      runningOnHand = Math.max(0, runningOnHand - dailyDemandRate);
+      onHandHistory.push(runningOnHand);
+
+      const currentDayOnHandVal = runningOnHand * unitCost;
+      const dailyCoverageDays = dailyDemandRate > 0 ? (runningOnHand / dailyDemandRate) : 0;
+      const dailyCoverageGap = dailyCoverageDays - leadTimeDays;
+      const dailyOptGap = runningOnHand - targetPositionQty;
+      const dailyRop = (dailyDemandRate * leadTimeDays) + safetyStock;
+
+      const windowStart = Math.max(0, t - 29);
+      const windowPoints = onHandHistory.slice(windowStart, t + 1);
+      const rollingAvgOnHand30d = windowPoints.reduce((sum, v) => sum + v, 0) / windowPoints.length;
+      const rollingAvgOnHandValue30d = rollingAvgOnHand30d * unitCost;
+      const projectedRollingITR = rollingAvgOnHandValue30d > 0 ? (currentAnnualConsumptionValue / rollingAvgOnHandValue30d) : 0;
+
+      const dailyHoldingCostSavings = (annualCarryingCostSavings / 365) * t;
+
+      timeline.push({
+        dayIndex: t,
+        date: dateStr,
+        fullDate: fullDateStr,
+        dataStatus,
+        dataStatusLabel,
+        statusTone,
+        isAuthoritative,
+        isToday: false,
+        abcClass: abcClass,
+        abcValueContribution: abcValueContribution,
+        abcCumulativeContribution: abcCumulativeContribution,
+        abcPriority: abcPriority,
+        forecastDemand: dailyDemandRate,
+        projectedOnHand: runningOnHand,
+        targetPosition: targetPositionQty,
+        safetyStock: safetyStock,
+        reorderPoint: dailyRop,
+        eoq: qStar,
+        cycleStock: cycleStockQty,
+        modeledAvgInventory: modeledAvgInventoryQty,
+        optimizationGap: dailyOptGap,
+        inventoryValue: currentDayOnHandVal,
+        targetValue: targetPositionValue,
+        coverageDays: dailyCoverageDays,
+        coverageGap: dailyCoverageGap,
+        rollingITR: projectedRollingITR,
+        isCoverageBreached: dailyCoverageDays < leadTimeDays,
+        isRopBreached: runningOnHand < dailyRop,
+        isSsBreached: runningOnHand < safetyStock,
+        isDepleted: runningOnHand <= 0,
+        cumulativeDemand: sumDemand,
+        cumulativeHoldingSavings: dailyHoldingCostSavings,
+      });
+    }
+
+    return timeline;
+  }, [
+    activeMaterial,
+    activeHorizonDays,
+    baseDailyDemand,
+    currentOnHand,
+    targetPositionQty,
+    safetyStock,
+    reorderPoint,
+    qStar,
+    cycleStockQty,
+    modeledAvgInventoryQty,
+    currentOptimizationGap,
+    currentOnHandValue,
+    targetPositionValue,
+    currentCoverageDays,
+    currentCoverageGap,
+    currentITR,
+    leadTimeDays,
+    trendPerWeek,
+    unitCost,
+    currentAnnualConsumptionValue,
+    annualCarryingCostSavings,
+    abcClass,
+    abcValueContribution,
+    abcCumulativeContribution,
+    abcPriority,
+  ]);
+
+  // 5. Derive First Breach Milestones
+  const firstCoverageBreach = useMemo(() => {
+    return optimizationTimeline.find((pt) => pt.dayIndex > 0 && pt.isCoverageBreached) || null;
+  }, [optimizationTimeline]);
+
+  // Active inspected items for charts
+  const activeTimelineItem = (hoveredTimelineIdx !== null && optimizationTimeline[hoveredTimelineIdx]) ? optimizationTimeline[hoveredTimelineIdx] : (optimizationTimeline[0] || null);
+  const activeCoverageItem = (hoveredCoverageIdx !== null && optimizationTimeline[hoveredCoverageIdx]) ? optimizationTimeline[hoveredCoverageIdx] : (firstCoverageBreach || optimizationTimeline[0] || null);
+  const activeItrItem = (hoveredItrIdx !== null && optimizationTimeline[hoveredItrIdx]) ? optimizationTimeline[hoveredItrIdx] : (optimizationTimeline[optimizationTimeline.length - 1] || null);
+  const activeCapitalItem = (hoveredCapitalIdx !== null && optimizationTimeline[hoveredCapitalIdx]) ? optimizationTimeline[hoveredCapitalIdx] : (optimizationTimeline[0] || null);
+
+  // 6. Multi-Material Catalog Optimization Dataset
+  const catalogOptimizationData = useMemo(() => {
+    return MATERIALS.map((mat) => {
+      const id = mat.id;
+      const eInput = (EOQ_INPUTS as Record<string, { demand: number; currentBatchQty: number }>)[id] || { demand: 4800.0, currentBatchQty: 600.0 };
+      const fInput = (FORECAST_INPUTS as Record<string, { leadTimeDays: number; demandCV: number; modelR2: number }>)[id] || { leadTimeDays: 30, demandCV: 0.12, modelR2: 0.85 };
+
+      const uCost = mat.unitCost ?? 100.0;
+      const cStock = mat.qty ?? 0.0;
+      const cValue = mat.value ?? (cStock * uCost);
+      const d = eInput.demand;
+      const lt = fInput.leadTimeDays || 30;
+      const cv = fInput.demandCV || 0.12;
+      const r2 = fInput.modelR2 ?? 0.85;
+
+      const h = HOLDING_RATE * uCost;
+      const qs = h > 0 ? Math.sqrt((2 * d * ORDERING_COST) / h) : 0;
+      const dDaily = (d / 52) / 7;
+      const sig = dDaily * cv;
+      const ss = SERVICE_FACTOR_Z * sig * Math.sqrt(lt);
+      const targetBuffer = Math.round(ss + qs);
+      const targetVal = targetBuffer * uCost;
+      const orderQuantity = Math.max(0, targetBuffer > cStock ? Math.round(targetBuffer - cStock) : 0);
+      const orderVal = orderQuantity * uCost;
+      const conf = Math.min(99.9, Math.max(50.0, r2 * 100));
+      const covDays = dDaily > 0 ? (cStock / dDaily) : 0;
+
+      const abc = mat.abcClass || 'A';
+      const abcPrio = abc === 'A' ? 'High Governance' : abc === 'B' ? 'Periodic Control' : 'Automated Two-Bin';
+
+      return {
+        id,
+        name: `${id} · ${mat.name}`,
+        shortLabel: id,
+        desc: mat.name,
+        plant: mat.plant,
+        category: mat.category,
+        abcClass: abc,
+        abcPriority: abcPrio,
+        abcValueContribution: d * uCost,
+        abcCumulativeContribution: '[Unavailable]',
+        unitCost: uCost,
+        uom: mat.uom || 'EA',
+        currentStock: cStock,
+        currentValue: cValue,
+        demand: d,
+        leadTimeDays: lt,
+        demandCV: cv,
+        qStar: qs,
+        safetyStock: ss,
+        desiredStock: targetBuffer,
+        desiredValue: targetVal,
+        orderQty: orderQuantity,
+        orderValue: orderVal,
+        coverageDays: covDays,
+        confidence: conf,
+        supplierAllocationText: 'Supplier allocation data unavailable',
+        statusBadge: 'Allocation Data Unavailable',
+        statusTone: 'neutral',
+        isSelected: id === activeId,
+      };
+    });
+  }, [activeId]);
+
+  // Dynamic WhyDisclosure generator
+  const dynamicDisclosure = useMemo(() => {
+    if (!activeMaterial) return null;
+    const hasOrder = currentOrderQty > 0;
+    return {
+      summary: hasOrder
+        ? `Optimization rationale for ${activeId} · ${name} (Class ${abcClass}): Recommended replenishment of ${formatNum(currentOrderQty)} ${uom}`
+        : `Optimization rationale for ${activeId} · ${name} (Class ${abcClass}): Current inventory position satisfies service requirements (0.00 ${uom} order)`,
+      drivers: [
+        `Optimal Economic Order Quantity (EOQ Q*) calibrated at ${formatNum(qStar)} ${uom} ($${formatNum(ORDERING_COST, 2)} ordering cost, ${(HOLDING_RATE * 100).toFixed(2)}% annual carrying rate on ${formatCurrency(unitCost)} unit cost).`,
+        `Safety stock buffer sized at ${formatNum(safetyStock)} ${uom} to maintain 95.00% service level factor (Z = ${SERVICE_FACTOR_Z}) across ${leadTimeDays}-day lead time (demand CV = ${(demandCV * 100).toFixed(1)}%).`,
+        `Current physical inventory of ${formatNum(currentOnHand)} ${uom} (${formatCurrency(currentOnHandValue)}) vs Modeled Target Buffer of ${formatNum(targetPositionQty)} ${uom} (${formatCurrency(targetPositionValue)}).`,
+        `Upstream ABC Segmentation: Class ${abcClass} (${abcPriority}) with ${formatCurrency(abcValueContribution)} annual consumption value.`,
+      ],
+      meaning: [
+        hasOrder
+          ? `Inventory deficit of ${formatNum(currentDeficitQty)} ${uom} requires a replenishment commitment of ${formatCurrency(currentOrderValue)} to restore stock to the Modeled Target Buffer (SS + Q*).`
+          : `Current physical stock of ${formatNum(currentOnHand)} ${uom} exceeds the Modeled Target Buffer (${formatNum(targetPositionQty)} ${uom}), averting immediate capital commitment ($0.00 PO required).`,
+        `Authoritative Multivariate forecast model fit yields ${optimizationConfidence.toFixed(2)}% analytical confidence for ${category} (Class ${abcClass}) operations at ${plant}.`,
+      ],
+      action: [
+        hasOrder
+          ? `Authorize replenishment purchase order of ${formatNum(currentOrderQty)} ${uom} (${formatCurrency(currentOrderValue)}) in Inventory Agent.`
+          : `Maintain standing inventory monitoring; defer replenishment purchase order until inventory approaches reorder threshold (${formatNum(reorderPoint)} ${uom}).`,
+        `Review lead-time variations and demand volatility in Multivariate Forecasting and What-If Simulation according to Class ${abcClass} ${abcReviewCadence.toLowerCase()} cadence.`,
+      ],
+    };
+  }, [
+    activeMaterial,
+    activeId,
+    name,
+    currentOrderQty,
+    uom,
+    qStar,
+    unitCost,
+    safetyStock,
+    leadTimeDays,
+    demandCV,
+    currentOnHand,
+    currentOnHandValue,
+    targetPositionQty,
+    targetPositionValue,
+    currentDeficitQty,
+    currentOrderValue,
+    optimizationConfidence,
+    category,
+    abcClass,
+    abcPriority,
+    abcValueContribution,
+    abcReviewCadence,
+    plant,
+    reorderPoint,
+  ]);
+
+  if (!activeMaterial || !activeMeta) {
+    return (
+      <section className="view" style={{ minWidth: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
+        <ViewHead
+          title="Inventory Optimization Intelligence"
+          subtitle={<p>No raw material selected. Please select a raw material from the catalog to generate time-phased predictive optimization intelligence.</p>}
+          actions={<button type="button" className="btn btn-primary" onClick={() => navigate('/solutions/inventory-intelligence/data-foundation/materials')}>Select Raw Material</button>}
+        />
+        <div className="card text-center p-12 bg-bg border-2 border-dashed border-border">
+          <h2 className="text-lg font-bold text-ink mb-2">No Active Raw Material Selected</h2>
+          <p className="text-sm text-subtle max-w-md mx-auto mb-5">
+            To view predictive time-phased inventory trajectories, calibrated EOQ lot sizes, coverage runways, and executive opportunity analysis, please select a raw material in Material Master.
+          </p>
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/solutions/inventory-intelligence/data-foundation/materials')}>
+            Open Material Selection Catalog
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  interface PersonaOptLensItem {
+    headlineLabel: string;
+    headline: string;
+    title: string;
+    subtitle: string;
+    badgeText: string;
+    badgeTone: 'risk' | 'success' | 'watch' | 'accent';
+    borderClass: string;
+    tiles: { label: string; value: string; sub: string }[];
+  }
+
+  // 7. Persona-specific optimization lens: one shared card shell, five content configs
+  const PERSONA_OPT_LENS: Record<string, PersonaOptLensItem> = {
+    supervisor: {
+      headlineLabel: 'Plant Supervisor Lens · Will the Line Keep Running',
+      headline: currentCoverageDays < leadTimeDays ? `${activeId} has ${formatNum(currentCoverageDays, 1)} days of cover against a ${leadTimeDays}-day lead time — order ${formatNum(currentOrderQty, 0)} ${uom} now to avoid a stoppage on ${activeMeta.downstream}.` : `${activeId} has ${formatNum(currentCoverageDays, 1)} days of cover, ${formatNum(currentCoverageDays - leadTimeDays, 1)} beyond the ${leadTimeDays}-day lead time${firstCoverageBreach ? `, but projected cover first breaches lead time on ${firstCoverageBreach.date}` : ' and stays protected across the horizon'}.`,
+      title: 'Coverage After Optimizing',
+      subtitle: `Whether ${activeId} keeps up with the lines it feeds once this policy is applied`,
+      badgeText: currentCoverageDays < leadTimeDays ? '● Coverage Below Lead Time' : '● Coverage Protected',
+      badgeTone: currentCoverageDays < leadTimeDays ? 'risk' : 'success',
+      borderClass: 'border-primary',
+      tiles: [
+        { label: 'Coverage vs Lead Time', value: `${formatNum(currentCoverageDays, 1)}d / ${leadTimeDays}d`, sub: currentCoverageDays < leadTimeDays ? 'Below lead time' : 'Covered beyond lead time' },
+        { label: 'Downstream Lines Fed', value: activeMeta.downstream, sub: 'Stops here if this material runs out' },
+        { label: 'Action Needed', value: currentCoverageDays < leadTimeDays ? 'Order now' : 'None — protected', sub: currentCoverageDays < leadTimeDays ? `${formatNum(currentOrderQty, 0)} ${uom} to restore buffer` : 'Coverage holds beyond lead time' },
+        { label: 'Days to Next Breach', value: firstCoverageBreach ? `${firstCoverageBreach.dayIndex} days` : 'None projected', sub: firstCoverageBreach ? `On ${firstCoverageBreach.date}` : 'Within modeled horizon' },
+      ],
+    },
+    warehouse: {
+      headlineLabel: 'Warehouse Manager Lens · What to Hold and What to Clear',
+      headline: currentExcessQty > 0 ? `${formatNum(currentExcessQty, 0)} ${uom} (${formatCurrency(currentExcessValue)}) of ${activeId} sits above the target buffer — defer the next PO and let stock run down toward ${formatNum(targetPositionQty, 0)} ${uom}.` : `${activeId} is at or below its target buffer; the change to make is the lot size, from ${formatNum(currentBatchQty, 0)} to ${formatNum(qStar, 0)} ${uom} per receipt.`,
+      title: 'Stock This Policy Implies Holding',
+      subtitle: `Physical footprint and batch-size change for ${activeId} under the recommended policy`,
+      badgeText: currentExcessQty > 0 ? '● Surplus Above Target' : '● At or Below Target',
+      badgeTone: currentExcessQty > 0 ? 'watch' : 'success',
+      borderClass: 'border-info',
+      tiles: [
+        { label: 'Surplus Above Target Buffer', value: `${formatNum(currentExcessQty, 0)} ${uom}`, sub: formatCurrency(currentExcessValue) },
+        { label: 'Cycle-Stock Size Change', value: `${formatNum(currentBatchQty, 0)} → ${formatNum(qStar, 0)} ${uom}`, sub: `${formatNum(recOrderFreq, 1)} orders/yr once recalibrated` },
+        { label: 'On-Hand Value', value: formatCurrency(currentOnHandValue), sub: `${formatNum(currentOnHand, 0)} ${uom} on-hand` },
+        { label: 'Storage Note', value: currentExcessQty > 0 ? 'Defer next PO' : 'Recalibrate lot size', sub: currentExcessQty > 0 ? 'Until stock nears ROP' : `Target ${formatNum(qStar, 0)} ${uom} batches` },
+      ],
+    },
+    planner: {
+      headlineLabel: 'Materials Planner Lens · Cover Against the Plan',
+      headline: `${activeId} is consuming ${formatNum(baseDailyDemand, 2)} ${uom}/day with a ${(trendPerWeek * 100).toFixed(2)}%/wk trend; on-hand is ${currentOnHand < reorderPoint ? `${formatNum(reorderPoint - currentOnHand, 0)} ${uom} below` : `${formatNum(currentOnHand - reorderPoint, 0)} ${uom} above`} the reorder point of ${formatNum(reorderPoint, 0)} ${uom}. Confirm that matches the production plan.`,
+      title: 'Cover Against the Plan',
+      subtitle: `Demand trend and reorder position for ${activeId} against the production plan`,
+      badgeText: `Trend ${(trendPerWeek * 100).toFixed(2)}%/wk`,
+      badgeTone: 'accent',
+      borderClass: 'border-success',
+      tiles: [
+        { label: 'Baseline Daily Demand', value: `${formatNum(baseDailyDemand, 2)} ${uom}/d`, sub: `${(trendPerWeek * 100).toFixed(2)}%/wk trend` },
+        { label: 'Reorder Point vs On-Hand', value: `${formatNum(reorderPoint, 0)} ${uom}`, sub: currentOnHand < reorderPoint ? `On-hand is ${formatNum(reorderPoint - currentOnHand, 0)} ${uom} below` : `${formatNum(currentOnHand - reorderPoint, 0)} ${uom} of buffer` },
+        { label: 'Demand Volatility (CV)', value: `${(demandCV * 100).toFixed(1)}%`, sub: demandCV <= 0.15 ? 'Stable' : 'Elevated — check plan alignment' },
+        { label: 'Review Cadence', value: abcReviewCadence, sub: `Class ${abcClass} governance` },
+      ],
+    },
+    procurement: {
+      headlineLabel: 'Procurement Officer Lens · What to Order and When',
+      headline: currentOnHand < reorderPoint ? `The reorder point is triggered — raise a PO for ${formatNum(currentOrderQty, 0)} ${uom} (${formatCurrency(currentOrderValue)}) with ${activeMeta.supplier.split('(')[0].trim()}; lead time is ${leadTimeDays} days.` : `No PO needed yet for ${activeId}. Recalibrating the lot from ${formatNum(currentBatchQty, 0)} to ${formatNum(qStar, 0)} ${uom} saves ${formatCurrency(netAnnualPolicySavings)}/yr when the next order is raised.`,
+      title: 'Reorder Position & Lot Size',
+      subtitle: `What to order and when for ${activeId}, and what recalibrating the lot size is worth`,
+      badgeText: currentOnHand < reorderPoint ? '● ROP Trigger Active' : '● Above ROP',
+      badgeTone: currentOnHand < reorderPoint ? 'risk' : 'success',
+      borderClass: 'border-warning',
+      tiles: [
+        { label: 'ROP Trigger Status', value: currentOnHand < reorderPoint ? 'Triggered' : 'Not yet', sub: `ROP at ${formatNum(reorderPoint, 0)} ${uom}` },
+        { label: 'Lot Recalibration Savings', value: `${formatCurrency(netAnnualPolicySavings)}/yr`, sub: `${formatNum(currentBatchQty, 0)} → ${formatNum(qStar, 0)} ${uom}` },
+        { label: 'Supplier & Lead Time', value: activeMeta.supplier.split('(')[0].trim(), sub: `${leadTimeDays}-day lead time` },
+        { label: 'Order Quantity Needed', value: `${formatNum(currentOrderQty, 0)} ${uom}`, sub: currentOrderQty > 0 ? formatCurrency(currentOrderValue) : 'None needed yet' },
+      ],
+    },
+    finance: {
+      headlineLabel: 'Finance Controller Lens · Capital Released or Locked',
+      headline: `${activeId} ties up ${formatCurrency(currentOnHandValue)} today. This policy opens a ${formatCurrency(modeledCapitalReleaseOpportunity)} release opportunity and saves ${formatCurrency(annualCarryingCostSavings)}/yr in carrying cost while holding a 95% service level.`,
+      title: '6-Month Capital Opportunity',
+      subtitle: `Working capital position and release opportunity for ${activeId} under this policy`,
+      badgeText: `Modeled Opportunity: ${formatCurrency(modeledCapitalReleaseOpportunity)}`,
+      badgeTone: 'accent',
+      borderClass: 'border-ink',
+      tiles: [
+        { label: 'Current Capital Position', value: formatCurrency(currentOnHandValue), sub: `${formatNum(currentOnHand, 0)} ${uom} on-hand (${formatNum(currentCoverageDays, 1)}d)` },
+        { label: 'Target Buffer Capital', value: formatCurrency(targetPositionValue), sub: 'Maintains 95% service level' },
+        { label: 'Capital Release Opportunity', value: formatCurrency(modeledCapitalReleaseOpportunity), sub: currentOnHandValue > 0 ? `${((modeledCapitalReleaseOpportunity / currentOnHandValue) * 100).toFixed(1)}% unlocked` : '' },
+        { label: 'Annual Carrying-Cost Savings', value: `${formatCurrency(annualCarryingCostSavings)}/yr`, sub: 'Direct P&L carrying expense reduction' },
+      ],
+    },
+  };
+  const activeOptLens = PERSONA_OPT_LENS[persona] || PERSONA_OPT_LENS.supervisor;
+
+  interface CatalogOptimizationRow {
+    id: string;
+    name: string;
+    shortLabel: string;
+    desc: string;
+    plant: string;
+    category: string;
+    abcClass: string;
+    abcPriority: string;
+    abcValueContribution: number;
+    abcCumulativeContribution: string;
+    unitCost: number;
+    uom: string;
+    currentStock: number;
+    currentValue: number;
+    demand: number;
+    leadTimeDays: number;
+    demandCV: number;
+    qStar: number;
+    safetyStock: number;
+    desiredStock: number;
+    desiredValue: number;
+    orderQty: number;
+    orderValue: number;
+    coverageDays: number;
+    confidence: number;
+    supplierAllocationText: string;
+    statusBadge: string;
+    statusTone: string;
+    isSelected: boolean;
+  }
+
+  // Chart and catalog framing per persona: same series, read through each persona's decision.
+  const OPT_COPY: Record<string, {
+    projSub: string;
+    covTitle: string; covSub: string;
+    itrTitle: string; itrSub: string;
+    capTitle: string; capSub: string;
+    catTitle: string; catSub: string;
+    cols: string[];
+    sort: (a: CatalogOptimizationRow, b: CatalogOptimizationRow) => number;
+  }> = {
+    supervisor: {
+      projSub: `Daily stock against the reorder point and safety stock; ${firstCoverageBreach ? `cover first drops below the ${leadTimeDays}-day lead time on ${firstCoverageBreach.date}` : `cover stays above the ${leadTimeDays}-day lead time across the horizon`}.`,
+      covTitle: 'Line Cover vs Lead Time', covSub: `How many days of production the stock covers, against the ${leadTimeDays} days a new order takes to arrive`,
+      itrTitle: 'Stock Turnover Trend', itrSub: 'Rolling turnover; a falling line means stock is sitting longer than the lines consume it',
+      capTitle: 'Capital Behind the Cover', capSub: 'Value of the stock that keeps the lines running, against the target buffer',
+      catTitle: 'Materials Ranked by Line Risk', catSub: 'Lowest cover first: these are the materials most likely to stop a line',
+      cols: ['coverage', 'alloc'],
+      sort: (a, b) => a.coverageDays - b.coverageDays,
+    },
+    warehouse: {
+      projSub: `Daily stock against the target buffer; today ${currentExcessQty > 0 ? `${formatNum(currentExcessQty, 0)} ${uom} sits above target` : 'stock is at or below target'}.`,
+      covTitle: 'Days of Stock on Hand', covSub: 'How long the shelf stock lasts at forecast consumption, against the supplier lead time',
+      itrTitle: 'Bin Turnover Trend', itrSub: 'Rolling turnover; the faster it climbs, the quicker shelves clear',
+      capTitle: 'Value Sitting on the Shelf', capSub: 'Value of the physical stock in the stores, against the target buffer value',
+      catTitle: 'Materials Ranked by Surplus', catSub: 'Largest surplus above target first: where to defer receipts or clear stock',
+      cols: ['stock', 'target'],
+      sort: (a, b) => (b.currentStock - b.desiredStock) * b.unitCost - (a.currentStock - a.desiredStock) * a.unitCost,
+    },
+    planner: {
+      projSub: `Daily stock against the reorder point of ${formatNum(reorderPoint, 0)} ${uom}; ${currentOnHand < reorderPoint ? 'on-hand is already below it' : 'on-hand is above it today'}.`,
+      covTitle: 'Cover Against the Plan', covSub: `Days of supply against the ${leadTimeDays}-day lead time; check the dips against the production plan`,
+      itrTitle: 'Turnover vs Plan', itrSub: 'Rolling turnover against target; a gap means the plan and stock are out of step',
+      capTitle: 'Capital the Plan Commits', capSub: 'Value of stock the plan needs to carry, against the target buffer',
+      catTitle: 'Materials Ranked by Distance from Target', catSub: 'Largest gap to target buffer first: where the plan needs adjusting',
+      cols: ['coverage', 'target', 'order'],
+      sort: (a, b) => Math.abs(b.desiredStock - b.currentStock) * b.unitCost - Math.abs(a.desiredStock - a.currentStock) * a.unitCost,
+    },
+    procurement: {
+      projSub: `Daily stock against the reorder point; ${currentOnHand < reorderPoint ? `order ${formatNum(currentOrderQty, 0)} ${uom} now` : 'no order is needed yet'}. Q* is ${formatNum(qStar, 0)} ${uom}.`,
+      covTitle: 'Cover vs Supplier Lead Time', covSub: `An order placed when cover drops to ${leadTimeDays} days arrives just in time`,
+      itrTitle: 'Turnover and Order Cadence', itrSub: 'Rolling turnover; it should rise as lot sizes move to the recommended quantity',
+      capTitle: 'Spend Implied by the Plan', capSub: 'Value of stock on hand against the target; the gap is what you will order or defer',
+      catTitle: 'Materials Ranked by Order Value', catSub: 'Largest recommended order first, across your supplier portfolio',
+      cols: ['order', 'alloc', 'priority'],
+      sort: (a, b) => b.orderValue - a.orderValue,
+    },
+    finance: {
+      projSub: `Daily stock against the target buffer; closing the gap releases ${formatCurrency(modeledCapitalReleaseOpportunity)}.`,
+      covTitle: 'Days of Cash in Stock', covSub: 'Days of supply held; every day above the lead time is cash that could be released',
+      itrTitle: 'Inventory Turnover (ITR)', itrSub: 'Rolling ITR (COGS / 30-day average inventory value) against target',
+      capTitle: 'Inventory Capital & Carrying Cost Outlook', capSub: 'Physical inventory capital valuation ($) over the planning horizon vs modeled target buffer ($)',
+      catTitle: 'Materials Ranked by Capital Held', catSub: 'Largest on-hand value first, across all plants in scope',
+      cols: ['stock', 'target', 'conf'],
+      sort: (a, b) => b.currentValue - a.currentValue,
+    },
+  };
+  const optCopy = OPT_COPY[persona] || OPT_COPY.supervisor;
+  const allPlantsScope = scope.startsWith('All Plants');
+  const inScope = (m: CatalogOptimizationRow) => allPlantsScope || m.isSelected || scope.startsWith(m.plant);
+  const catalogRows = [...catalogOptimizationData].filter(inScope).sort(optCopy.sort);
+  const colStyle = (k: string) => ({ opacity: optCopy.cols.includes(k) ? 1 : 0.45, fontWeight: optCopy.cols.includes(k) ? 700 : undefined });
+
+  // Chart Coordinate Engines
+  const W1 = 920, H1 = 280, ML1 = 76, MR1 = 30, MT1 = 26, MB1 = 48;
+  const maxStock1 = Math.max(...optimizationTimeline.map((p) => Math.max(p.projectedOnHand, p.targetPosition, p.reorderPoint)), 100);
+  const yMax1 = Math.ceil((maxStock1 * 1.15) / 100) * 100 || 1000;
+  const numPts1 = optimizationTimeline.length;
+  const x1 = (i: number) => ML1 + (i / (numPts1 - 1 || 1)) * (W1 - ML1 - MR1);
+  const y1 = (v: number) => MT1 + (1 - Math.max(0, v) / yMax1) * (H1 - MT1 - MB1);
+
+  const baselinePath1 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x1(i).toFixed(1)},${y1(p.projectedOnHand).toFixed(1)}`).join(' ');
+  const targetPath1 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x1(i).toFixed(1)},${y1(p.targetPosition).toFixed(1)}`).join(' ');
+  const ssPath1 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x1(i).toFixed(1)},${y1(p.safetyStock).toFixed(1)}`).join(' ');
+  const ropPath1 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x1(i).toFixed(1)},${y1(p.reorderPoint).toFixed(1)}`).join(' ');
+
+  const W2 = 440, H2 = 220, ML2 = 60, MR2 = 25, MT2 = 24, MB2 = 42;
+  const maxCov2 = Math.max(...optimizationTimeline.map((p) => p.coverageDays), leadTimeDays, 10);
+  const yMax2 = Math.ceil((maxCov2 * 1.15) / 10) * 10 || 100;
+  const x2 = (i: number) => ML2 + (i / (numPts1 - 1 || 1)) * (W2 - ML2 - MR2);
+  const y2 = (v: number) => MT2 + (1 - Math.max(0, v) / yMax2) * (H2 - MT2 - MB2);
+  const coveragePath2 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x2(i).toFixed(1)},${y2(p.coverageDays).toFixed(1)}`).join(' ');
+
+  const W3 = 440, H3 = 220, ML3 = 54, MR3 = 25, MT3 = 24, MB3 = 42;
+  const maxItr3 = Math.max(...optimizationTimeline.map((p) => p.rollingITR), targetITR, 5);
+  const yMax3 = Math.ceil((maxItr3 * 1.25) / 2) * 2 || 10;
+  const x3 = (i: number) => ML3 + (i / (numPts1 - 1 || 1)) * (W3 - ML3 - MR3);
+  const y3 = (v: number) => MT3 + (1 - Math.max(0, v) / yMax3) * (H3 - MT3 - MB3);
+  const itrPath3 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x3(i).toFixed(1)},${y3(p.rollingITR).toFixed(1)}`).join(' ');
+
+  const W4 = 920, H4 = 230, ML4 = 76, MR4 = 30, MT4 = 24, MB4 = 44;
+  const maxCap4 = Math.max(...optimizationTimeline.map((p) => Math.max(p.inventoryValue, p.targetValue)), 1000);
+  const yMax4 = Math.ceil((maxCap4 * 1.15) / 100000) * 100000 || 1000000;
+  const x4 = (i: number) => ML4 + (i / (numPts1 - 1 || 1)) * (W4 - ML4 - MR4);
+  const y4 = (v: number) => MT4 + (1 - Math.max(0, v) / yMax4) * (H4 - MT4 - MB4);
+  const capBaselinePath4 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x4(i).toFixed(1)},${y4(p.inventoryValue).toFixed(1)}`).join(' ');
+  const capTargetPath4 = optimizationTimeline.map((p, i) => `${i === 0 ? 'M' : 'L'}${x4(i).toFixed(1)},${y4(p.targetValue).toFixed(1)}`).join(' ');
+
+  return (
+    <motion.section 
+      className="view" 
+      style={{ minWidth: 0, overflowX: 'hidden', boxSizing: 'border-box' }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* 1. VIEW HEADER & HORIZON SELECTOR */}
+      <ViewHead
+        title="Optimization Plan"
+        subtitle={
+          <p>
+            Time-phased predictive inventory optimization, lot-sizing economics, lead-time runway, and working-capital intelligence for <strong>{activeId} ({name})</strong>.
+            <span className="block mt-1 font-semibold text-ink">
+              Active SKU Context: <span className="text-primary">{activeId} · {name}</span> — {plant} ({category} · Class {abcClass})
+            </span>
+          </p>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="inline-flex bg-muted-fill border border-border rounded-lg p-1">
+              <button
+                type="button"
+                className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                  selectedHorizon === '12w' 
+                    ? 'bg-primary text-white shadow-sm' 
+                    : 'text-body-c hover:text-ink'
+                }`}
+                onClick={() => setSelectedHorizon('12w')}
+              >
+                12-Week Authoritative Forecast (84d)
+              </button>
+              <button
+                type="button"
+                className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                  selectedHorizon === '26w' 
+                    ? 'bg-primary text-white shadow-sm' 
+                    : 'text-body-c hover:text-ink'
+                }`}
+                onClick={() => setSelectedHorizon('26w')}
+              >
+                26-Week Modeled Outlook (182d)
+              </button>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate('/solutions/inventory-intelligence/decision-intelligence')}
+            >
+              Send to Inventory Agent
+            </button>
+          </div>
+        }
+      />
+
+      <OptimizationSetup
+        expected={optimizationTimeline[0]?.projectedOnHand}
+        optimal={optimizationTimeline[0]?.targetPosition}
+        uom={uom}
+        material={`${activeId} · ${name}`}
+        persona={persona}
+        key={`setup-${persona}`}
+      />
+
+      {/* 2. PERSONA-SPECIFIC INTELLIGENCE LENS (leads the page; the shared position below is the evidence) */}
+      <Insight key={`head-${persona}`} label={activeOptLens.headlineLabel} defaultOpen>
+        {activeOptLens.headline}
+      </Insight>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={persona}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          className={`card mb-4 border-l-4 ${activeOptLens.borderClass}`}
+        >
+          <div className="card__head mb-3">
+            <div>
+              <h2 className="card__title text-base font-bold text-ink m-0">
+                {activeOptLens.title}
+              </h2>
+              <p className="card__sub text-xs text-subtle m-0">
+                {activeOptLens.subtitle}
+              </p>
+            </div>
+            <span className={`badge badge-${activeOptLens.badgeTone} font-bold text-xs`}>
+              {activeOptLens.badgeText}
+            </span>
+          </div>
+
+          <div className="grid-4">
+            {activeOptLens.tiles.map((tile) => (
+              <div key={tile.label} className="bg-bg p-2.5 rounded-md border border-border">
+                <span className="text-xs text-subtle uppercase block font-semibold">{tile.label}</span>
+                <strong className="num text-sm text-ink block">{tile.value}</strong>
+                <span className="text-xs text-subtle font-mono">{tile.sub}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* 3. CURRENT INVENTORY POSITION — AS OF TODAY (shared evidence) */}
+      <div className="card mb-4">
+        <div className="card__head flex-wrap gap-2 mb-3.5">
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5 mb-1">
+              <h2 className="card__title text-base font-bold text-ink m-0">
+                Current Inventory Position — As of Today
+              </h2>
+              <Badge tone="success">[Actual] Enterprise State</Badge>
+              <Badge tone={activeMaterial.abcClass === 'A' ? 'accent' : 'neutral'}>
+                {activeMeta.contextTag}
+              </Badge>
+            </div>
+            <p className="card__sub text-xs text-subtle m-0">
+              Physical on-hand inventory position, coverage runway, and optimization baseline for <strong>{activeId}</strong> at <strong>{plant}</strong> (Supplier: <strong>{activeMeta.supplier}</strong> · Lead Time: <strong>{leadTimeDays} days</strong>)
+            </p>
+          </div>
+          <div className="text-xs text-subtle font-mono">
+            As-Of Date: <strong className="text-body-c">{optimizationTimeline[0]?.fullDate}</strong>
+          </div>
+        </div>
+
+        <div className="grid-4 mb-2.5">
+          <KpiTile
+            label="Physical On-Hand Inventory"
+            value={`${formatNum(currentOnHand, 0)} ${uom}`}
+            sub={`${formatCurrency(currentOnHandValue)} inventory carrying value`}
+          />
+          <KpiTile
+            label="Modeled Target Buffer (SS + Q*)"
+            value={`${formatNum(targetPositionQty, 0)} ${uom}`}
+            valueStyle={{ color: 'var(--primary)' }}
+            sub={`${formatCurrency(targetPositionValue)} target buffer (SS + EOQ Lot)`}
+          />
+          <KpiTile
+            label="Current Inventory Coverage"
+            value={`${formatNum(currentCoverageDays, 1)} Days`}
+            valueStyle={{ color: currentCoverageDays < leadTimeDays ? 'var(--error)' : 'var(--success)' }}
+            delta={
+              currentCoverageDays < leadTimeDays
+                ? `LEAN: -${formatNum(leadTimeDays - currentCoverageDays, 1)}d vs ${leadTimeDays}d lead time`
+                : `COVERED: +${formatNum(currentCoverageDays - leadTimeDays, 1)}d beyond lead time`
+            }
+            deltaTone={currentCoverageDays < leadTimeDays ? 'down' : 'up'}
+            sub={`Supplier lead time is ${leadTimeDays} days`}
+          />
+          <KpiTile
+            label="Current Optimization Gap"
+            value={`${currentOptimizationGap >= 0 ? '+' : ''}${formatNum(currentOptimizationGap, 0)} ${uom}`}
+            valueStyle={{ color: currentOptimizationGap > 0 ? 'var(--primary)' : currentOptimizationGap < 0 ? 'var(--error)' : 'var(--ink)' }}
+            delta={
+              currentOptimizationGap > 0
+                ? `${formatCurrency(currentExcessValue)} Capital Release Opportunity`
+                : currentOptimizationGap < 0
+                  ? `${formatCurrency(currentDeficitValue)} Replenishment Required`
+                  : 'Balanced on target'
+            }
+            deltaTone={currentOptimizationGap > 0 ? 'up' : currentOptimizationGap < 0 ? 'down' : 'flat'}
+            sub="Current On-Hand vs Modeled Target Buffer"
+          />
+        </div>
+
+        <div className="grid-4">
+          <KpiTile
+            label="Optimal Order Quantity (EOQ Q*)"
+            value={`${formatNum(qStar, 0)} ${uom}`}
+            delta={`${formatCurrency(qStar * unitCost)} spend/order`}
+            deltaTone="flat"
+            sub={`vs ERP batch size ${formatNum(currentBatchQty, 0)} ${uom} (${recOrderFreq.toFixed(1)} orders/yr)`}
+          />
+          <KpiTile
+            label="Statistical Safety Stock (SS)"
+            value={`${formatNum(safetyStock, 0)} ${uom}`}
+            delta={`${formatCurrency(safetyStockValue)} buffer value`}
+            deltaTone="flat"
+            sub={`Z = 1.65 (95.00% service factor) · ${leadTimeDays}d LT`}
+          />
+          <KpiTile
+            label="Planning Reorder Point (ROP)"
+            value={`${formatNum(reorderPoint, 0)} ${uom}`}
+            delta={
+              currentOnHand < reorderPoint
+                ? `Trigger Active: -${formatNum(reorderPoint - currentOnHand, 0)} ${uom}`
+                : `Buffer: +${formatNum(currentOnHand - reorderPoint, 0)} ${uom}`
+            }
+            deltaTone={currentOnHand < reorderPoint ? 'down' : 'up'}
+            sub={`${formatNum(demandDuringLeadTime, 0)} ${uom} LT demand + ${formatNum(safetyStock, 0)} ${uom} SS`}
+          />
+          <KpiTile
+            label="Current Inventory Turnover (ITR)"
+            value={`${formatNum(currentITR, 2)}×`}
+            delta={`Target: ${formatNum(targetITR, 2)}× under calibrated EOQ`}
+            deltaTone={targetITR > currentITR ? 'up' : 'flat'}
+            sub={`Annualized COGS (${formatCurrency(currentAnnualConsumptionValue)}) / On-Hand Value`}
+          />
+        </div>
+      </div>
+
+      {/* 4. PRIMARY TIME-SERIES CHARTS (Projected Inventory Position) */}
+      <div className="card mb-4">
+        <div className="card__head flex-wrap gap-2.5 mb-3.5">
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="card__title text-base font-bold text-ink m-0">
+                Projected Inventory Position Over Horizon ({activeHorizonDays} Days)
+              </h2>
+              <Badge tone={selectedHorizon === '12w' ? 'accent' : 'neutral'}>
+                {selectedHorizon === '12w' ? 'Authoritative Forecast (84 Days)' : 'Modeled Extension (182 Days)'}
+              </Badge>
+            </div>
+            <p className="card__sub text-xs text-subtle mt-0.5">
+              {optCopy.projSub}
+            </p>
+          </div>
+          <div className="chart-legend flex items-center gap-3 text-xs flex-wrap">
+            <span className="flex items-center gap-1.5"><span className="legend-dot inline-block w-2.5 h-2.5 rounded-full" style={{ background: 'var(--primary)' }} />Projected On-Hand</span>
+            <span className="flex items-center gap-1.5"><span className="legend-dot inline-block w-2.5 h-2.5 rounded-full" style={{ background: 'var(--success)' }} />Target Buffer (SS + EOQ)</span>
+            <span className="flex items-center gap-1.5"><span className="legend-dot inline-block w-2.5 h-2.5 rounded-full" style={{ background: 'var(--warning)' }} />Reorder Point (ROP)</span>
+            <span className="flex items-center gap-1.5"><span className="legend-dot inline-block w-2.5 h-2.5 rounded-full" style={{ background: 'var(--error)' }} />Safety Stock Floor</span>
+          </div>
+        </div>
+
+        {activeTimelineItem && (
+          <div className="flex flex-wrap items-center justify-between gap-2.5 bg-[color-mix(in_srgb,var(--bg)_90%,transparent)] border border-border rounded-lg px-3.5 py-2 mb-3">
+            <div className="flex items-center gap-2">
+              <Badge tone={activeTimelineItem.statusTone}>{activeTimelineItem.dataStatus}</Badge>
+              <span className="text-xs font-bold text-ink font-mono">
+                Day {activeTimelineItem.dayIndex} · {activeTimelineItem.fullDate}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3.5 text-xs font-mono text-body-c">
+              <div>
+                <span className="text-subtle mr-1 font-sans">Projected Stock:</span>
+                <strong className="text-primary">{formatNum(activeTimelineItem.projectedOnHand, 0)} {uom}</strong>
+              </div>
+              <div>
+                <span className="text-subtle mr-1 font-sans">Target Buffer:</span>
+                <strong className="text-success-tx">{formatNum(activeTimelineItem.targetPosition, 0)} {uom}</strong>
+              </div>
+              <div>
+                <span className="text-subtle mr-1 font-sans">ROP:</span>
+                <strong className="text-warning-tx">{formatNum(activeTimelineItem.reorderPoint, 0)} {uom}</strong>
+              </div>
+              <div>
+                <span className="text-subtle mr-1 font-sans">Safety Stock:</span>
+                <strong className="text-error-tx">{formatNum(activeTimelineItem.safetyStock, 0)} {uom}</strong>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="relative w-full overflow-hidden">
+          <svg
+            viewBox={`0 0 ${W1} ${H1}`}
+            preserveAspectRatio="none"
+            className="w-full block cursor-crosshair rounded-lg overflow-hidden border border-[color-mix(in_srgb,var(--border)_80%,transparent)] shadow-inner"
+            style={{ height: 260 }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const mouseSvgX = ((e.clientX - rect.left) / rect.width) * W1;
+              if (mouseSvgX >= ML1 && mouseSvgX <= W1 - MR1) {
+                const approxIdx = Math.round(((mouseSvgX - ML1) / (W1 - ML1 - MR1)) * (numPts1 - 1));
+                const clampedIdx = Math.max(0, Math.min(numPts1 - 1, approxIdx));
+                setHoveredTimelineIdx(clampedIdx);
+              }
+            }}
+            onMouseLeave={() => setHoveredTimelineIdx(null)}
+          >
+            {[0, yMax1 * 0.25, yMax1 * 0.5, yMax1 * 0.75, yMax1].map((v) => (
+              <g key={v}>
+                <line x1={ML1} x2={W1 - MR1} y1={y1(v)} y2={y1(v)} stroke="var(--muted-fill)" strokeWidth={1} />
+                <text x={8} y={y1(v) + 4} fontSize={12} fill="var(--subtle)">{formatNum(v, 0)}</text>
+              </g>
+            ))}
+            <path d={targetPath1} fill="none" stroke="var(--success)" strokeWidth={2} strokeDasharray="5 4" />
+            <path d={ropPath1} fill="none" stroke="var(--warning)" strokeWidth={2} strokeDasharray="3 3" />
+            <path d={ssPath1} fill="none" stroke="var(--error)" strokeWidth={2} strokeDasharray="2 2" />
+            <path d={baselinePath1} fill="none" stroke="var(--primary)" strokeWidth={3} />
+            {hoveredTimelineIdx !== null && activeTimelineItem && (
+              <g>
+                <circle cx={x1(hoveredTimelineIdx)} cy={y1(activeTimelineItem.projectedOnHand)} r={5.5} fill="var(--primary)" stroke="#fff" strokeWidth={2} />
+                <circle cx={x1(hoveredTimelineIdx)} cy={y1(activeTimelineItem.targetPosition)} r={4.5} fill="var(--success)" stroke="#fff" strokeWidth={1.5} />
+                <circle cx={x1(hoveredTimelineIdx)} cy={y1(activeTimelineItem.reorderPoint)} r={4.5} fill="var(--warning)" stroke="#fff" strokeWidth={1.5} />
+                <circle cx={x1(hoveredTimelineIdx)} cy={y1(activeTimelineItem.safetyStock)} r={4.5} fill="var(--error)" stroke="#fff" strokeWidth={1.5} />
+              </g>
+            )}
+            <line x1={ML1} x2={W1 - MR1} y1={H1 - MB1} y2={H1 - MB1} stroke="var(--border-strong)" strokeWidth={1} />
+            <line x1={ML1} x2={ML1} y1={MT1} y2={H1 - MB1} stroke="var(--border-strong)" strokeWidth={1} />
+          </svg>
+        </div>
+      </div>
+
+      {/* 5. DUAL SECONDARY CHARTS (Coverage Runway + Turnover ITR) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Coverage Runway Chart */}
+        <div className="card">
+          <div className="card__head mb-2.5">
+            <div>
+              <h2 className="card__title text-sm font-bold text-ink m-0">{optCopy.covTitle}</h2>
+              <p className="card__sub text-xs text-subtle mt-0.5">{optCopy.covSub}</p>
+            </div>
+            <Badge tone={firstCoverageBreach ? 'risk' : 'success'}>
+              {firstCoverageBreach ? `Breach Day ${firstCoverageBreach.dayIndex}` : 'Protected'}
+            </Badge>
+          </div>
+
+          {activeCoverageItem && (
+            <div className="flex items-center justify-between text-xs font-mono bg-bg p-2 rounded border border-border mb-2.5">
+              <span>Day {activeCoverageItem.dayIndex} ({activeCoverageItem.date})</span>
+              <strong className={activeCoverageItem.isCoverageBreached ? 'text-error-tx' : 'text-success-tx'}>
+                {formatNum(activeCoverageItem.coverageDays, 1)} Days Supply
+              </strong>
+            </div>
+          )}
+
+          <div className="relative w-full overflow-hidden">
+            <svg
+              viewBox={`0 0 ${W2} ${H2}`}
+              preserveAspectRatio="none"
+              className="w-full block cursor-crosshair rounded-lg overflow-hidden border border-[color-mix(in_srgb,var(--border)_80%,transparent)] shadow-inner"
+              style={{ height: 180 }}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const mouseSvgX = ((e.clientX - rect.left) / rect.width) * W2;
+                if (mouseSvgX >= ML2 && mouseSvgX <= W2 - MR2) {
+                  const approxIdx = Math.round(((mouseSvgX - ML2) / (W2 - ML2 - MR2)) * (numPts1 - 1));
+                  const clampedIdx = Math.max(0, Math.min(numPts1 - 1, approxIdx));
+                  setHoveredCoverageIdx(clampedIdx);
+                }
+              }}
+              onMouseLeave={() => setHoveredCoverageIdx(null)}
+            >
+              {[0, yMax2 * 0.5, yMax2].map((v) => (
+                <g key={v}>
+                  <line x1={ML2} x2={W2 - MR2} y1={y2(v)} y2={y2(v)} stroke="var(--muted-fill)" strokeWidth={1} />
+                  <text x={8} y={y2(v) + 4} fontSize={11} fill="var(--subtle)">{formatNum(v, 0)}d</text>
+                </g>
+              ))}
+              <line x1={ML2} x2={W2 - MR2} y1={y2(leadTimeDays)} y2={y2(leadTimeDays)} stroke="var(--warning)" strokeWidth={1.5} strokeDasharray="4 3" />
+              <path d={coveragePath2} fill="none" stroke="var(--primary)" strokeWidth={2.5} />
+              {hoveredCoverageIdx !== null && activeCoverageItem && (
+                <circle cx={x2(hoveredCoverageIdx)} cy={y2(activeCoverageItem.coverageDays)} r={5} fill="var(--primary)" stroke="#fff" strokeWidth={2} />
+              )}
+              <line x1={ML2} x2={W2 - MR2} y1={H2 - MB2} y2={H2 - MB2} stroke="var(--border-strong)" strokeWidth={1} />
+              <line x1={ML2} x2={ML2} y1={MT2} y2={H2 - MB2} stroke="var(--border-strong)" strokeWidth={1} />
+            </svg>
+          </div>
+        </div>
+
+        {/* Inventory Turnover (ITR) Chart */}
+        <div className="card">
+          <div className="card__head mb-2.5">
+            <div>
+              <h2 className="card__title text-sm font-bold text-ink m-0">{optCopy.itrTitle}</h2>
+              <p className="card__sub text-xs text-subtle mt-0.5">{optCopy.itrSub}</p>
+            </div>
+            <Badge tone="accent">Target: {formatNum(targetITR, 1)}×</Badge>
+          </div>
+
+          {activeItrItem && (
+            <div className="flex items-center justify-between text-xs font-mono bg-bg p-2 rounded border border-border mb-2.5">
+              <span>Day {activeItrItem.dayIndex} ({activeItrItem.date})</span>
+              <strong className="text-primary">{formatNum(activeItrItem.rollingITR, 2)}× Turnover</strong>
+            </div>
+          )}
+
+          <div className="relative w-full overflow-hidden">
+            <svg
+              viewBox={`0 0 ${W3} ${H3}`}
+              preserveAspectRatio="none"
+              className="w-full block cursor-crosshair rounded-lg overflow-hidden border border-[color-mix(in_srgb,var(--border)_80%,transparent)] shadow-inner"
+              style={{ height: 180 }}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const mouseSvgX = ((e.clientX - rect.left) / rect.width) * W3;
+                if (mouseSvgX >= ML3 && mouseSvgX <= W3 - MR3) {
+                  const approxIdx = Math.round(((mouseSvgX - ML3) / (W3 - ML3 - MR3)) * (numPts1 - 1));
+                  const clampedIdx = Math.max(0, Math.min(numPts1 - 1, approxIdx));
+                  setHoveredItrIdx(clampedIdx);
+                }
+              }}
+              onMouseLeave={() => setHoveredItrIdx(null)}
+            >
+              {[0, yMax3 * 0.5, yMax3].map((v) => (
+                <g key={v}>
+                  <line x1={ML3} x2={W3 - MR3} y1={y3(v)} y2={y3(v)} stroke="var(--muted-fill)" strokeWidth={1} />
+                  <text x={8} y={y3(v) + 4} fontSize={11} fill="var(--subtle)">{formatNum(v, 1)}×</text>
+                </g>
+              ))}
+              <line x1={ML3} x2={W3 - MR3} y1={y3(targetITR)} y2={y3(targetITR)} stroke="var(--success)" strokeWidth={1.5} strokeDasharray="4 3" />
+              <path d={itrPath3} fill="none" stroke="var(--primary)" strokeWidth={2.5} />
+              {hoveredItrIdx !== null && activeItrItem && (
+                <circle cx={x3(hoveredItrIdx)} cy={y3(activeItrItem.rollingITR)} r={5} fill="var(--primary)" stroke="#fff" strokeWidth={2} />
+              )}
+              <line x1={ML3} x2={W3 - MR3} y1={H3 - MB3} y2={H3 - MB3} stroke="var(--border-strong)" strokeWidth={1} />
+              <line x1={ML3} x2={ML3} y1={MT3} y2={H3 - MB3} stroke="var(--border-strong)" strokeWidth={1} />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. WORKING CAPITAL & CARRYING SAVINGS OUTLOOK */}
+      <div className="card mb-4">
+        <div className="card__head flex-wrap gap-2.5 mb-3.5">
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="card__title text-base font-bold text-ink m-0">{optCopy.capTitle}</h2>
+              <Badge tone="accent">Capital Valuation</Badge>
+            </div>
+            <p className="card__sub text-xs text-subtle mt-0.5">{optCopy.capSub}</p>
+          </div>
+          <div className="chart-legend flex items-center gap-3 text-xs flex-wrap">
+            <span className="flex items-center gap-1.5"><span className="legend-dot inline-block w-2.5 h-2.5 rounded-full" style={{ background: 'var(--primary)' }} />Physical Inventory Capital</span>
+            <span className="flex items-center gap-1.5"><span className="legend-dot inline-block w-2.5 h-2.5 rounded-full" style={{ background: 'var(--success)' }} />Target Buffer Capital</span>
+          </div>
+        </div>
+
+        {activeCapitalItem && (
+          <div className="flex flex-wrap items-center justify-between gap-2.5 bg-[color-mix(in_srgb,var(--bg)_90%,transparent)] border border-border rounded-lg px-3.5 py-2 mb-3">
+            <div className="flex items-center gap-2">
+              <Badge tone={activeCapitalItem.statusTone}>{activeCapitalItem.dataStatus}</Badge>
+              <span className="text-xs font-bold text-ink font-mono">Day {activeCapitalItem.dayIndex} · {activeCapitalItem.fullDate}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3.5 text-xs font-mono">
+              <div>
+                <span className="text-subtle mr-1 font-sans">Physical Capital:</span>
+                <strong className="text-primary">{formatCurrency(activeCapitalItem.inventoryValue)}</strong>
+              </div>
+              <div>
+                <span className="text-subtle mr-1 font-sans">Target Capital:</span>
+                <strong className="text-success-tx">{formatCurrency(activeCapitalItem.targetValue)}</strong>
+              </div>
+              <div>
+                <span className="text-subtle mr-1 font-sans">Carrying Savings:</span>
+                <strong className="text-success-tx">+{formatCurrency(activeCapitalItem.cumulativeHoldingSavings)}</strong>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="relative w-full overflow-hidden">
+          <svg
+            viewBox={`0 0 ${W4} ${H4}`}
+            preserveAspectRatio="none"
+            className="w-full block cursor-crosshair rounded-lg overflow-hidden border border-[color-mix(in_srgb,var(--border)_80%,transparent)] shadow-inner"
+            style={{ height: 200 }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const mouseSvgX = ((e.clientX - rect.left) / rect.width) * W4;
+              if (mouseSvgX >= ML4 && mouseSvgX <= W4 - MR4) {
+                const approxIdx = Math.round(((mouseSvgX - ML4) / (W4 - ML4 - MR4)) * (numPts1 - 1));
+                const clampedIdx = Math.max(0, Math.min(numPts1 - 1, approxIdx));
+                setHoveredCapitalIdx(clampedIdx);
+              }
+            }}
+            onMouseLeave={() => setHoveredCapitalIdx(null)}
+          >
+            {[0, yMax4 * 0.25, yMax4 * 0.5, yMax4 * 0.75, yMax4].map((v) => (
+              <g key={v}>
+                <line x1={ML4} x2={W4 - MR4} y1={y4(v)} y2={y4(v)} stroke="var(--muted-fill)" strokeWidth={1} />
+                <text x={8} y={y4(v) + 4} fontSize={12} fill="var(--subtle)">{formatCurrency(v, 0)}</text>
+              </g>
+            ))}
+            <path d={capTargetPath4} fill="none" stroke="var(--success)" strokeWidth={2} strokeDasharray="5 4" />
+            <path d={capBaselinePath4} fill="none" stroke="var(--primary)" strokeWidth={2.5} />
+            {hoveredCapitalIdx !== null && activeCapitalItem && (
+              <g>
+                <circle cx={x4(hoveredCapitalIdx)} cy={y4(activeCapitalItem.inventoryValue)} r={5} fill="var(--primary)" stroke="#fff" strokeWidth={2} />
+                <circle cx={x4(hoveredCapitalIdx)} cy={y4(activeCapitalItem.targetValue)} r={4.5} fill="var(--success)" stroke="#fff" strokeWidth={1.5} />
+              </g>
+            )}
+            <line x1={ML4} x2={W4 - MR4} y1={H4 - MB4} y2={H4 - MB4} stroke="var(--border-strong)" strokeWidth={1} />
+            <line x1={ML4} x2={ML4} y1={MT4} y2={H4 - MB4} stroke="var(--border-strong)" strokeWidth={1} />
+          </svg>
+        </div>
+      </div>
+
+      {/* 7. PER-MATERIAL CATALOG ORDER PLAN & ALLOCATION STATUS */}
+      <div className="card mb-4">
+        <div className="card__head mb-3">
+          <div>
+            <h2 className="card__title text-base font-bold text-ink m-0">{optCopy.catTitle}</h2>
+            <p className="card__sub text-xs text-subtle mt-0.5">{optCopy.catSub}</p>
+          </div>
+          <Badge tone="neutral">Scope: {scope}</Badge>
+        </div>
+
+        <div className="border border-border rounded-lg overflow-hidden mb-3.5">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Material</TableHead>
+                <TableHead>ABC Class</TableHead>
+                <TableHead className="text-right" style={colStyle('stock')}>Current Stock</TableHead>
+                <TableHead className="text-right" style={colStyle('target')}>Target Buffer</TableHead>
+                <TableHead className="text-right" style={colStyle('coverage')}>Coverage (DOS)</TableHead>
+                <TableHead className="text-right" style={colStyle('order')}>Recommended Order Qty</TableHead>
+                <TableHead style={colStyle('priority')}>Optimization Priority</TableHead>
+                <TableHead style={colStyle('alloc')}>Supplier Allocation</TableHead>
+                <TableHead className="text-right" style={colStyle('conf')}>Model Confidence</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {catalogRows.map((m) => (
+                <TableRow
+                  key={m.id}
+                  className={m.isSelected ? 'bg-[color-mix(in_srgb,var(--info-bg)_60%,transparent)] font-medium' : undefined}
+                >
+                  <TableCell className="font-semibold text-ink font-mono text-xs">
+                    {m.name} <span className="text-subtle font-sans">· {m.plant}</span>
+                    {m.isSelected && (
+                      <span className="badge badge-accent ml-2 text-xs py-0.5 px-1.5 font-sans">
+                        Active SKU
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge tone={m.abcClass === 'A' ? 'accent' : 'neutral'}>
+                      Class {m.abcClass}
+                    </Badge>
+                  </TableCell>
+                  <TableCell style={colStyle('stock')} className="text-right font-mono text-xs text-ink">
+                    {formatNum(m.currentStock, 0)} {m.uom} ({formatCurrency(m.currentValue)})
+                  </TableCell>
+                  <TableCell style={colStyle('target')} className="text-right font-mono text-xs text-ink">
+                    {formatNum(m.desiredStock, 0)} {m.uom} ({formatCurrency(m.desiredValue)})
+                  </TableCell>
+                  <TableCell style={colStyle('coverage')} className="text-right font-mono text-xs">
+                    {formatNum(m.coverageDays, 1)}d
+                  </TableCell>
+                  <TableCell style={colStyle('order')} className="text-right font-mono text-xs">
+                    <strong className={m.orderQty > 0 ? 'text-ink' : 'text-subtle'}>
+                      {formatNum(m.orderQty, 0)} {m.uom} ({formatCurrency(m.orderValue)})
+                    </strong>
+                  </TableCell>
+                  <TableCell style={colStyle('priority')}>
+                    <span className="text-xs font-semibold text-body-c">
+                      {m.abcPriority}
+                    </span>
+                  </TableCell>
+                  <TableCell style={colStyle('alloc')} className="text-xs text-subtle">{m.supplierAllocationText}</TableCell>
+                  <TableCell style={colStyle('conf')} className="text-right font-mono text-xs">{m.confidence.toFixed(2)}%</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Explainability disclosure for active selected material */}
+        {dynamicDisclosure && (
+          <WhyDisclosure
+            summary={dynamicDisclosure.summary}
+            drivers={dynamicDisclosure.drivers}
+            meaning={dynamicDisclosure.meaning}
+            action={dynamicDisclosure.action}
+            defaultOpen={true}
+          />
+        )}
+      </div>
+    </motion.section>
+  );
+}

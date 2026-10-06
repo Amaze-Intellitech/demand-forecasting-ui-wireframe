@@ -1,35 +1,30 @@
 import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:pointer-events-none disabled:opacity-50 select-none',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-sm text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50 select-none',
   {
     variants: {
       variant: {
-        default:
-          'bg-primary text-white hover:bg-deep active:bg-deep font-semibold shadow-sm',
-        primary:
-          'bg-primary text-white hover:bg-deep active:bg-deep font-semibold shadow-sm',
-        deep:
-          'bg-deep text-white hover:bg-[#1E293B] active:bg-[#1E293B] font-semibold shadow-sm',
-        secondary:
-          'bg-muted text-deep hover:bg-border border border-border',
-        outline:
-          'border border-border bg-transparent text-deep hover:border-primary hover:text-primary',
-        ghost:
-          'text-primary hover:bg-muted',
-        destructive:
-          'bg-error-bg text-error-tx hover:bg-destructive hover:text-white',
-        subtle:
-          'bg-info-bg text-info-tx border border-primary/20 hover:bg-primary/10',
+        default: 'bg-primary-solid text-white hover:bg-[var(--primary-hover)] border border-primary-solid hover:border-[var(--primary-hover)] shadow-sm',
+        primary: 'bg-primary-solid text-white hover:bg-[var(--primary-hover)] border border-primary-solid hover:border-[var(--primary-hover)] shadow-sm',
+        accent: 'bg-primary-solid text-white hover:bg-[var(--primary-hover)] border border-primary-solid hover:border-[var(--primary-hover)] shadow-sm',
+        deep: 'bg-deep text-white hover:bg-primary-solid border border-transparent shadow-sm',
+        outline: 'border border-border-strong bg-surface text-ink hover:border-primary hover:text-primary',
+        secondary: 'bg-muted-fill text-ink hover:bg-border border border-border',
+        ghost: 'text-ink hover:bg-muted-fill border border-transparent',
+        destructive: 'bg-error-bg text-error-tx border border-transparent hover:bg-error hover:text-white',
+        subtle: 'bg-info-bg text-info-tx border border-primary/20 hover:bg-primary/10',
+        link: 'text-primary underline underline-offset-4 hover:text-ink p-0 h-auto',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-11 rounded-md px-6 text-base font-semibold',
-        icon: 'h-9 w-9',
+        default: 'h-9 px-3.5 py-2 gap-1.5',
+        sm: 'h-7 px-2.5 py-1 text-xs gap-1',
+        md: 'h-9 px-3.5 py-2 text-[13px] gap-1.5',
+        lg: 'h-10 px-5 py-2.5 text-sm gap-2',
+        icon: 'h-8 w-8 p-0',
       },
     },
     defaultVariants: {
@@ -45,6 +40,7 @@ export interface ButtonProps
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  asChild?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -63,9 +59,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {leftIcon && <span className="mr-2 inline-flex items-center">{leftIcon}</span>}
+            {leftIcon && <span className="mr-1.5 inline-flex items-center">{leftIcon}</span>}
             {children}
-            {rightIcon && <span className="ml-2 inline-flex items-center">{rightIcon}</span>}
+            {rightIcon && <span className="ml-1.5 inline-flex items-center">{rightIcon}</span>}
           </>
         )}
       </button>
@@ -74,3 +70,5 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+export { buttonVariants };

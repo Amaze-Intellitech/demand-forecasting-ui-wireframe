@@ -4,7 +4,7 @@ import { INITIAL_SOLUTIONS, INITIAL_CONNECTORS } from '../data/mockData';
 
 // Helper to automatically derive a clean user display name from email credentials
 export const deriveNameFromEmail = (input: string): string => {
-  if (!input || !input.trim()) return 'Siddhartha M';
+  if (!input || !input.trim()) return 'User';
   
   // Extract user handle before '@'
   let handle = input.includes('@') ? input.split('@')[0] : input;
@@ -14,7 +14,7 @@ export const deriveNameFromEmail = (input: string): string => {
   
   // Capitalize each word
   const words = handle.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return 'Siddhartha M';
+  if (words.length === 0) return 'User';
   
   return words
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -40,8 +40,8 @@ interface AitekContextType {
 }
 
 const DEFAULT_USER: UserSession = {
-  email: 'siddhartha.m@aitek.ai',
-  name: 'Siddhartha M',
+  email: 'user@aitek.ai',
+  name: 'User',
   orgName: 'ABC Manufacturing',
   orgId: 'ORG-8842-ENTERPRISE',
   role: 'Operations Director',
@@ -52,9 +52,9 @@ const AitekContext = createContext<AitekContextType | undefined>(undefined);
 
 export const AitekProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserSession | null>(() => {
-    // Check if previously logged in for smooth navigation, fallback to DEFAULT_USER
+    // Check if previously logged in for smooth navigation, otherwise start unauthenticated at /login
     const saved = sessionStorage.getItem('aitek_auth_user');
-    return saved ? JSON.parse(saved) : DEFAULT_USER;
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [selectedSolutionId, setSelectedSolutionId] = useState<string>(() => {

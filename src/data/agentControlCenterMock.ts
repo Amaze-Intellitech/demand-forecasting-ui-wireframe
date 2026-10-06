@@ -76,7 +76,7 @@ export const AGENT_DECISION_LOG_MOCK: AgentDecisionLogEntry[] = [
     recommendation: 'Increase APAC buffer inventory target by 1,200 MT ahead of forecasted demand surge',
     recommendedAt: 'Today, 08:19 AM',
     outcome: 'approved',
-    decidedBy: 'Siddhartha M',
+    decidedBy: 'Operations Lead',
     decidedAt: 'Today, 08:52 AM',
     relatedRoute: '/solutions/demand-intelligence/demand-sensing',
   },

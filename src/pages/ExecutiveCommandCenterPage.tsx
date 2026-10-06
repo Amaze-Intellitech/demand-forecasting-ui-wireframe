@@ -117,7 +117,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
           return {
             ...t,
             status: 'approved',
-            approvedBy: 'Siddhartha M',
+            approvedBy: 'Operations Lead',
             approvedAt: 'Just now',
           };
         }
@@ -130,7 +130,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
           ? {
               ...prev,
               status: 'approved',
-              approvedBy: 'Siddhartha M',
+              approvedBy: 'Operations Lead',
               approvedAt: 'Just now',
             }
           : null
@@ -172,7 +172,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
             ...t,
             status: 'approved',
             modificationNotes: notes,
-            approvedBy: 'Siddhartha M (Modified)',
+            approvedBy: 'Operations Lead (Modified)',
             approvedAt: 'Just now',
           };
         }
@@ -186,7 +186,7 @@ export const ExecutiveCommandCenterPage: React.FC = () => {
               ...prev,
               status: 'approved',
               modificationNotes: notes,
-              approvedBy: 'Siddhartha M (Modified)',
+              approvedBy: 'Operations Lead (Modified)',
               approvedAt: 'Just now',
             }
           : null

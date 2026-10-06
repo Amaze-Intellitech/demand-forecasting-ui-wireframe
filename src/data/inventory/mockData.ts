@@ -1,0 +1,156 @@
+import {
+  InventoryRole,
+  RoleContextItem,
+  InventoryMaterial,
+  RawMaterialRow,
+  RmlcStageItem,
+  RmlcPlantStage,
+  InventoryDecisionRow,
+  EoqInput,
+  ForecastInput,
+  RmlcLeg,
+  RmlcCycleMaterial,
+  PersonaKey,
+  PersonaLegsDefinition,
+} from '@/types/inventory';
+
+// Mock/illustrative data for the Inventory storyboard prototype.
+export const ROLE_CONTEXT: Record<InventoryRole, RoleContextItem> = {
+  'Plant Supervisor': { dept: 'Plant Operations', scope: 'Plant 1 — Assembly', persona: 'supervisor' },
+  'Warehouse Manager': { dept: 'Stores & Warehousing', scope: 'Plant 1 — Assembly', persona: 'warehouse' },
+  'Materials Planner': { dept: 'Production Planning', scope: 'Plant 1 — Assembly', persona: 'planner' },
+  'Procurement Officer': { dept: 'Procurement & Sourcing', scope: 'All Plants (4)', persona: 'procurement' },
+  'Finance Controller': { dept: 'Finance & Costing', scope: 'All Plants (4)', persona: 'finance' },
+};
+
+export const DEFAULT_ROLE: InventoryRole = 'Plant Supervisor';
+
+export const PLANT_SCOPES: string[] = [
+  'All Plants (4)',
+  'Plant 1 — Assembly',
+  'Plant 2 — Engine Hub',
+  'Plant 3 — Microelectronics',
+  'Plant 4 — Fastener Depot',
+];
+
+export const MATERIALS: InventoryMaterial[] = [
+  { id: 'MAT-1082', name: 'Hydraulic Pump 250BAR', category: 'Components', plant: 'Plant 1', qty: 930, uom: 'EA', unitCost: 600.0, value: 558000.0, abcClass: 'A' },
+  { id: 'MAT-4120', name: 'Microcontroller MCU-64', category: 'Components', plant: 'Plant 3', qty: 920.0, uom: 'EA', unitCost: 78.65, value: 72358.0, abcClass: 'A' },
+  { id: 'MAT-2041', name: 'Lithium Cell 21700', category: 'Raw Materials', plant: 'Plant 2', qty: 142000, uom: 'EA', unitCost: 5.14, value: 729880.0, abcClass: 'A' },
+  { id: 'MAT-5501', name: 'High-Temp Sealant Paste', category: 'Consumables', plant: 'Plant 1', qty: 1400, uom: 'KG', unitCost: 41.14, value: 57600.0, abcClass: 'C' },
+];
+
+export const CONNECTORS_STATIC = [
+  { id: 'erp1', label: 'ERP System', desc: 'SAP S/4HANA, Oracle NetSuite, Microsoft Dynamics or another ERP', cta: 'Connect ERP' },
+  { id: 'wh', label: 'Data Warehouse', desc: 'Snowflake, BigQuery, Redshift or another warehouse', cta: 'Connect Warehouse' },
+  { id: 'file', label: 'File Upload', desc: 'CSV or Excel extract, for a one-time or manual load', cta: 'Upload File' },
+];
+
+export const SQL_TABLE_OPTIONS: Record<string, string[]> = {
+  inventory: ['inventory_master', 'sku_ledger', 'stock_position_v2'],
+  transactions: ['stock_movements', 'gr_gi_history', 'transaction_log'],
+  bom: ['bom_structure', 'material_bom', 'bom_master'],
+};
+
+export const RAW_MATERIAL_ROWS: RawMaterialRow[] = [
+  { id: 'MAT-1082', name: 'Hydraulic Pump', qtyPerUnit: 1.0, p1: 770, p2: 900, p3: 930, coverage: 'risk' },
+  { id: 'MAT-3390', name: 'Steel Housing', qtyPerUnit: 1.0, p1: 1800, p2: 1800, p3: 1800, coverage: 'watch' },
+  { id: 'MAT-1177', name: 'Seal Kit', qtyPerUnit: 2.0, p1: 3600, p2: 3600, p3: 3600, coverage: 'ok' },
+  { id: 'MAT-2041', name: 'Lithium Cell 21700', qtyPerUnit: 0.5, p1: 900, p2: 900, p3: 900, coverage: 'ok' },
+  { id: 'MAT-4120', name: 'Microcontroller MCU-64', qtyPerUnit: 1.0, p1: 1800, p2: 1800, p3: 1800, coverage: 'risk' },
+];
+
+export const RMLC_STAGES: RmlcStageItem[] = [
+  { key: 'accumulation', label: 'Accumulation', value: 4.10, count: 86, desc: 'Building faster than consumption', rule: 'Alert rule: inflow > 1.5× trailing consumption for 3 consecutive weeks', tone: 'watch' },
+  { key: 'active', label: 'Active Circulation', value: 34.60, count: 1140, desc: 'Turning within policy', rule: 'Alert rule: none — within expected turnover band', tone: 'ok' },
+  { key: 'atrisk', label: 'At Risk', value: 1.94, count: 76, desc: '90–180 days without consumption', rule: 'Alert rule: 0 consumption events in 90 days', tone: 'risk' },
+  { key: 'liquidation', label: 'Liquidation', value: 2.10, count: 118, desc: 'Past 180-day threshold', rule: 'Alert rule: 0 consumption events in 180 days', tone: 'risk' },
+];
+
+// The same four stages split by plant. Each stage sums back to the all-plant totals in RMLC_STAGES above.
+export const RMLC_STAGES_BY_PLANT: RmlcPlantStage[] = [
+  { plant: 'Plant 1', name: 'Plant 1 — Assembly', stages: { accumulation: { value: 1.20, count: 26 }, active: { value: 10.40, count: 340 }, atrisk: { value: 0.52, count: 20 }, liquidation: { value: 0.55, count: 30 } } },
+  { plant: 'Plant 2', name: 'Plant 2 — Engine Hub', stages: { accumulation: { value: 1.55, count: 32 }, active: { value: 11.30, count: 380 }, atrisk: { value: 0.68, count: 26 }, liquidation: { value: 0.80, count: 42 } } },
+  { plant: 'Plant 3', name: 'Plant 3 — Microelectronics', stages: { accumulation: { value: 0.85, count: 18 }, active: { value: 8.10, count: 270 }, atrisk: { value: 0.44, count: 18 }, liquidation: { value: 0.45, count: 26 } } },
+  { plant: 'Plant 4', name: 'Plant 4 — Fastener Depot', stages: { accumulation: { value: 0.50, count: 10 }, active: { value: 4.80, count: 150 }, atrisk: { value: 0.30, count: 12 }, liquidation: { value: 0.30, count: 20 } } },
+];
+
+export const DECISION_ROWS: InventoryDecisionRow[] = [
+  { id: 'd1', tag: 'Act now', tone: 'risk', title: 'Authorize expedited PO — MAT-4120', meta: 'Stockout in 14 days · Plant 3 · Confidence 94.80%', impact: '+$1.82M protected' },
+  { id: 'd2', tag: 'Optimize', tone: 'accent', title: 'Recalibrate lot size — 46 Class A materials', meta: 'EOQ recalibration · Confidence 94.80%', impact: '+$3.65M released' },
+  { id: 'd3', tag: 'Monitor', tone: 'watch', title: 'Track Plant 3 service level recovery', meta: 'Currently 94.50% vs 98.00% target', impact: 'Risk mitigation' },
+  { id: 'd4', tag: 'Prevent', tone: 'neutral', title: 'Transfer MAT-5501 to Plant 2 before expiry', meta: '165 days stagnant · RMLC liquidation stage', impact: '+$57,600.00 salvage' },
+];
+
+export const EOQ_INPUTS: Record<string, EoqInput> = {
+  'MAT-1082': { demand: 4800.0, currentBatchQty: 600.0 },
+  'MAT-4120': { demand: 24000.0, currentBatchQty: 3000.0 },
+  'MAT-2041': { demand: 420000.0, currentBatchQty: 60000.0 },
+  'MAT-5501': { demand: 6000.0, currentBatchQty: 1400.0 },
+};
+
+export const FORECAST_INPUTS: Record<string, ForecastInput> = {
+  'MAT-1082': { leadTimeDays: 60, demandCV: 0.12, trendPerWeek: 0.002, modelR2: 0.91, rmseRatio: 0.09 },
+  'MAT-4120': { leadTimeDays: 60, demandCV: 0.28, trendPerWeek: 0.012, modelR2: 0.78, rmseRatio: 0.22 },
+  'MAT-2041': { leadTimeDays: 30, demandCV: 0.10, trendPerWeek: 0.001, modelR2: 0.93, rmseRatio: 0.08 },
+  'MAT-5501': { leadTimeDays: 21, demandCV: 0.15, trendPerWeek: 0.000, modelR2: 0.87, rmseRatio: 0.12 },
+};
+
+// Fixed event sequence for Stage 5 RMLC cash cycle
+export const RMLC_EVENTS: string[] = [
+  'Supplier PO',
+  'Material arrival',
+  'Supplier payment',
+  'Production issue',
+  'FG production',
+  'FG sale',
+  'Customer payment',
+];
+
+export const RMLC_LEGS: RmlcLeg[] = [
+  { key: 'lead', short: 'Supplier lead time', from: 0, to: 1 },
+  { key: 'credit', short: 'Supplier credit period', from: 1, to: 2 },
+  { key: 'store', short: 'Wait in stores', from: 2, to: 3 },
+  { key: 'make', short: 'Production time', from: 3, to: 4 },
+  { key: 'fg', short: 'Finished goods unsold', from: 4, to: 5 },
+  { key: 'cust', short: 'Customer payment terms', from: 5, to: 6 },
+];
+
+export const RMLC_CYCLE_MATERIALS: RmlcCycleMaterial[] = [
+  { id: 'MAT-4120', name: 'Microcontroller', days: [6, 4, 5, 4, 10, 6], bottleneck: 'fg', why: 'Cycle is healthy; nothing stands out.' },
+  { id: 'MAT-1082', name: 'Hydraulic Pump', days: [12, 10, 8, 6, 14, 20], bottleneck: 'cust', why: 'Customer payment terms lengthened from 30 to 45 days last quarter.' },
+  { id: 'MAT-2041', name: 'Lithium Cell', days: [15, 9, 12, 8, 66, 30], bottleneck: 'fg', why: 'Finished goods are sitting unsold in the warehouse for 66 days.' },
+];
+
+export const PERSONA_LEGS: Record<PersonaKey, PersonaLegsDefinition> = {
+  supervisor: {
+    label: 'Plant Supervisor',
+    legs: ['lead', 'store'],
+    sub: 'Highlighted: the two legs that decide whether material reaches the line on time.',
+    read: (f, own) => `${f.id} spends ${f.days[0]} days in supplier lead time and ${f.days[2]} waiting in stores before it reaches the line — ${own} of its ${f.total ?? f.days.reduce((a, b) => a + b, 0)} days.`,
+  },
+  warehouse: {
+    label: 'Warehouse Manager',
+    legs: ['store', 'fg'],
+    sub: 'Highlighted: the legs where stock sits physically in your stores.',
+    read: (f, own) => `${f.id} sits ${f.days[2]} days as raw material in stores and ${f.days[4]} days as unsold finished goods — ${own} of its ${f.total ?? f.days.reduce((a, b) => a + b, 0)} days on your shelves.`,
+  },
+  planner: {
+    label: 'Materials Planner',
+    legs: ['store', 'make'],
+    sub: 'Highlighted: the legs your plan controls, from stores issue through production.',
+    read: (f, own) => `${f.id} waits ${f.days[2]} days in stores and takes ${f.days[3]} days to produce — ${own} of ${f.total ?? f.days.reduce((a, b) => a + b, 0)} days sit between the plan and finished goods.`,
+  },
+  procurement: {
+    label: 'Procurement Officer',
+    legs: ['lead', 'credit'],
+    sub: 'Highlighted: the legs you negotiate with the supplier.',
+    read: (f, own) => `${f.id} has a ${f.days[0]}-day supplier lead time and ${f.days[1]} days of supplier credit — ${own} of ${f.total ?? f.days.reduce((a, b) => a + b, 0)} days are set in the supplier agreement.`,
+  },
+  finance: {
+    label: 'Finance Controller',
+    legs: ['credit', 'fg', 'cust'],
+    sub: 'Highlighted: the legs that decide how long cash stays out — supplier credit, unsold goods and customer terms.',
+    read: (f, own) => `${f.id} ties up cash for ${f.total ?? f.days.reduce((a, b) => a + b, 0)} days from PO to customer payment; ${own} of them come from supplier credit, unsold finished goods and customer terms.`,
+  },
+};
